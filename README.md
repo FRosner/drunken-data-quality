@@ -21,4 +21,13 @@ Check(customers)
   .run()
 ```
 
+### Authors
+
+- [Frank Rosner](https://github.com/FRosner) (Creator)
+- [Slavo N.](https://github.com/mfsny) (Contributor)
+
+### License 
+
+This project is licensed under the Apache License Version 2.0. For details please see the file called LICENSE.
+
 
