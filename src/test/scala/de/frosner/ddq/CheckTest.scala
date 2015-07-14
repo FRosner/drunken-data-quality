@@ -74,4 +74,12 @@ class CheckTest extends FlatSpec with Matchers {
     Check(df).hasKey("column1", "column2").run shouldBe false
   }
 
+  "Multiple checks" should "fail if one check is failing" in {
+    Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).run shouldBe false
+  }
+
+  it should "succeed if all checks are succeeding" in {
+    Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasKey("column").satisfies("column > 0").run shouldBe true
+  }
+
 }
