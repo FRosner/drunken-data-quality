@@ -14,7 +14,11 @@ In order to use DDQ, you can add it as a dependency to your project using [JitPa
 import de.frosner.ddq._
 
 val customers = sqlContext.table("customers")
-Check(customers).hasNumRowsEqualTo(100000).hasKey("customer_id").satisfies("customer_age > 0").run()
+Check(customers)
+  .hasNumRowsEqualTo(100000)
+  .hasKey("customer_id")
+  .satisfies("customer_age > 0")
+  .run()
 ```
 
 
