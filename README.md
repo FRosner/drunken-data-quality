@@ -6,7 +6,15 @@ DDQ is a small library for checking constraints on Spark data structures. It can
 
 ### Getting DDQ
 
-In order to use DDQ, you can add it as a dependency to your project using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality). If you are not using any of the supported dependency management systems, feel free to download one of the compiled artifacts in the [release section](https://github.com/FRosner/drunken-data-quality/releases). Alternatively you may of course also build from source.
+In order to use DDQ, you can add it as a dependency to your project using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality). Just add the following to your `build.sbt` file:
+
+```scala
+resolvers += "jitpack" at "https://jitpack.io"
+
+libraryDependencies += "com.github.FRosner" % "drunken-data-quality" % "1.0.0"
+```
+
+If you are not using any of the dependency management systems supported by JitPack, feel free to download one of the compiled artifacts in the [release section](https://github.com/FRosner/drunken-data-quality/releases). Alternatively you may of course also build from source.
 
 ### Using DDQ
 
