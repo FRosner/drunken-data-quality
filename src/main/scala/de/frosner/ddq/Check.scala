@@ -2,6 +2,7 @@ package de.frosner.ddq
 
 import java.text.SimpleDateFormat
 
+import org.apache.spark.sql.catalyst.plans.JoinType
 import org.apache.spark.sql.{Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
@@ -111,7 +112,41 @@ case class Check(dataFrame: DataFrame,
         failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
     }
   }
-  
+
+  def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint {
+    df => {
+      val columns = keyMap :: keyMaps.toList
+      val renamedColumns = columns.map{ case (baseColumn, refColumn) => ("b_" + baseColumn, "r_" + refColumn)}
+      val (baseColumns, refColumns) = columns.unzip
+      val (renamedBaseColumns, renamedRefColumns) = renamedColumns.unzip
+
+      // check if foreign key is a key in reference table
+      val nonUniqueRows = referenceTable.groupBy(refColumns.map(new Column(_)):_*).count.filter(new Column("count") > 1).count
+      if (nonUniqueRows > 0) {
+        failure( s"""Columns ${refColumns.mkString(", ")} are not a key in reference table""")
+      } else {
+        // rename all columns to avoid ambiguous column references
+        val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
+          case (original, renamed) => new Column(original).as(renamed)
+        }:_*)
+        val renamedRef = referenceTable.select(refColumns.zip(renamedRefColumns).map {
+          case (original, renamed) => new Column(original).as(renamed)
+        }:_*)
+
+        // check if left outer join yields some null values
+        val leftOuterJoin = renamedDf.distinct.join(renamedRef, renamedColumns.map{
+          case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
+        }.reduce(_ && _), "outer")
+        val notMatchingRefs = leftOuterJoin.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count
+        val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
+        if (notMatchingRefs == 0)
+          success(s"""Columns $columnsString define a foreign key""")
+        else
+          failure(s"Columns $columnsString do not define a foreign key ($notMatchingRefs records do not match)")
+      }
+    }
+  }
+
   def run: Boolean = {
     hint(s"Checking $dataFrame")
     val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)

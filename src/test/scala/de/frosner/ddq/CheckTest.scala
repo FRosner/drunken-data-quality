@@ -147,6 +147,42 @@ class CheckTest extends FlatSpec with Matchers {
       .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe false
   }
 
+  "A foreign key check" should "succeed if the given column is a foreign key pointing to the reference table" in {
+    val base = makeIntegerDf(List(1, 1, 1, 2, 2, 3))
+    val ref = makeIntegerDf(List(1, 2, 3))
+    Check(base).hasForeignKey(ref, "column" -> "column").run shouldBe true
+  }
+
+  it should "succeed if the given columns are a foreign key pointing to the reference table" in {
+    val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = makeIntegersDf(List(1, 2, 100), List(1, 3, 100))
+    Check(base).hasForeignKey(ref, "column1" -> "column1", "column2" -> "column2").run shouldBe true
+  }
+
+  it should "succeed if the given columns are a foreign key pointing to the reference table having a different name" in {
+    val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = makeIntegersDf(List(1, 3, 100), List(1, 5, 100))
+    Check(base).hasForeignKey(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe true
+  }
+
+  it should "fail if the given column contains values that are not found in the reference table" in {
+    val base = makeIntegerDf(List(1, 1, 1, 2, 2, 3))
+    val ref = makeIntegerDf(List(1, 2))
+    Check(base).hasForeignKey(ref, "column" -> "column").run shouldBe false
+  }
+
+  it should "fail if the given columns contains values that are not found in the reference table" in {
+    val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 5, 3))
+    val ref = makeIntegersDf(List(1, 2, 100), List(1, 3, 100))
+    Check(base).hasForeignKey(ref, "column1" -> "column1", "column2" -> "column2").run shouldBe false
+  }
+
+  it should "fail if the foreign key is not a primary key in the reference table" in {
+    val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = makeIntegersDf(List(1, 3, 100), List(1, 5, 100), List(1, 5, 500))
+    Check(base).hasForeignKey(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe false
+  }
+
   "Multiple checks" should "fail if one check is failing" in {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).run shouldBe false
   }
