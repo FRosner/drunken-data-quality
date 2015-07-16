@@ -106,6 +106,18 @@ class CheckTest extends FlatSpec with Matchers {
     Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToInt("column").run shouldBe false
   }
 
+  "A to Double conversion check" should "succeed if all elements can be converted to Double" in {
+    Check(makeNullableStringDf(List("1.0", "2.0", "3"))).isConvertibleToDouble("column").run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Double or are null" in {
+    Check(makeNullableStringDf(List("1", "2.0", null))).isConvertibleToDouble("column").run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Double" in {
+    Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToDouble("column").run shouldBe false
+  }
+
   "Multiple checks" should "fail if one check is failing" in {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).run shouldBe false
   }

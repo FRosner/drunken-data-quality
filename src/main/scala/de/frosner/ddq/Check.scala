@@ -76,6 +76,17 @@ case class Check(dataFrame: DataFrame,
         failure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
     }
   }
+
+  private val cannotBeDouble = udf((column: String) => column != null && Try(column.toDouble).isFailure)
+  def isConvertibleToDouble(columnName: String) = addConstraint {
+    df => {
+      val cannotBeDoubleCount = df.filter(cannotBeDouble(new Column(columnName))).count
+      if (cannotBeDoubleCount == 0)
+        success(s"Column $columnName can be converted to Double")
+      else
+        failure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
+    }
+  }
   
   def run: Boolean = {
     hint(s"Checking $dataFrame")
