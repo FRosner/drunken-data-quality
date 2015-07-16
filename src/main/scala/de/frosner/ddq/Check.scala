@@ -1,5 +1,7 @@
 package de.frosner.ddq
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.sql.{Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
@@ -96,6 +98,17 @@ case class Check(dataFrame: DataFrame,
         success(s"Column $columnName can be converted to Long")
       else
         failure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
+    }
+  }
+
+  def isConvertibleToDate(columnName: String, dateFormat: SimpleDateFormat) = addConstraint {
+    df => {
+      val cannotBeDate = udf((column: String) => column != null && Try(dateFormat.parse(column)).isFailure)
+      val cannotBeDateCount = df.filter(cannotBeDate(new Column(columnName))).count
+      if (cannotBeDateCount == 0)
+        success(s"Column $columnName can be converted to Date")
+      else
+        failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
     }
   }
   

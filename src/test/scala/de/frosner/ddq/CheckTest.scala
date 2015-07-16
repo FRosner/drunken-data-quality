@@ -1,5 +1,7 @@
 package de.frosner.ddq
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
@@ -128,6 +130,21 @@ class CheckTest extends FlatSpec with Matchers {
 
   it should "fail if at least one element cannot be converted to Long" in {
     Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToLong("column").run shouldBe false
+  }
+
+  "A to Date conversion check" should "succeed if all elements can be converted to Date" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", "2000-5-23 11:50:10", "2000-02-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Date or are null" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", null, "2000-02-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Date" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe false
   }
 
   "Multiple checks" should "fail if one check is failing" in {
