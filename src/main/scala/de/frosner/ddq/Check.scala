@@ -68,10 +68,12 @@ case class Check(dataFrame: DataFrame,
   def run: Boolean = {
     hint(s"Checking $dataFrame")
     val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)
-    if (!constraints.isEmpty)
+    val result = if (!constraints.isEmpty)
       constraints.map(c => c.fun(potentiallyPersistedDf)).reduce(_ && _)
     else
       hint("- Nothing to check!")
+    if (cacheMethod.isDefined) potentiallyPersistedDf.unpersist()
+    result
   }
       
 }
