@@ -78,6 +78,14 @@ class CheckTest extends FlatSpec with Matchers {
     Check(df).hasKey("column1", "column2").run shouldBe false
   }
 
+  "An is-always-null check" should "succeed if the column is always null" in {
+    Check(makeNullableStringDf(List(null, null, null))).isAlwaysNull("column").run shouldBe true
+  }
+
+  it should "fail if the column is not always null" in {
+    Check(makeNullableStringDf(List("a", null, null))).isAlwaysNull("column").run shouldBe false
+  }
+
   "An is-never-null check" should "succeed if the column contains no null values" in {
     Check(makeNullableStringDf(List("a", "b", "c"))).isNeverNull("column").run shouldBe true
   }
