@@ -87,6 +87,17 @@ case class Check(dataFrame: DataFrame,
         failure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
     }
   }
+
+  private val cannotBeLong = udf((column: String) => column != null && Try(column.toLong).isFailure)
+  def isConvertibleToLong(columnName: String) = addConstraint {
+    df => {
+      val cannotBeLongCount = df.filter(cannotBeLong(new Column(columnName))).count
+      if (cannotBeLongCount == 0)
+        success(s"Column $columnName can be converted to Long")
+      else
+        failure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
+    }
+  }
   
   def run: Boolean = {
     hint(s"Checking $dataFrame")
