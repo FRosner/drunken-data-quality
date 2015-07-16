@@ -17,7 +17,7 @@ case class Check(dataFrame: DataFrame,
   
   private def addConstraint(cf: ConstraintFunction): Check = Check(dataFrame, cacheMethod, constraints ++ List(Constraint(cf)))
   
-  def hasKey(columnName: String, columnNames: String*): Check = addConstraint { 
+  def hasUniqueKey(columnName: String, columnNames: String*): Check = addConstraint {
     df => {
       val columnsString = (columnName :: columnNames.toList).mkString(",")
       val nonUniqueRows = df.groupBy(columnName, columnNames:_*).count.filter(new Column("count") > 1).count
