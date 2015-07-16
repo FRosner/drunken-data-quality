@@ -25,10 +25,11 @@ case class Check(dataFrame: DataFrame,
   def satisfies(constraint: String): Check = addConstraint {
     df => {
       val succeedingRows = df.filter(constraint).count
-      if (succeedingRows == df.count)
+      val count = df.count
+      if (succeedingRows == count)
         success(s"Constraint $constraint is satisfied")
       else
-        failure(s"$succeedingRows rows did not satisfy constraint $constraint")
+        failure(s"${count - succeedingRows} rows did not satisfy constraint $constraint")
     }
   }
 
