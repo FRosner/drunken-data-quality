@@ -22,10 +22,14 @@ If you are not using any of the dependency management systems supported by JitPa
 import de.frosner.ddq._
 
 val customers = sqlContext.table("customers")
+val contracts = sqlContext.table("contracts")
 Check(customers)
   .hasNumRowsEqualTo(100000)
-  .hasKey("customer_id")
+  .isNeverNull("customer_id")
+  .hasUniqueKey("customer_id")
   .satisfies("customer_age > 0")
+  .isConvertibleToDate("customer_birthday", new SimpleDateFormat("yyyy-MM-dd"))
+  .hasForeignKey(contracts, "customer_id" -> "contract_owner_id")
   .run()
 ```
 
