@@ -1,5 +1,7 @@
 package de.frosner.ddq
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
@@ -92,6 +94,57 @@ class CheckTest extends FlatSpec with Matchers {
 
   it should "fail if the column contains null values" in {
     Check(makeNullableStringDf(List("a", "b", null))).isNeverNull("column").run shouldBe false
+  }
+
+  "A to Int conversion check" should "succeed if all elements can be converted to Int" in {
+    Check(makeNullableStringDf(List("1", "2", "3"))).isConvertibleToInt("column").run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Int or are null" in {
+    Check(makeNullableStringDf(List("1", "2", null))).isConvertibleToInt("column").run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Int" in {
+    Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToInt("column").run shouldBe false
+  }
+
+  "A to Double conversion check" should "succeed if all elements can be converted to Double" in {
+    Check(makeNullableStringDf(List("1.0", "2.0", "3"))).isConvertibleToDouble("column").run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Double or are null" in {
+    Check(makeNullableStringDf(List("1", "2.0", null))).isConvertibleToDouble("column").run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Double" in {
+    Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToDouble("column").run shouldBe false
+  }
+
+  "A to Long conversion check" should "succeed if all elements can be converted to Long" in {
+    Check(makeNullableStringDf(List("1", "2", "34565465756776"))).isConvertibleToLong("column").run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Long or are null" in {
+    Check(makeNullableStringDf(List("1", "2", null))).isConvertibleToLong("column").run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Long" in {
+    Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToLong("column").run shouldBe false
+  }
+
+  "A to Date conversion check" should "succeed if all elements can be converted to Date" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", "2000-5-23 11:50:10", "2000-02-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe true
+  }
+
+  it should "succeed if all elements can be converted to Date or are null" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", null, "2000-02-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe true
+  }
+
+  it should "fail if at least one element cannot be converted to Date" in {
+    Check(makeNullableStringDf(List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11")))
+      .isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).run shouldBe false
   }
 
   "Multiple checks" should "fail if one check is failing" in {

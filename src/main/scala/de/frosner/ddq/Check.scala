@@ -1,9 +1,14 @@
 package de.frosner.ddq
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.sql.{Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql.functions._
 import Check._
+
+import scala.util.Try
 
 case class Check(dataFrame: DataFrame,
                  cacheMethod: Option[StorageLevel] = Option(StorageLevel.MEMORY_ONLY),
@@ -36,22 +41,20 @@ case class Check(dataFrame: DataFrame,
   def isNeverNull(columnName: String) = addConstraint {
     df => {
       val nullCount = df.filter(new Column(columnName).isNull).count
-      if (nullCount == 0) {
+      if (nullCount == 0)
         success(s"Column $columnName is not null")
-      } else {
+      else
         failure(s"Column $columnName has $nullCount null rows although it should not be null")
-      }
     }
   }
 
   def isAlwaysNull(columnName: String) = addConstraint {
     df => {
       val notNullCount = df.filter(new Column(columnName).isNotNull).count
-      if (notNullCount == 0) {
+      if (notNullCount == 0)
         success(s"Column $columnName is null")
-      } else {
+      else
         failure(s"Column $columnName has $notNullCount non-null rows although it should be null")
-      }
     }
   }
   
@@ -62,6 +65,50 @@ case class Check(dataFrame: DataFrame,
         success(s"The number of rows is equal to $count")
       else
         failure(s"The actual number of rows $count is not equal to the expected $expected")
+    }
+  }
+
+  private val cannotBeInt = udf((column: String) => column != null && Try(column.toInt).isFailure)
+  def isConvertibleToInt(columnName: String) = addConstraint {
+    df => {
+      val cannotBeIntCount = df.filter(cannotBeInt(new Column(columnName))).count
+      if (cannotBeIntCount == 0)
+        success(s"Column $columnName can be converted to Int")
+      else
+        failure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
+    }
+  }
+
+  private val cannotBeDouble = udf((column: String) => column != null && Try(column.toDouble).isFailure)
+  def isConvertibleToDouble(columnName: String) = addConstraint {
+    df => {
+      val cannotBeDoubleCount = df.filter(cannotBeDouble(new Column(columnName))).count
+      if (cannotBeDoubleCount == 0)
+        success(s"Column $columnName can be converted to Double")
+      else
+        failure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
+    }
+  }
+
+  private val cannotBeLong = udf((column: String) => column != null && Try(column.toLong).isFailure)
+  def isConvertibleToLong(columnName: String) = addConstraint {
+    df => {
+      val cannotBeLongCount = df.filter(cannotBeLong(new Column(columnName))).count
+      if (cannotBeLongCount == 0)
+        success(s"Column $columnName can be converted to Long")
+      else
+        failure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
+    }
+  }
+
+  def isConvertibleToDate(columnName: String, dateFormat: SimpleDateFormat) = addConstraint {
+    df => {
+      val cannotBeDate = udf((column: String) => column != null && Try(dateFormat.parse(column)).isFailure)
+      val cannotBeDateCount = df.filter(cannotBeDate(new Column(columnName))).count
+      if (cannotBeDateCount == 0)
+        success(s"Column $columnName can be converted to Date")
+      else
+        failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
     }
   }
   
