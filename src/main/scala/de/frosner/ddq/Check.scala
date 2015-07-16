@@ -3,7 +3,10 @@ package de.frosner.ddq
 import org.apache.spark.sql.{Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql.functions._
 import Check._
+
+import scala.util.Try
 
 case class Check(dataFrame: DataFrame,
                  cacheMethod: Option[StorageLevel] = Option(StorageLevel.MEMORY_ONLY),
@@ -60,6 +63,17 @@ case class Check(dataFrame: DataFrame,
         success(s"The number of rows is equal to $count")
       else
         failure(s"The actual number of rows $count is not equal to the expected $expected")
+    }
+  }
+
+  private val cannotBeInt = udf((column: String) => column != null && Try(column.toInt).isFailure)
+  def isConvertibleToInt(columnName: String) = addConstraint {
+    df => {
+      val cannotBeIntCount = df.filter(cannotBeInt(new Column(columnName))).count
+      if (cannotBeIntCount == 0)
+        success(s"Column $columnName can be converted to Int")
+      else
+        failure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
     }
   }
   
