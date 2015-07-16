@@ -31,6 +31,17 @@ case class Check(dataFrame: DataFrame,
         failure(s"$succeedingRows rows did not satisfy constraint $constraint")
     }
   }
+
+  def isNeverNull(columnName: String) = addConstraint {
+    df => {
+      val nullCount = df.filter(new Column(columnName).isNull).count
+      if (nullCount == 0) {
+        success(s"Column $columnName is not null")
+      } else {
+        failure(s"Column $columnName has $nullCount null rows although it should not be null")
+      }
+    }
+  }
   
   def hasNumRowsEqualTo(expected: Long): Check = addConstraint {
     df => {

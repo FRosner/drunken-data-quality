@@ -14,6 +14,10 @@ class CheckTest extends FlatSpec with Matchers {
   private def makeIntegerDf(numbers: Seq[Int]): DataFrame =
     sql.createDataFrame(sc.makeRDD(numbers.map(Row(_))), StructType(List(StructField("column", IntegerType, false))))
 
+  private def makeNullableStringDf(strings: Seq[String]): DataFrame =
+    sql.createDataFrame(sc.makeRDD(strings.map(Row(_))), StructType(List(StructField("column", StringType, true))))
+
+
   private def makeIntegersDf(row1: Seq[Int], rowN: Seq[Int]*): DataFrame = {
     val rows = (row1 :: rowN.toList)
     val numCols = row1.size
@@ -72,6 +76,14 @@ class CheckTest extends FlatSpec with Matchers {
       List(1,2,3)
     )
     Check(df).hasKey("column1", "column2").run shouldBe false
+  }
+
+  "An is-never-null check" should "succeed if the column contains no null values" in {
+    Check(makeNullableStringDf(List("a", "b", "c"))).isNeverNull("column").run shouldBe true
+  }
+
+  it should "fail if the column contains null values" in {
+    Check(makeNullableStringDf(List("a", "b", null))).isNeverNull("column").run shouldBe false
   }
 
   "Multiple checks" should "fail if one check is failing" in {
