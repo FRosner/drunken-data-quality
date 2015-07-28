@@ -190,4 +190,8 @@ class CheckTest extends FlatSpec with Matchers {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasUniqueKey("column").satisfies("column > 0").run shouldBe true
   }
 
+  "It" should "be possible to specify a display name for a data frame" in {
+    Check(makeIntegerDf(List(1,2,3)), displayName = Option("Integer Data Frame")).run
+  }
+
 }

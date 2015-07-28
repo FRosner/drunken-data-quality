@@ -12,10 +12,12 @@ import Check._
 import scala.util.Try
 
 case class Check(dataFrame: DataFrame,
+                 displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = Option(StorageLevel.MEMORY_ONLY),
                  constraints: Iterable[Constraint] = Iterable.empty) {
   
-  private def addConstraint(cf: ConstraintFunction): Check = Check(dataFrame, cacheMethod, constraints ++ List(Constraint(cf)))
+  private def addConstraint(cf: ConstraintFunction): Check =
+    Check(dataFrame, displayName, cacheMethod, constraints ++ List(Constraint(cf)))
   
   def hasUniqueKey(columnName: String, columnNames: String*): Check = addConstraint {
     df => {
@@ -148,7 +150,7 @@ case class Check(dataFrame: DataFrame,
   }
 
   def run: Boolean = {
-    hint(s"Checking $dataFrame")
+    hint(s"Checking ${displayName.getOrElse(dataFrame.toString)}")
     val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)
     val result = if (!constraints.isEmpty)
       constraints.map(c => c.fun(potentiallyPersistedDf)).reduce(_ && _)
