@@ -194,4 +194,17 @@ class CheckTest extends FlatSpec with Matchers {
     Check(makeIntegerDf(List(1,2,3)), displayName = Option("Integer Data Frame")).run
   }
 
+  "A check from a SQLContext" should "load the given table" in {
+    val df = makeIntegerDf(List(1,2,3))
+    val tableName = "myintegerdf1"
+    df.registerTempTable(tableName)
+    Check.sqlTable(sql, tableName).hasNumRowsEqualTo(3).run shouldBe true
+  }
+
+  it should "require the table to exist" in {
+    intercept[IllegalArgumentException] {
+      Check.sqlTable(sql, "doesnotexist").run
+    }
+  }
+
 }
