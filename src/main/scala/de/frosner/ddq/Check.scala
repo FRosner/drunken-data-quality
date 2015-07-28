@@ -164,17 +164,17 @@ case class Check(dataFrame: DataFrame,
 
 object Check {
 
-  def success(message: String): Boolean = {
+  private def success(message: String): Boolean = {
     println(Console.GREEN + "- " + message + Console.RESET)
     true
   }
 
-  def failure(message: String): Boolean = {
+  private def failure(message: String): Boolean = {
     println(Console.RED + "- " + message + Console.RESET)
     false
   }
 
-  def hint(message: String): Boolean = {
+  private def hint(message: String): Boolean = {
     println(Console.BLUE + message + Console.RESET)
     true
   }
