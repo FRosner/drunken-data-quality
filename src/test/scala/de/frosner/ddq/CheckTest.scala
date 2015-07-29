@@ -1,20 +1,27 @@
 package de.frosner.ddq
 
+import java.io.File
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
-import org.apache.spark.storage.StorageLevel
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
-class CheckTest extends FlatSpec with Matchers {
+class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
 
   private val sc = new SparkContext("local[1]", "CheckTest")
   private val sql = new SQLContext(sc)
+  private val hive = new TestHiveContext(sc)
 
-  private def makeIntegerDf(numbers: Seq[Int]): DataFrame =
+  override def afterAll(): Unit = {
+    hive.deletePaths()
+  }
+
+  private def makeIntegerDf(numbers: Seq[Int], sql: SQLContext): DataFrame =
     sql.createDataFrame(sc.makeRDD(numbers.map(Row(_))), StructType(List(StructField("column", IntegerType, false))))
+
+  private def makeIntegerDf(numbers: Seq[Int]): DataFrame = makeIntegerDf(numbers, sql)
 
   private def makeNullableStringDf(strings: Seq[String]): DataFrame =
     sql.createDataFrame(sc.makeRDD(strings.map(Row(_))), StructType(List(StructField("column", StringType, true))))
@@ -204,6 +211,24 @@ class CheckTest extends FlatSpec with Matchers {
   it should "require the table to exist" in {
     intercept[IllegalArgumentException] {
       Check.sqlTable(sql, "doesnotexist").run
+    }
+  }
+
+  "A check from a HiveContext" should "load the given table from the given database" in {
+    val tableName = "myintegerdf2"
+    val databaseName = "testDb"
+    hive.sql(s"CREATE DATABASE $databaseName")
+    hive.sql(s"USE $databaseName")
+    val df = makeIntegerDf(List(1,2,3), hive)
+    df.registerTempTable(tableName)
+    hive.sql(s"USE default")
+    Check.hiveTable(hive, databaseName, tableName).hasNumRowsEqualTo(3).run shouldBe true
+    hive.sql(s"DROP DATABASE $databaseName")
+  }
+
+  it should "require the table to exist" in {
+    intercept[IllegalArgumentException] {
+      Check.hiveTable(hive, "default", "doesnotexist").run
     }
   }
 

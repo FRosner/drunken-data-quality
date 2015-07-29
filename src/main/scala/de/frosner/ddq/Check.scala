@@ -3,6 +3,7 @@ package de.frosner.ddq
 import java.text.SimpleDateFormat
 
 import org.apache.spark.sql.catalyst.plans.JoinType
+import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{SQLContext, Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
@@ -176,6 +177,14 @@ object Check {
       displayName = Option(table),
       cacheMethod = cacheMethod
     )
+  }
+
+  def hiveTable(hive: HiveContext,
+                database: String,
+                table: String,
+                cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
+    hive.sql(s"USE $database")
+    sqlTable(hive, table, cacheMethod)
   }
 
   private def success(message: String): Boolean = {
