@@ -6,12 +6,14 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{Tag, FlatSpec, Matchers}
 
 class CheckTest extends FlatSpec with Matchers {
 
   private val sc = new SparkContext("local[1]", "CheckTest")
   private val sql = new SQLContext(sc)
+
+  sql.setConf("spark.sql.shuffle.partitions","1")
 
   private def makeIntegerDf(numbers: Seq[Int]): DataFrame =
     sql.createDataFrame(sc.makeRDD(numbers.map(Row(_))), StructType(List(StructField("column", IntegerType, false))))
@@ -188,6 +190,23 @@ class CheckTest extends FlatSpec with Matchers {
 
   it should "succeed if all checks are succeeding" in {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasUniqueKey("column").satisfies("column > 0").run shouldBe true
+  }
+
+  //isConvertibleToBoolean
+  "A boolean check" should "succeed if column values are true and false only" in {
+    Check(makeNullableStringDf(List("true","false"))).isConvertibleToBoolean("column").run shouldBe true
+  }
+  it should "fail if column values are not true and false only" in {
+    Check(makeNullableStringDf(List("true","false","error"))).isConvertibleToBoolean("column").run shouldBe false
+  }
+  it should "succeed if column values are true/TRUE and false/FALSE if case sensitive is false" in {
+    Check(makeNullableStringDf(List("true","false","TRUE","FALSE","True","fAlsE"))).isConvertibleToBoolean("column",isCaseSensitive = false).run shouldBe true
+  }
+  it should "succeed if column values are 1 and 0 only" in {
+    Check(makeNullableStringDf(List("1","0"))).isConvertibleToBoolean("column","1","0").run shouldBe true
+  }
+  it should "fail if column values are not 1 and 0 only" in {
+    Check(makeNullableStringDf(List("1","0","2"))).isConvertibleToBoolean("column","1","0").run shouldBe false
   }
 
 }
