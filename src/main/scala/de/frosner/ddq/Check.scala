@@ -140,6 +140,26 @@ case class Check(dataFrame: DataFrame,
     }
   }
 
+  def isConvertibleToBoolean(columnName: String, trueValue: String = "true", falseValue: String = "false",
+                              isCaseSensitive: Boolean = false) = addConstraint {
+    df => {
+      val cannotBeBoolean =
+        if (isCaseSensitive)
+          udf((column: String) => column != null
+            && column != trueValue
+            && column != falseValue)
+        else
+          udf((column: String) => column != null
+            && column.toUpperCase != trueValue.toUpperCase
+            && column.toUpperCase != falseValue.toUpperCase)
+      val cannotBeDateCount = df.filter(cannotBeBoolean(new Column(columnName))).count
+      if (cannotBeDateCount == 0)
+        success(s"Column $columnName can be converted to Boolean")
+      else
+        failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Boolean")
+    }
+  }
+
   def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint {
     df => {
       val columns = keyMap :: keyMaps.toList

@@ -5,13 +5,16 @@ import java.text.SimpleDateFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{FlatSpec, Matchers}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
 
   private val sc = new SparkContext("local[1]", "CheckTest")
   private val sql = new SQLContext(sc)
+  sql.setConf("spark.sql.shuffle.partitions", "1")
   private val hive = new TestHiveContext(sc)
+  hive.setConf("spark.sql.shuffle.partitions", "1")
 
   override def afterAll(): Unit = {
     hive.deletePaths()
@@ -255,7 +258,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   }
 
   "A check from a SQLContext" should "load the given table" in {
-    val df = makeIntegerDf(List(1,2,3))
+    val df = makeIntegerDf(List(1,2,3), sql)
     val tableName = "myintegerdf1"
     df.registerTempTable(tableName)
     Check.sqlTable(sql, tableName).hasNumRowsEqualTo(3).run shouldBe true
@@ -283,6 +286,23 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     intercept[IllegalArgumentException] {
       Check.hiveTable(hive, "default", "doesnotexist").run
     }
+  }
+
+  //isConvertibleToBoolean
+  "A boolean check" should "succeed if column values are true and false only" in {
+    Check(makeNullableStringDf(List("true","false"))).isConvertibleToBoolean("column").run shouldBe true
+  }
+  it should "fail if column values are not true and false only" in {
+    Check(makeNullableStringDf(List("true","false","error"))).isConvertibleToBoolean("column").run shouldBe false
+  }
+  it should "succeed if column values are true/TRUE and false/FALSE if case sensitive is false" in {
+    Check(makeNullableStringDf(List("true","false","TRUE","FALSE","True","fAlsE"))).isConvertibleToBoolean("column",isCaseSensitive = false).run shouldBe true
+  }
+  it should "succeed if column values are 1 and 0 only" in {
+    Check(makeNullableStringDf(List("1","0"))).isConvertibleToBoolean("column","1","0").run shouldBe true
+  }
+  it should "fail if column values are not 1 and 0 only" in {
+    Check(makeNullableStringDf(List("1","0","2"))).isConvertibleToBoolean("column","1","0").run shouldBe false
   }
 
 }
