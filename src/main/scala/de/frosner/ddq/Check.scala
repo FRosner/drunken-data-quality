@@ -124,11 +124,11 @@ case class Check(dataFrame: DataFrame,
           udf((column: String) => column != null
             && column.toUpperCase != trueValue.toUpperCase
             && column.toUpperCase != falseValue.toUpperCase)
-      val cannotBeDateCount = df.filter(cannotBeBoolean(new Column(columnName))).count
-      if (cannotBeDateCount == 0)
+      val cannotBeBooleanCount = df.filter(cannotBeBoolean(new Column(columnName))).count
+      if (cannotBeBooleanCount == 0)
         success(s"Column $columnName can be converted to Boolean")
       else
-        failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Boolean")
+        failure(s"Column $columnName contains $cannotBeBooleanCount rows that cannot be converted to Boolean")
     }
   }
 
