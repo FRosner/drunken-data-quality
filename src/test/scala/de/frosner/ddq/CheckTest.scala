@@ -13,7 +13,7 @@ class CheckTest extends FlatSpec with Matchers {
   private val sc = new SparkContext("local[1]", "CheckTest")
   private val sql = new SQLContext(sc)
 
-  sql.setConf("spark.sql.shuffle.partitions","1")
+  sql.setConf("spark.sql.shuffle.partitions","5") // default 200 is too much
 
   private def makeIntegerDf(numbers: Seq[Int]): DataFrame =
     sql.createDataFrame(sc.makeRDD(numbers.map(Row(_))), StructType(List(StructField("column", IntegerType, false))))
