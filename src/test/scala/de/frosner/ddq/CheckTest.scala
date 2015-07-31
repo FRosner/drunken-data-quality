@@ -192,8 +192,7 @@ class CheckTest extends FlatSpec with Matchers {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasUniqueKey("column").satisfies("column > 0").run shouldBe true
   }
 
-  //isConvertibleToBoolean
-  "A boolean check" should "succeed if column values are true and false only" in {
+  "A to boolean conversion check" should "succeed if column values are true and false only" in {
     Check(makeNullableStringDf(List("true","false"))).isConvertibleToBoolean("column").run shouldBe true
   }
   it should "fail if column values are not true and false only" in {
