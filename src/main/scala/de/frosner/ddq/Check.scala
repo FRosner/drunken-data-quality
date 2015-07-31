@@ -2,12 +2,11 @@ package de.frosner.ddq
 
 import java.text.SimpleDateFormat
 
-import org.apache.spark.sql.catalyst.plans.JoinType
-import org.apache.spark.sql.{Column, DataFrame}
-import Constraint.ConstraintFunction
-import org.apache.spark.storage.StorageLevel
+import de.frosner.ddq.Check._
+import de.frosner.ddq.Constraint.ConstraintFunction
 import org.apache.spark.sql.functions._
-import Check._
+import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.storage.StorageLevel
 
 import scala.util.Try
 
