@@ -12,9 +12,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
 
   private val sc = new SparkContext("local[1]", "CheckTest")
   private val sql = new SQLContext(sc)
-  sql.setConf("spark.sql.shuffle.partitions", "1")
+  sql.setConf("spark.sql.shuffle.partitions", "5")
   private val hive = new TestHiveContext(sc)
-  hive.setConf("spark.sql.shuffle.partitions", "1")
+  hive.setConf("spark.sql.shuffle.partitions", "5")
 
   override def afterAll(): Unit = {
     hive.deletePaths()
