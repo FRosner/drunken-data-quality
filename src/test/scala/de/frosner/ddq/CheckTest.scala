@@ -288,8 +288,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     }
   }
 
-  //isConvertibleToBoolean
-  "A boolean check" should "succeed if column values are true and false only" in {
+  "A to boolean conversion check" should "succeed if column values are true and false only" in {
     Check(makeNullableStringDf(List("true","false"))).isConvertibleToBoolean("column").run shouldBe true
   }
   it should "fail if column values are not true and false only" in {
