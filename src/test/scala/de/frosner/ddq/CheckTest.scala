@@ -193,19 +193,24 @@ class CheckTest extends FlatSpec with Matchers {
   }
 
   "A to boolean conversion check" should "succeed if column values are true and false only" in {
-    Check(makeNullableStringDf(List("true","false"))).isConvertibleToBoolean("column").run shouldBe true
+    Check(makeNullableStringDf(List("true", "false"))).isConvertibleToBoolean("column").run shouldBe true
   }
+
   it should "fail if column values are not true and false only" in {
-    Check(makeNullableStringDf(List("true","false","error"))).isConvertibleToBoolean("column").run shouldBe false
+    Check(makeNullableStringDf(List("true", "false", "error"))).isConvertibleToBoolean("column").run shouldBe false
   }
+
   it should "succeed if column values are true/TRUE and false/FALSE if case sensitive is false" in {
-    Check(makeNullableStringDf(List("true","false","TRUE","FALSE","True","fAlsE"))).isConvertibleToBoolean("column",isCaseSensitive = false).run shouldBe true
+    val df = makeNullableStringDf(List("true", "false", "TRUE", "FALSE", "True", "fAlsE"))
+    Check(df).isConvertibleToBoolean("column", isCaseSensitive = false).run shouldBe true
   }
+
   it should "succeed if column values are 1 and 0 only" in {
-    Check(makeNullableStringDf(List("1","0"))).isConvertibleToBoolean("column","1","0").run shouldBe true
+    Check(makeNullableStringDf(List("1", "0"))).isConvertibleToBoolean("column", "1", "0").run shouldBe true
   }
+
   it should "fail if column values are not 1 and 0 only" in {
-    Check(makeNullableStringDf(List("1","0","2"))).isConvertibleToBoolean("column","1","0").run shouldBe false
+    Check(makeNullableStringDf(List("1", "0", "2"))).isConvertibleToBoolean("column", "1", "0").run shouldBe false
   }
 
 }
