@@ -3,7 +3,8 @@ package de.frosner.ddq
 import java.text.SimpleDateFormat
 
 import org.apache.spark.sql.catalyst.plans.JoinType
-import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.{SQLContext, Column, DataFrame}
 import Constraint.ConstraintFunction
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.sql.functions._
@@ -13,7 +14,7 @@ import scala.util.Try
 
 case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
-                 cacheMethod: Option[StorageLevel] = Option(StorageLevel.MEMORY_ONLY),
+                 cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD,
                  constraints: Iterable[Constraint] = Iterable.empty) {
   
   private def addConstraint(cf: ConstraintFunction): Check =
@@ -164,17 +165,39 @@ case class Check(dataFrame: DataFrame,
 
 object Check {
 
-  def success(message: String): Boolean = {
+  private val DEFAULT_CACHE_METHOD = Option(StorageLevel.MEMORY_ONLY)
+
+  def sqlTable(sql: SQLContext,
+               table: String,
+               cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
+    val tryTable = Try(sql.table(table))
+    require(tryTable.isSuccess, s"""Failed to reference table $table: ${tryTable.failed.getOrElse("No exception provided")}""")
+    Check(
+      dataFrame = tryTable.get,
+      displayName = Option(table),
+      cacheMethod = cacheMethod
+    )
+  }
+
+  def hiveTable(hive: HiveContext,
+                database: String,
+                table: String,
+                cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
+    hive.sql(s"USE $database")
+    sqlTable(hive, table, cacheMethod)
+  }
+
+  private def success(message: String): Boolean = {
     println(Console.GREEN + "- " + message + Console.RESET)
     true
   }
 
-  def failure(message: String): Boolean = {
+  private def failure(message: String): Boolean = {
     println(Console.RED + "- " + message + Console.RESET)
     false
   }
 
-  def hint(message: String): Boolean = {
+  private def hint(message: String): Boolean = {
     println(Console.BLUE + message + Console.RESET)
     true
   }
