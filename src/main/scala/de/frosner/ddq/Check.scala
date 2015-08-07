@@ -177,6 +177,7 @@ case class Check(dataFrame: DataFrame,
   def run: Boolean = {
     hint(s"Checking ${displayName.getOrElse(dataFrame.toString)}")
     val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)
+    hint(s"It has a total number of ${potentiallyPersistedDf.columns.size} columns and ${potentiallyPersistedDf.count} rows.")
     val result = if (!constraints.isEmpty)
       constraints.map(c => c.fun(potentiallyPersistedDf)).reduce(_ && _)
     else
