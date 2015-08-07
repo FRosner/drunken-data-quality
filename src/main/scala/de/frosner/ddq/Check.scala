@@ -1,8 +1,8 @@
 package de.frosner.ddq
 
 import java.text.SimpleDateFormat
+import java.util.regex.Pattern
 
-import org.apache.spark.sql.catalyst.plans.JoinType
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{SQLContext, Column, DataFrame}
 import Constraint.ConstraintFunction
@@ -125,6 +125,18 @@ case class Check(dataFrame: DataFrame,
         success(s"Column $columnName contains only values in $allowed")
       else
         failure(s"Column $columnName contains $notAllowedCount rows that are not in $allowed")
+    }
+  }
+
+  def isMatchingRegex(columnName: String, regex: String) = addConstraint {
+    df => {
+      val pattern = Pattern.compile(regex)
+      val doesNotMatch = udf((column: String) => column != null && !pattern.matcher(column).find())
+      val doesNotMatchCount = df.filter(doesNotMatch(new Column(columnName))).count
+      if (doesNotMatchCount == 0)
+        success(s"Column $columnName matches $regex")
+      else
+        failure(s"Column $columnName contains $doesNotMatchCount rows that do not match $regex")
     }
   }
 

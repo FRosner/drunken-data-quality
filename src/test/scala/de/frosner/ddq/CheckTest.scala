@@ -200,6 +200,18 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     Check(makeNullableStringDf(List("a", "b", "c", "c"))).isAnyOf("column", Set("a", "b", "d")).run shouldBe false
   }
 
+  "A check if a column satisfies the given regex" should "succeed if all values satisfy the regex" in {
+    Check(makeNullableStringDf(List("Hello A", "Hello B", "Hello C"))).isMatchingRegex("column", "^Hello").run shouldBe true
+  }
+
+  it should "succeed if all values satisfy the regex or are null" in {
+    Check(makeNullableStringDf(List("Hello A", "Hello B", null))).isMatchingRegex("column", "^Hello").run shouldBe true
+  }
+
+  it should "fail if there are values not satisfying the regex" in {
+    Check(makeNullableStringDf(List("Hello A", "Hello B", "Hello C"))).isMatchingRegex("column", "^Hello A$").run shouldBe false
+  }
+
   "Multiple checks" should "fail if one check is failing" in {
     Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).run shouldBe false
   }
