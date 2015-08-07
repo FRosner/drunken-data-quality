@@ -1,6 +1,5 @@
 package de.frosner.ddq
 
-import java.io.File
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
@@ -187,6 +186,18 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
     val ref = makeIntegersDf(List(1, 3, 100), List(1, 5, 100), List(1, 5, 500))
     Check(base).hasForeignKey(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe false
+  }
+
+  "A check if a column is in the given values" should "succeed if all values are inside" in {
+    Check(makeNullableStringDf(List("a", "b", "c", "c"))).isAnyOf("column", Set("a", "b", "c", "d")).run shouldBe true
+  }
+
+  it should "succeed if all values are inside or null" in {
+    Check(makeNullableStringDf(List("a", "b", "c", null))).isAnyOf("column", Set("a", "b", "c", "d")).run shouldBe true
+  }
+
+  it should "fail if there are values not inside" in {
+    Check(makeNullableStringDf(List("a", "b", "c", "c"))).isAnyOf("column", Set("a", "b", "d")).run shouldBe false
   }
 
   "Multiple checks" should "fail if one check is failing" in {

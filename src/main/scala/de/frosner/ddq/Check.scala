@@ -116,6 +116,18 @@ case class Check(dataFrame: DataFrame,
     }
   }
 
+  def isAnyOf(columnName: String, allowed: Set[Any]) = addConstraint {
+    df => {
+      df.select(new Column(columnName)) // check if reference is not ambiguous
+      val columnIndex = df.columns.indexOf(columnName)
+      val notAllowedCount = df.rdd.filter(row => !row.isNullAt(columnIndex) && !allowed.contains(row.get(columnIndex))).count
+      if (notAllowedCount == 0)
+        success(s"Column $columnName contains only values in $allowed")
+      else
+        failure(s"Column $columnName contains $notAllowedCount rows that are not in $allowed")
+    }
+  }
+
   def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint {
     df => {
       val columns = keyMap :: keyMaps.toList
