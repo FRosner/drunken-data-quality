@@ -174,6 +174,38 @@ case class Check(dataFrame: DataFrame,
     }
   }
 
+  def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint {
+    df => {
+      val columns = keyMap :: keyMaps.toList
+      val columnsMap = columns.toMap
+      val renamedColumns = columns.map{ case (baseColumn, refColumn) => ("b_" + baseColumn, "r_" + refColumn)}
+      val (baseColumns, refColumns) = columns.unzip
+      val (renamedBaseColumns, renamedRefColumns) = renamedColumns.unzip
+
+      val nonUniqueRows = referenceTable.groupBy(refColumns.map(new Column(_)):_*).count.filter(new Column("count") > 1).count
+
+    // rename all columns to avoid ambiguous column references
+    val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
+      case (original, renamed) => new Column(original).as(renamed)
+    }:_*)
+    val renamedRef = referenceTable.select(refColumns.zip(renamedRefColumns).map {
+      case (original, renamed) => new Column(original).as(renamed)
+    }:_*)
+
+    // check if join yields some values
+    val join = renamedDf.distinct.join(renamedRef, renamedColumns.map{
+      case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
+    }.reduce(_ && _))
+    val matchingRows = join.count
+    val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
+    if (matchingRows > 0)
+      success(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
+    else
+      failure(s"Columns $columnsString cannot be used for joining (no rows match)")
+    }
+  }
+
+
   def run: Boolean = {
     hint(s"Checking ${displayName.getOrElse(dataFrame.toString)}")
     val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)

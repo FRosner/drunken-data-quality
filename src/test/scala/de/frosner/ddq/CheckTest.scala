@@ -188,6 +188,36 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     Check(base).hasForeignKey(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe false
   }
 
+  "A joinable check" should "succeed if a join on the given column yields at least one row" in {
+    val base = makeIntegerDf(List(1, 1, 1, 2, 2, 3))
+    val ref = makeIntegerDf(List(1, 2, 5))
+    Check(base).isJoinableWith(ref, "column" -> "column").run shouldBe true
+  }
+
+  it should "succeed if a join on the given columns yields at least one row" in {
+    val base = makeIntegersDf(List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = makeIntegersDf(List(1, 2, 100), List(1, 5, 100))
+    Check(base).isJoinableWith(ref, "column1" -> "column1", "column2" -> "column2").run shouldBe true
+  }
+
+  it should "succeed if a join on the given columns yields at least one row if the columns have a different name" in {
+    val base = makeIntegersDf(List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
+    val ref = makeIntegersDf(List(1, 3, 100), List(1, 500, 100))
+    Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe true
+  }
+
+  it should "fail if a join on the given columns yields no result" in {
+    val base = makeIntegersDf(List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
+    val ref = makeIntegersDf(List(1, 1, 100), List(1, 10, 100))
+    Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2").run shouldBe false
+  }
+
+  it should "fail if a join on the given columns is not possible due to mismatching types" in {
+    val base = makeNullableStringDf(List("a", "b"))
+    val ref = makeIntegerDf(List(1, 2, 3))
+    Check(base).isJoinableWith(ref, "column" -> "column").run shouldBe false
+  }
+
   "A check if a column is in the given values" should "succeed if all values are inside" in {
     Check(makeNullableStringDf(List("a", "b", "c", "c"))).isAnyOf("column", Set("a", "b", "c", "d")).run shouldBe true
   }
