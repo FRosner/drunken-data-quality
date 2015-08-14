@@ -302,7 +302,8 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   }
 
   it should "fail if column values are true/TRUE and false/FALSE if case sensitive is true" in {
-    Check(makeNullableStringDf(List("true", "false", "TRUE", "FALSE", "True", "fAlsE"))).isConvertibleToBoolean("column", isCaseSensitive = true).run shouldBe false
+    val df = makeNullableStringDf(List("true", "false", "TRUE", "FALSE", "True", "fAlsE"))
+    Check(df).isConvertibleToBoolean("column", isCaseSensitive = true).run shouldBe false
   }
 
   it should "succeed if column values are 1 and 0 only" in {
@@ -312,8 +313,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if column values are not 1 and 0 only" in {
     Check(makeNullableStringDf(List("1", "0", "2"))).isConvertibleToBoolean("column", "1", "0").run shouldBe false
   }
+
   it should "fail if column values are empty" in {
-    Check(makeNullableStringDf(List("1","0","2",null))).isConvertibleToBoolean("column","1","0").run shouldBe false
+    Check(makeNullableStringDf(List("1", "0", null))).isConvertibleToBoolean("column", "1", "0").run shouldBe true
   }
 
 }
