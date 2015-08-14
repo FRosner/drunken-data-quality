@@ -314,7 +314,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     Check(makeNullableStringDf(List("1", "0", "2"))).isConvertibleToBoolean("column", "1", "0").run shouldBe false
   }
 
-  it should "fail if column values are empty" in {
+  it should "succeed if column values are convertible or null" in {
     Check(makeNullableStringDf(List("1", "0", null))).isConvertibleToBoolean("column", "1", "0").run shouldBe true
   }
 
