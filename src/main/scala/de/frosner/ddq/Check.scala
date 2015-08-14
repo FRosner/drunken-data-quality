@@ -4,11 +4,12 @@ import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.sql.{SQLContext, Column, DataFrame}
-import Constraint.ConstraintFunction
-import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql.SQLContext
+import de.frosner.ddq.Check._
+import de.frosner.ddq.Constraint.ConstraintFunction
 import org.apache.spark.sql.functions._
-import Check._
+import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.storage.StorageLevel
 
 import scala.util.Try
 
@@ -137,6 +138,26 @@ case class Check(dataFrame: DataFrame,
         success(s"Column $columnName matches $regex")
       else
         failure(s"Column $columnName contains $doesNotMatchCount rows that do not match $regex")
+    }
+  }
+
+  def isConvertibleToBoolean(columnName: String, trueValue: String = "true", falseValue: String = "false",
+                              isCaseSensitive: Boolean = false) = addConstraint {
+    df => {
+      val cannotBeBoolean =
+        if (isCaseSensitive)
+          udf((column: String) => column != null
+            && column != trueValue
+            && column != falseValue)
+        else
+          udf((column: String) => column != null
+            && column.toUpperCase != trueValue.toUpperCase
+            && column.toUpperCase != falseValue.toUpperCase)
+      val cannotBeBooleanCount = df.filter(cannotBeBoolean(new Column(columnName))).count
+      if (cannotBeBooleanCount == 0)
+        success(s"Column $columnName can be converted to Boolean")
+      else
+        failure(s"Column $columnName contains $cannotBeBooleanCount rows that cannot be converted to Boolean")
     }
   }
 
