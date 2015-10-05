@@ -3,7 +3,7 @@ package de.frosner.ddq
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.{FlatSpec, Matchers}
@@ -44,12 +44,20 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(4).run shouldBe false
   }
 
-  "A satisfies check" should "succeed if all rows satisfy the given condition" in {
+  "A satisfies check (String)" should "succeed if all rows satisfy the given condition" in {
     Check(makeIntegerDf(List(1, 2, 3))).satisfies("column > 0").run shouldBe true
   }
 
   it should "fail if there are rows that do not satisfy the given condition" in {
     Check(makeIntegerDf(List(1, 2, 3))).satisfies("column > 1").run shouldBe false
+  }
+
+  "A satisfies check (Column)" should "succeed if all rows satisfy the given condition" in {
+    Check(makeIntegerDf(List(1, 2, 3))).satisfies(new Column("column") > 0).run shouldBe true
+  }
+
+  it should "fail if there are rows that do not satisfy the given condition" in {
+    Check(makeIntegerDf(List(1, 2, 3))).satisfies(new Column("column") > 1).run shouldBe false
   }
 
   "A unique key check" should "succeed if a given column defines a key" in {

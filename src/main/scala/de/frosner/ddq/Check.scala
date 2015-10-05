@@ -31,17 +31,27 @@ case class Check(dataFrame: DataFrame,
         failure(s"""Columns $columnsString are not a key""")
     }
   }
-  
-  def satisfies(constraint: String): Check = addConstraint {
+
+  private def satisfies(succeedingRowsFunction: DataFrame => DataFrame, constraintString: String): Check = addConstraint {
     df => {
-      val succeedingRows = df.filter(constraint).count
+      val succeedingRows = succeedingRowsFunction(df).count
       val count = df.count
       if (succeedingRows == count)
-        success(s"Constraint $constraint is satisfied")
+        success(s"Constraint $constraintString is satisfied")
       else
-        failure(s"${count - succeedingRows} rows did not satisfy constraint $constraint")
+        failure(s"${count - succeedingRows} rows did not satisfy constraint $constraintString")
     }
   }
+
+  def satisfies(constraint: String): Check = satisfies(
+    (df: DataFrame) => df.filter(constraint),
+    constraint
+  )
+
+  def satisfies(constraint: Column): Check = satisfies(
+    (df: DataFrame) => df.filter(constraint),
+    constraint.toString()
+  )
 
   def isNeverNull(columnName: String) = addConstraint {
     df => {
