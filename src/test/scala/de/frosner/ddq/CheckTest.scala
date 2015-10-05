@@ -60,6 +60,33 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     Check(makeIntegerDf(List(1, 2, 3))).satisfies(new Column("column") > 1).run shouldBe false
   }
 
+  "A conditional satisfies check" should "succeed if all rows where the statement is true, satisfy the given condition" in {
+    val condition = (new Column("column1") === 1) -> (new Column("column2") === 0)
+    Check(makeIntegersDf(
+      List(1, 0),
+      List(2, 0),
+      List(3, 0)
+    )).satisfies(condition).run shouldBe true
+  }
+
+  it should "succeed if there are no rows where the statement is true" in {
+    val condition = (new Column("column1") === 5) -> (new Column("column2") === 100)
+    Check(makeIntegersDf(
+      List(1, 0),
+      List(1, 1),
+      List(3, 0)
+    )).satisfies(condition).run shouldBe true
+  }
+
+  it should "fail if there are rows that do not satisfy the given condition" in {
+    val condition = (new Column("column1") === 1) -> (new Column("column2") === 0)
+    Check(makeIntegersDf(
+      List(1, 0),
+      List(1, 1),
+      List(3, 0)
+    )).satisfies(condition).run shouldBe false
+  }
+
   "A unique key check" should "succeed if a given column defines a key" in {
     val df = makeIntegersDf(
       List(1,2),

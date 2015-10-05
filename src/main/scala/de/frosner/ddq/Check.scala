@@ -53,6 +53,14 @@ case class Check(dataFrame: DataFrame,
     constraint.toString()
   )
 
+  def satisfies(conditional: (Column, Column)): Check = {
+    val (statement, implication) = conditional
+    satisfies(
+      (df: DataFrame) => df.filter(!statement || implication),
+      s"$statement -> $implication"
+    )
+  }
+
   def isNeverNull(columnName: String) = addConstraint {
     df => {
       val nullCount = df.filter(new Column(columnName).isNull).count
