@@ -7,6 +7,6 @@ case class Constraint(fun: ConstraintFunction)
 
 object Constraint {
 
-  type ConstraintFunction = (DataFrame) => Boolean
+  type ConstraintFunction = (DataFrame) => ConstraintResult
 
 }

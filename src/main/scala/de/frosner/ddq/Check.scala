@@ -7,6 +7,7 @@ import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.SQLContext
 import de.frosner.ddq.Check._
 import de.frosner.ddq.Constraint.ConstraintFunction
+import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.storage.StorageLevel
@@ -376,18 +377,14 @@ case class Check(dataFrame: DataFrame,
    *
    * @return whether all constraints are satisfied
    */
-  def run: Boolean = {
-    hint(s"Checking ${displayName.getOrElse(dataFrame.toString)}")
-    val potentiallyPersistedDf = cacheMethod.map(dataFrame.persist(_)).getOrElse(dataFrame)
-    hint(s"It has a total number of ${potentiallyPersistedDf.columns.size} columns and ${potentiallyPersistedDf.count} rows.")
-    val result = if (!constraints.isEmpty)
-      constraints.map(c => c.fun(potentiallyPersistedDf)).reduce(_ && _)
-    else
-      hint("- Nothing to check!")
-    if (cacheMethod.isDefined) potentiallyPersistedDf.unpersist()
-    result
+  def run(reporters: Iterable[Reporter]): CheckResult = {
+    Runner.run(List(this), reporters).head
   }
-      
+
+  def run(): CheckResult = {
+    run(List(ConsoleReporter(System.out)))
+  }
+
 }
 
 object Check {
@@ -433,19 +430,16 @@ object Check {
     sqlTable(hive, table, cacheMethod)
   }
 
-  private def success(message: String): Boolean = {
-    println(Console.GREEN + "- " + message + Console.RESET)
-    true
+  def success(message: String): ConstraintResult = {
+    ConstraintSuccess(message)
   }
 
-  private def failure(message: String): Boolean = {
-    println(Console.RED + "- " + message + Console.RESET)
-    false
+  def failure(message: String): ConstraintResult = {
+    ConstraintFailure(message)
   }
 
-  private def hint(message: String): Boolean = {
-    println(Console.BLUE + message + Console.RESET)
-    true
+  def hint(message: String): ConstraintResult = {
+    Hint(message)
   }
 
 }
