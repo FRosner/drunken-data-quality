@@ -7,7 +7,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, BeforeAndAfterEach}
 
 
 abstract class TestDataFrameContext extends FlatSpec with BeforeAndAfterEach with BeforeAndAfterAll{
-  protected val sc = new SparkContext("local[1]", "CheckTest")
+  protected val sc = new SparkContext("local[1]", this.getClass.getSimpleName)
   protected val sql = new SQLContext(sc)
   sql.setConf("spark.sql.shuffle.partitions", "5")
   protected val hive = new TestHiveContext(sc)
