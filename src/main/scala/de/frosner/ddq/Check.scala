@@ -373,10 +373,11 @@ case class Check(dataFrame: DataFrame,
 
 
   /**
-   * Run all the previously specified constraints.
+   * Run check with all the previously specified constraints and report to every reporter passed as an argument
    *
-   * @return whether all constraints are satisfied
-   */
+   * @param reporters iterable of reporters to produce output on the check result
+   * @return check result
+   **/
   def run(reporters: Iterable[Reporter]): CheckResult = {
     Runner.run(List(this), reporters).head
   }
