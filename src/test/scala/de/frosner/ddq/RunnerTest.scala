@@ -3,19 +3,27 @@ package de.frosner.ddq
 import java.io.{ByteArrayOutputStream, PrintStream}
 
 import de.frosner.ddq.reporters.{MarkdownReporter, ConsoleReporter}
-import org.scalatest.Matchers
+import org.apache.spark.sql.{DataFrame}
+import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito._
 
-class RunnerTest extends TestDataFrameContext with Matchers {
+class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
+  val df = mock[DataFrame]
+  when(df.toString).thenReturn("[[column: int]]")
+  when(df.count).thenReturn(3)
+  when(df.columns).thenReturn(Array("column"))
 
   "runner" should "run with multiple checks" in {
-    val check1 = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(3)
-    val check2 = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(4)
+    val constraintResults1 = List(ConstraintSuccess("The number of rows is equal to 3"))
+    val constraintResults2 = List(ConstraintFailure("The actual number of rows 3 is not equal to the expected 4"))
+
+    val check1 = Check(df, None, None, Seq(Constraint(df => constraintResults1.head)))
+    val check2 = Check(df, None, None, Seq(Constraint(df => constraintResults2.head)))
+
     val checkResults = Runner.run(List(check1, check2), List())
 
     checkResults.size shouldBe 2
-
-    val constraintResults1 = List(ConstraintSuccess("The number of rows is equal to 3"))
-    val constraintResults2 = List(ConstraintFailure("The actual number of rows 3 is not equal to the expected 4"))
 
     val checkResult1 = checkResults.head
     val checkResult2 = checkResults.drop(1).head
@@ -28,7 +36,7 @@ class RunnerTest extends TestDataFrameContext with Matchers {
   }
 
   it should "run with multiple reporters" in {
-    val check = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(3)
+    val check = Check(df, None, None, Seq(Constraint(df => ConstraintSuccess("success"))))
     val baos1 = new ByteArrayOutputStream()
     val consoleReporter = new ConsoleReporter(new PrintStream(baos1))
     val baos2 = new ByteArrayOutputStream()

@@ -2,12 +2,39 @@ package de.frosner.ddq
 
 import java.text.SimpleDateFormat
 
-import org.apache.spark.sql.Column
-import org.scalatest. Matchers
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
+import org.apache.spark.sql.types._
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{FlatSpec, Matchers}
 
-class CheckTest extends TestDataFrameContext with Matchers {
+class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
 
+  private val sc = new SparkContext("local[1]", "CheckTest")
+  private val sql = new SQLContext(sc)
+  sql.setConf("spark.sql.shuffle.partitions", "5")
+  private val hive = new TestHiveContext(sc)
+  hive.setConf("spark.sql.shuffle.partitions", "5")
 
+  override def afterAll(): Unit = {
+    hive.deletePaths()
+  }
+
+  private def makeIntegerDf(numbers: Seq[Int], sql: SQLContext): DataFrame =
+    sql.createDataFrame(sc.makeRDD(numbers.map(Row(_))), StructType(List(StructField("column", IntegerType, false))))
+
+  private def makeIntegerDf(numbers: Seq[Int]): DataFrame = makeIntegerDf(numbers, sql)
+
+  private def makeNullableStringDf(strings: Seq[String]): DataFrame =
+    sql.createDataFrame(sc.makeRDD(strings.map(Row(_))), StructType(List(StructField("column", StringType, true))))
+
+  private def makeIntegersDf(row1: Seq[Int], rowN: Seq[Int]*): DataFrame = {
+    val rows = (row1 :: rowN.toList)
+    val numCols = row1.size
+    val rdd = sc.makeRDD(rows.map(Row(_:_*)))
+    val schema = StructType((1 to numCols).map(idx => StructField("column" + idx, IntegerType, false)))
+    sql.createDataFrame(rdd, schema)
+  }
 
   it should "fail if the number of rows is not equal to the expected" in {
     val expectedResult = List(ConstraintFailure("The actual number of rows 3 is not equal to the expected 4"))
