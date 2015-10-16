@@ -17,7 +17,8 @@ class ReporterTest extends FlatSpec with Matchers with MockitoSugar {
   val check = Check(df, None, None, Seq(
     Constraint(df => ConstraintSuccess("The number of rows is equal to 3")),
     Constraint(df => ConstraintFailure("The actual number of rows 3 is not equal to the expected 2")),
-    Constraint(df => ConstraintSuccess("Constraint column > 0 is satisfied"))
+    Constraint(df => ConstraintSuccess("Constraint column > 0 is satisfied")),
+    Constraint(df => Hint("It's a mock"))
   ))
 
   "ConsoleReporter" should "produce correct output" in {
@@ -31,6 +32,7 @@ ${Console.BLUE}It has a total number of 1 columns and 3 rows.${Console.RESET}
 ${Console.GREEN}- The number of rows is equal to 3${Console.RESET}
 ${Console.RED}- The actual number of rows 3 is not equal to the expected 2${Console.RESET}
 ${Console.GREEN}- Constraint column > 0 is satisfied${Console.RESET}
+${Console.BLUE}It's a mock${Console.RESET}
 """
 
     baos.toString shouldBe expectedOutput
@@ -49,6 +51,7 @@ It has a total number of 1 columns and 3 rows.
 * [success]: The number of rows is equal to 3
 * [failure]: The actual number of rows 3 is not equal to the expected 2
 * [success]: Constraint column > 0 is satisfied
+* [hint]: It's a mock
 """
 
     baos.toString shouldBe expectedOutput
