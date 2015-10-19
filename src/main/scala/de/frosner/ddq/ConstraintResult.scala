@@ -9,5 +9,3 @@ sealed trait ConstraintResult {
 case class ConstraintSuccess(message: String) extends ConstraintResult
 
 case class ConstraintFailure(message: String) extends ConstraintResult
-
-case class Hint(message: String) extends ConstraintResult
