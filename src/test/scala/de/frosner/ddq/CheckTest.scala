@@ -37,17 +37,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   }
 
   it should "fail if the number of rows is not equal to the expected" in {
-    val constraint = Check.hasNumRowsEqualTo(4)
+    val check = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(4)
+    val constraint = check.constraints(0)
     val result = ConstraintFailure("The actual number of rows 3 is not equal to the expected 4")
-    Check(makeIntegerDf(List(1, 2, 3))).addConstraint(constraint).
-      run().constraintResults shouldBe Map((constraint, result))
+    check.run().constraintResults shouldBe Map((constraint, result))
   }
 
   "A satisfies check (String)" should "succeed if all rows satisfy the given condition" in {
-    val constraint = Check.satisfies("column > 0")
+    val check = Check(makeIntegerDf(List(1, 2, 3))).satisfies("column > 0")
+    val constraint = check.constraints(0)
     val result = ConstraintSuccess("Constraint column > 0 is satisfied")
-    Check(makeIntegerDf(List(1, 2, 3))).addConstraint(constraint).
-      run().constraintResults shouldBe Map((constraint, result))
+    check.run().constraintResults shouldBe Map((constraint, result))
   }
 
   it should "fail if there are rows that do not satisfy the given condition" in {
