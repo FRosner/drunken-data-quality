@@ -9,6 +9,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
 class ReporterTest extends FlatSpec with Matchers with MockitoSugar {
+
   val df = mock[DataFrame]
   when(df.toString).thenReturn("[column: int]")
   when(df.count).thenReturn(3)
@@ -81,5 +82,6 @@ Nothing to check
 
     baos.toString shouldBe expectedOutput
   }
+  
 }
 
