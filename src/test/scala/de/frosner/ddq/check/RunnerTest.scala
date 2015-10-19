@@ -41,7 +41,7 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
 
   it should "run with multiple reporters" in {
     val check = Check(df, None, None, Seq(Constraint(df => ConstraintSuccess("success"))))
-    val checkResult = check.run(List.empty)
+    val checkResult = Runner.run(List(check), List.empty).head
 
     val reporter1 = mock[Reporter]
     val reporter2 = mock[Reporter]
