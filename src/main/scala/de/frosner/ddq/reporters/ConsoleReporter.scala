@@ -20,11 +20,14 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
   override def report(checkResult: CheckResult): Unit = {
     stream.println(Console.BLUE + checkResult.header + Console.RESET)
     stream.println(Console.BLUE + checkResult.prologue + Console.RESET)
-    checkResult.constraintResults.foreach {
-      case ConstraintSuccess(message) => stream.println(Console.GREEN + "- " + message + Console.RESET)
-      case ConstraintFailure(message) => stream.println(Console.RED + "- " + message + Console.RESET)
-      case Hint(message) => stream.println(Console.BLUE + message + Console.RESET)
-    }
+    if (checkResult.constraintResults.nonEmpty)
+      checkResult.constraintResults.foreach {
+        case (_, ConstraintSuccess(message)) => stream.println(Console.GREEN + "- " + message + Console.RESET)
+        case (_, ConstraintFailure(message)) => stream.println(Console.RED + "- " + message + Console.RESET)
+        case (_, Hint(message)) => stream.println(Console.BLUE + message + Console.RESET)
+      }
+    else
+      stream.println(Console.BLUE + "Nothing to check" + Console.RESET)
   }
 
 }

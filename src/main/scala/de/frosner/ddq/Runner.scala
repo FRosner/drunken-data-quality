@@ -20,12 +20,7 @@ object Runner {
 
       val header = s"Checking ${check.displayName.getOrElse(check.dataFrame.toString)}"
       val prologue = s"It has a total number of ${potentiallyPersistedDf.columns.length} columns and ${potentiallyPersistedDf.count} rows."
-
-
-      val constraintResults = if (check.constraints.nonEmpty)
-        check.constraints.map(c => c.fun(potentiallyPersistedDf))
-      else
-        List(Check.hint("Nothing to check!"))
+      val constraintResults = check.constraints.map(c => (c, c.fun(potentiallyPersistedDf))).toMap
 
       val checkResult = CheckResult(header, prologue, constraintResults, check)
 
