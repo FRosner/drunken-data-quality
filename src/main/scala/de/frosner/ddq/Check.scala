@@ -27,7 +27,7 @@ import scala.util.Try
 case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD,
-                 constraints: Iterable[Constraint] = Iterable.empty) {
+                 constraints: Seq[Constraint] = Seq.empty) {
 
   private def addConstraint(cf: ConstraintFunction): Check = addConstraint(Constraint(cf))
 
