@@ -27,7 +27,7 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
         case (_, ConstraintFailure(message)) => stream.println(Console.RED + "- " + message + Console.RESET)
       }
     else
-      stream.println(Console.BLUE + "Nothing to check" + Console.RESET)
+      stream.println(Console.BLUE + "Nothing to check!" + Console.RESET)
   }
 
 }

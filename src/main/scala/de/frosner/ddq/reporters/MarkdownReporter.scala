@@ -25,6 +25,6 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
         case (_, ConstraintFailure(message)) => stream.println("* [failure]: " + message)
       }
     else
-      stream.println("Nothing to check")
+      stream.println("Nothing to check!")
   }
 }
