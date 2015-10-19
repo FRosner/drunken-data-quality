@@ -593,8 +593,4 @@ object Check {
     ConstraintFailure(message)
   }
 
-  def hint(message: String): ConstraintResult = {
-    Hint(message)
-  }
-
 }
