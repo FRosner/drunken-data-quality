@@ -7,6 +7,7 @@ import de.frosner.ddq.reporters.Reporter
  * An object responsible for running checks and producing reports
  */
 object Runner {
+
   /**
    * Run checks and then report to the reporters. Each check will be reported by every reporter.
    *
@@ -19,7 +20,8 @@ object Runner {
       val potentiallyPersistedDf = check.cacheMethod.map(check.dataFrame.persist(_)).getOrElse(check.dataFrame)
 
       val header = s"Checking ${check.displayName.getOrElse(check.dataFrame.toString)}"
-      val prologue = s"It has a total number of ${potentiallyPersistedDf.columns.length} columns and ${potentiallyPersistedDf.count} rows."
+      val prologue = s"It has a total number of ${potentiallyPersistedDf.columns.length} columns " +
+        s"and ${potentiallyPersistedDf.count} rows."
       val constraintResults = check.constraints.map(c => (c, c.fun(potentiallyPersistedDf))).toMap
 
       val checkResult = CheckResult(header, prologue, constraintResults, check)
@@ -30,4 +32,5 @@ object Runner {
       checkResult
     })
   }
+
 }
