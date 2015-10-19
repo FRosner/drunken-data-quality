@@ -15,11 +15,14 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
   when(df.columns).thenReturn(Array("column"))
 
   "runner" should "run with multiple checks" in {
-    val constraintResults1 = List(ConstraintSuccess("The number of rows is equal to 3"))
-    val constraintResults2 = List(ConstraintFailure("The actual number of rows 3 is not equal to the expected 4"))
+    val result1 = ConstraintSuccess("The number of rows is equal to 3")
+    val constraint1 = Constraint(df => result1)
 
-    val check1 = Check(df, None, None, Seq(Constraint(df => constraintResults1.head)))
-    val check2 = Check(df, None, None, Seq(Constraint(df => constraintResults2.head)))
+    val result2 = ConstraintFailure("The actual number of rows 3 is not equal to the expected 4")
+    val constraint2 = Constraint(df => result2)
+
+    val check1 = Check(df, None, None, Seq(constraint1))
+    val check2 = Check(df, None, None, Seq(constraint2))
 
     val checkResults = Runner.run(List(check1, check2), List())
 
@@ -29,10 +32,10 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     val checkResult2 = checkResults.drop(1).head
 
     checkResult1.check shouldBe check1
-    checkResult1.constraintResults shouldBe constraintResults1
+    checkResult1.constraintResults shouldBe Map((constraint1, result1))
 
     checkResult2.check shouldBe check2
-    checkResult2.constraintResults shouldBe constraintResults2
+    checkResult2.constraintResults shouldBe Map((constraint2, result2))
   }
 
   it should "run with multiple reporters" in {
