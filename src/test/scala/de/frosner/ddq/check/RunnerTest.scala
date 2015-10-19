@@ -2,7 +2,7 @@ package de.frosner.ddq.check
 
 import java.io.{ByteArrayOutputStream, PrintStream}
 
-import de.frosner.ddq.reporters.{ConsoleReporter, MarkdownReporter}
+import de.frosner.ddq.reporters.{Reporter, ConsoleReporter, MarkdownReporter}
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -40,15 +40,13 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
 
   it should "run with multiple reporters" in {
     val check = Check(df, None, None, Seq(Constraint(df => ConstraintSuccess("success"))))
-    val baos1 = new ByteArrayOutputStream()
-    val consoleReporter = new ConsoleReporter(new PrintStream(baos1))
-    val baos2 = new ByteArrayOutputStream()
-    val markdownReporter = new MarkdownReporter(new PrintStream(baos2))
+    val checkResult = check.run(List.empty)
 
-    Runner.run(List(check), List(consoleReporter, markdownReporter))
+    val reporter1 = mock[Reporter]
+    val reporter2 = mock[Reporter]
 
-    // tests that runner outputs something to both reporters
-    baos1.toString.nonEmpty shouldBe true
-    baos2.toString.nonEmpty shouldBe true
+    Runner.run(List(check), List(reporter1, reporter2))
+    verify(reporter1).report(checkResult)
+    verify(reporter2).report(checkResult)
   }
 }
