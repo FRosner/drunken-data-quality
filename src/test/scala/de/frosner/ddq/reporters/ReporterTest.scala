@@ -1,12 +1,12 @@
-package de.frosner.ddq
+package de.frosner.ddq.reporters
 
-import java.io.{PrintStream, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, PrintStream}
 
-import de.frosner.ddq.reporters.{MarkdownReporter, ConsoleReporter}
+import de.frosner.ddq.check.{Check, Constraint, ConstraintFailure, ConstraintSuccess}
 import org.apache.spark.sql.DataFrame
-import org.scalatest.{FlatSpec, Matchers}
-import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{FlatSpec, Matchers}
 
 class ReporterTest extends FlatSpec with Matchers with MockitoSugar {
   val df = mock[DataFrame]

@@ -3,11 +3,12 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
+import de.frosner.ddq.check.{ConstraintFailure, ConstraintSuccess, CheckResult}
 
 // TODO give iterable of checks
 // TODO document that the stream will not be closed automatically
 /**
- * A class which produces a console report of [[de.frosner.ddq.CheckResult]].
+ * A class which produces a console report of [[CheckResult]].
  *
  * @param stream The [[java.io.PrintStream]] to put the output
 **/
@@ -15,7 +16,7 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
 
   /**
    * Output console report of a given checkResult to the stream passed to the constructor
-   * @param checkResult The [[de.frosner.ddq.CheckResult]] to be reported
+   * @param checkResult The [[CheckResult]] to be reported
    */
   override def report(checkResult: CheckResult): Unit = {
     stream.println(Console.BLUE + checkResult.header + Console.RESET)

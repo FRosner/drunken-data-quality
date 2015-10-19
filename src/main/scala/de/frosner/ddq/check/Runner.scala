@@ -1,4 +1,4 @@
-package de.frosner.ddq
+package de.frosner.ddq.check
 
 import de.frosner.ddq.reporters.Reporter
 

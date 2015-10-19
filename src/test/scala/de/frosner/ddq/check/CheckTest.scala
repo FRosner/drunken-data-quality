@@ -1,12 +1,11 @@
-package de.frosner.ddq
+package de.frosner.ddq.check
 
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
 import org.apache.spark.sql.types._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatest.{FlatSpec, Matchers}
+import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll {
 
