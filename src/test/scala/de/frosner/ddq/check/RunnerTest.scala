@@ -25,7 +25,7 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     val check1 = Check(df, None, None, Seq(constraint1))
     val check2 = Check(df, None, None, Seq(constraint2))
 
-    val checkResults = Runner.run(List(check1, check2), List())
+    val checkResults = Runner.run(List(check1, check2), List.empty)
 
     checkResults.size shouldBe 2
 
