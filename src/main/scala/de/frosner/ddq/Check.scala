@@ -28,9 +28,7 @@ case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD,
                  constraints: Seq[Constraint] = Seq.empty) {
-
-  private def addConstraint(cf: ConstraintFunction): Check = addConstraint(Constraint(cf))
-
+  
   def addConstraint(c: Constraint): Check =
     Check(dataFrame, displayName, cacheMethod, constraints ++ List(c))
 
@@ -173,7 +171,7 @@ case class Check(dataFrame: DataFrame,
    * @return [[de.frosner.ddq.Check]] object including this constraint
    */
   def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
-    Check.hasForeignKey(referenceTable, keyMap)
+    Check.hasForeignKey(referenceTable, keyMap, keyMaps: _*)
   )
 
   /**
@@ -186,7 +184,7 @@ case class Check(dataFrame: DataFrame,
    * @return [[de.frosner.ddq.Check]] object including this constraint
    */
   def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
-    Check.isJoinableWith(referenceTable, keyMap)
+    Check.isJoinableWith(referenceTable, keyMap, keyMaps: _*)
   )
 
   /**
