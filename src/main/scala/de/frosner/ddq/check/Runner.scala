@@ -11,9 +11,9 @@ object Runner {
   /**
    * Run checks and then report to the reporters. Each check will be reported by every reporter.
    *
-   * @param checks An iterable of Check objects to be reported
-   * @param reporters An iterable of Reporters
-   * @return CheckResult for every check passed as an argument
+   * @param checks An iterable of check objects to be reported
+   * @param reporters An iterable of reporters
+   * @return Result for every check passed as an argument
    */
   def run(checks: Iterable[Check], reporters: Iterable[Reporter]): Iterable[CheckResult] = {
     checks.map(check => {
