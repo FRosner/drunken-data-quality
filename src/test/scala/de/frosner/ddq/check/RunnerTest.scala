@@ -9,12 +9,13 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
 class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
+
   val df = mock[DataFrame]
   when(df.toString).thenReturn("[[column: int]]")
   when(df.count).thenReturn(3)
   when(df.columns).thenReturn(Array("column"))
 
-  "runner" should "run with multiple checks" in {
+  "A runner" should "run with multiple checks" in {
     val result1 = ConstraintSuccess("The number of rows is equal to 3")
     val constraint1 = Constraint(df => result1)
 
@@ -49,4 +50,5 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     verify(reporter1).report(checkResult)
     verify(reporter2).report(checkResult)
   }
+
 }
