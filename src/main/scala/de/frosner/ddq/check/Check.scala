@@ -195,6 +195,11 @@ case class Check(dataFrame: DataFrame,
     Runner.run(List(this), reporters).head
   }
 
+  /**
+   * Run check with all the previously specified constraints and report to the console reporter
+   *
+   * @return check result
+   **/
   def run(): CheckResult = {
     run(List(ConsoleReporter(System.out)))
   }
