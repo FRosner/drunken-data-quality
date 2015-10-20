@@ -238,9 +238,9 @@ object Check {
       val columnsString = (columnName :: columnNames.toList).mkString(",")
       val nonUniqueRows = df.groupBy(columnName, columnNames:_*).count.filter(new Column("count") > 1).count
       if (nonUniqueRows == 0)
-        success(s"""Columns $columnsString are a key""")
+        ConstraintSuccess(s"""Columns $columnsString are a key""")
       else
-        failure(s"""Columns $columnsString are not a key""")
+        ConstraintFailure(s"""Columns $columnsString are not a key""")
     }
    )
 
@@ -254,9 +254,9 @@ object Check {
     df => {
       val count = df.count
       if (count == expected)
-        success(s"The number of rows is equal to $count")
+        ConstraintSuccess(s"The number of rows is equal to $count")
       else
-        failure(s"The actual number of rows $count is not equal to the expected $expected")
+        ConstraintFailure(s"The actual number of rows $count is not equal to the expected $expected")
     }
   )
 
@@ -265,9 +265,9 @@ object Check {
       val succeedingRows = succeedingRowsFunction(df).count
       val count = df.count
       if (succeedingRows == count)
-        success(s"Constraint $constraintString is satisfied")
+        ConstraintSuccess(s"Constraint $constraintString is satisfied")
       else
-        failure(s"${count - succeedingRows} rows did not satisfy constraint $constraintString")
+        ConstraintFailure(s"${count - succeedingRows} rows did not satisfy constraint $constraintString")
     }
   )
 
@@ -324,9 +324,9 @@ object Check {
     df => {
       val notNullCount = df.filter(new Column(columnName).isNotNull).count
       if (notNullCount == 0)
-        success(s"Column $columnName is null")
+        ConstraintSuccess(s"Column $columnName is null")
       else
-        failure(s"Column $columnName has $notNullCount non-null rows although it should be null")
+        ConstraintFailure(s"Column $columnName has $notNullCount non-null rows although it should be null")
     }
   )
 
@@ -340,9 +340,9 @@ object Check {
     df => {
       val nullCount = df.filter(new Column(columnName).isNull).count
       if (nullCount == 0)
-        success(s"Column $columnName is not null")
+        ConstraintSuccess(s"Column $columnName is not null")
       else
-        failure(s"Column $columnName has $nullCount null rows although it should not be null")
+        ConstraintFailure(s"Column $columnName has $nullCount null rows although it should not be null")
     }
   )
 
@@ -357,9 +357,9 @@ object Check {
     df => {
       val cannotBeIntCount = df.filter(cannotBeInt(new Column(columnName))).count
       if (cannotBeIntCount == 0)
-        success(s"Column $columnName can be converted to Int")
+        ConstraintSuccess(s"Column $columnName can be converted to Int")
       else
-        failure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
+        ConstraintFailure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
     }
   )
 
@@ -374,9 +374,9 @@ object Check {
     df => {
       val cannotBeDoubleCount = df.filter(cannotBeDouble(new Column(columnName))).count
       if (cannotBeDoubleCount == 0)
-        success(s"Column $columnName can be converted to Double")
+        ConstraintSuccess(s"Column $columnName can be converted to Double")
       else
-        failure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
+        ConstraintFailure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
     }
   )
 
@@ -391,9 +391,9 @@ object Check {
     df => {
       val cannotBeLongCount = df.filter(cannotBeLong(new Column(columnName))).count
       if (cannotBeLongCount == 0)
-        success(s"Column $columnName can be converted to Long")
+        ConstraintSuccess(s"Column $columnName can be converted to Long")
       else
-        failure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
+        ConstraintFailure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
     }
   )
 
@@ -409,9 +409,9 @@ object Check {
       val cannotBeDate = udf((column: String) => column != null && Try(dateFormat.parse(column)).isFailure)
       val cannotBeDateCount = df.filter(cannotBeDate(new Column(columnName))).count
       if (cannotBeDateCount == 0)
-        success(s"Column $columnName can be converted to Date")
+        ConstraintSuccess(s"Column $columnName can be converted to Date")
       else
-        failure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
+        ConstraintFailure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
     }
   )
 
@@ -428,9 +428,9 @@ object Check {
       val columnIndex = df.columns.indexOf(columnName)
       val notAllowedCount = df.rdd.filter(row => !row.isNullAt(columnIndex) && !allowed.contains(row.get(columnIndex))).count
       if (notAllowedCount == 0)
-        success(s"Column $columnName contains only values in $allowed")
+        ConstraintSuccess(s"Column $columnName contains only values in $allowed")
       else
-        failure(s"Column $columnName contains $notAllowedCount rows that are not in $allowed")
+        ConstraintFailure(s"Column $columnName contains $notAllowedCount rows that are not in $allowed")
     }
   )
 
@@ -447,9 +447,9 @@ object Check {
       val doesNotMatch = udf((column: String) => column != null && !pattern.matcher(column).find())
       val doesNotMatchCount = df.filter(doesNotMatch(new Column(columnName))).count
       if (doesNotMatchCount == 0)
-        success(s"Column $columnName matches $regex")
+        ConstraintSuccess(s"Column $columnName matches $regex")
       else
-        failure(s"Column $columnName contains $doesNotMatchCount rows that do not match $regex")
+        ConstraintFailure(s"Column $columnName contains $doesNotMatchCount rows that do not match $regex")
     }
   )
 
@@ -477,9 +477,9 @@ object Check {
             && column.toUpperCase != falseValue.toUpperCase)
       val cannotBeBooleanCount = df.filter(cannotBeBoolean(new Column(columnName))).count
       if (cannotBeBooleanCount == 0)
-        success(s"Column $columnName can be converted to Boolean")
+        ConstraintSuccess(s"Column $columnName can be converted to Boolean")
       else
-        failure(s"Column $columnName contains $cannotBeBooleanCount rows that cannot be converted to Boolean")
+        ConstraintFailure(s"Column $columnName contains $cannotBeBooleanCount rows that cannot be converted to Boolean")
     }
   )
 
@@ -501,7 +501,7 @@ object Check {
       // check if foreign key is a key in reference table
       val nonUniqueRows = referenceTable.groupBy(refColumns.map(new Column(_)):_*).count.filter(new Column("count") > 1).count
       if (nonUniqueRows > 0) {
-        failure( s"""Columns ${refColumns.mkString(", ")} are not a key in reference table""")
+        ConstraintFailure( s"""Columns ${refColumns.mkString(", ")} are not a key in reference table""")
       } else {
         // rename all columns to avoid ambiguous column references
         val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
@@ -518,9 +518,9 @@ object Check {
         val notMatchingRefs = leftOuterJoin.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count
         val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
         if (notMatchingRefs == 0)
-          success(s"""Columns $columnsString define a foreign key""")
+          ConstraintSuccess(s"""Columns $columnsString define a foreign key""")
         else
-          failure(s"Columns $columnsString do not define a foreign key ($notMatchingRefs records do not match)")
+          ConstraintFailure(s"Columns $columnsString do not define a foreign key ($notMatchingRefs records do not match)")
       }
     }
   )
@@ -559,9 +559,9 @@ object Check {
       val matchingRows = join.count
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        success(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
+        ConstraintSuccess(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
       else
-        failure(s"Columns $columnsString cannot be used for joining (no rows match)")
+        ConstraintFailure(s"Columns $columnsString cannot be used for joining (no rows match)")
     }
   )
 
@@ -581,14 +581,6 @@ object Check {
                 cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
     hive.sql(s"USE $database")
     sqlTable(hive, table, cacheMethod)
-  }
-
-  def success(message: String): ConstraintResult = {
-    ConstraintSuccess(message)
-  }
-
-  def failure(message: String): ConstraintResult = {
-    ConstraintFailure(message)
   }
 
 }
