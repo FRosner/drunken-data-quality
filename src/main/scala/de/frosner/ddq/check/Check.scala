@@ -242,7 +242,7 @@ object Check {
       else
         ConstraintFailure(s"""Columns $columnsString are not a key""")
     }
-   )
+  )
 
   /**
    * Check whether the table has exactly the given number of rows.
