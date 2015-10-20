@@ -35,6 +35,55 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     sql.createDataFrame(rdd, schema)
   }
 
+  "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
+    val check = Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).satisfies("column > 0")
+    val constraint1 = check.constraints(0)
+    val constraint2 = check.constraints(1)
+    val constraint3 = check.constraints(2)
+
+    check.run().constraintResults shouldBe Map(
+      constraint1 -> ConstraintSuccess("The number of rows is equal to 3"),
+      constraint2 -> ConstraintFailure("The actual number of rows 3 is not equal to the expected 2"),
+      constraint3 -> ConstraintSuccess("Constraint column > 0 is satisfied")
+    )
+  }
+
+  "A check from a SQLContext" should "load the given table" in {
+    val df = makeIntegerDf(List(1,2,3), sql)
+    val tableName = "myintegerdf1"
+    df.registerTempTable(tableName)
+    val constraint = Check.hasNumRowsEqualTo(3)
+    val result = ConstraintSuccess("The number of rows is equal to 3")
+    Check.sqlTable(sql, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "require the table to exist" in {
+    intercept[IllegalArgumentException] {
+      Check.sqlTable(sql, "doesnotexist").run
+    }
+  }
+
+  "A check from a HiveContext" should "load the given table from the given database" in {
+    val tableName = "myintegerdf2"
+    val databaseName = "testDb"
+    hive.sql(s"CREATE DATABASE $databaseName")
+    hive.sql(s"USE $databaseName")
+    val df = makeIntegerDf(List(1,2,3), hive)
+    df.registerTempTable(tableName)
+    hive.sql(s"USE default")
+    val constraint = Check.hasNumRowsEqualTo(3)
+    val result = ConstraintSuccess("The number of rows is equal to 3")
+    Check.hiveTable(hive, databaseName, tableName).addConstraint(constraint).run().
+      constraintResults shouldBe Map(constraint -> result)
+    hive.sql(s"DROP DATABASE $databaseName")
+  }
+
+  it should "require the table to exist" in {
+    intercept[IllegalArgumentException] {
+      Check.hiveTable(hive, "default", "doesnotexist").run
+    }
+  }
+
   "A number of rows equality check" should "" in {
     val check = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(3)
     val constraint = check.constraints.head
@@ -413,59 +462,6 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val constraint = check.constraints.head
     val result = ConstraintFailure("Column column contains 2 rows that do not match ^Hello A$")
     check.run().constraintResults shouldBe Map(constraint -> result)
-  }
-
-  "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
-    val check = Check(makeIntegerDf(List(1,2,3))).hasNumRowsEqualTo(3).hasNumRowsEqualTo(2).satisfies("column > 0")
-    val constraint1 = check.constraints(0)
-    val constraint2 = check.constraints(1)
-    val constraint3 = check.constraints(2)
-
-    check.run().constraintResults shouldBe Map(
-      constraint1 -> ConstraintSuccess("The number of rows is equal to 3"),
-      constraint2 -> ConstraintFailure("The actual number of rows 3 is not equal to the expected 2"),
-      constraint3 -> ConstraintSuccess("Constraint column > 0 is satisfied")
-    )
-  }
-
-  "It" should "be possible to specify a display name for a data frame" in {
-    Check(makeIntegerDf(List(1,2,3)), displayName = Option("Integer Data Frame")).run
-  }
-
-  "A check from a SQLContext" should "load the given table" in {
-    val df = makeIntegerDf(List(1,2,3), sql)
-    val tableName = "myintegerdf1"
-    df.registerTempTable(tableName)
-    val constraint = Check.hasNumRowsEqualTo(3)
-    val result = ConstraintSuccess("The number of rows is equal to 3")
-    Check.sqlTable(sql, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
-  }
-
-  it should "require the table to exist" in {
-    intercept[IllegalArgumentException] {
-      Check.sqlTable(sql, "doesnotexist").run
-    }
-  }
-
-  "A check from a HiveContext" should "load the given table from the given database" in {
-    val tableName = "myintegerdf2"
-    val databaseName = "testDb"
-    hive.sql(s"CREATE DATABASE $databaseName")
-    hive.sql(s"USE $databaseName")
-    val df = makeIntegerDf(List(1,2,3), hive)
-    df.registerTempTable(tableName)
-    hive.sql(s"USE default")
-    val constraint = Check.hasNumRowsEqualTo(3)
-    val result = ConstraintSuccess("The number of rows is equal to 3")
-    Check.hiveTable(hive, databaseName, tableName).addConstraint(constraint).run().
-      constraintResults shouldBe Map(constraint -> result)
-    hive.sql(s"DROP DATABASE $databaseName")
-  }
-
-  it should "require the table to exist" in {
-    intercept[IllegalArgumentException] {
-      Check.hiveTable(hive, "default", "doesnotexist").run
-    }
   }
 
   "A to boolean conversion check" should "succeed if column values are true and false only" in {
