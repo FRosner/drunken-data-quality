@@ -35,6 +35,13 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     sql.createDataFrame(rdd, schema)
   }
 
+  "A number of rows equality check" should "" in {
+    val check = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(3)
+    val constraint = check.constraints.head
+    val result = ConstraintSuccess("The number of rows is equal to 3")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
   it should "fail if the number of rows is not equal to the expected" in {
     val check = Check(makeIntegerDf(List(1, 2, 3))).hasNumRowsEqualTo(4)
     val constraint = check.constraints.head
