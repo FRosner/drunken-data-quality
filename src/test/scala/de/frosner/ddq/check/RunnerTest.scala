@@ -67,7 +67,7 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     checkResult.header shouldBe s"Checking $displayName"
   }
 
-  it should "run with multiple reporters" in {
+  it should "report to all reporters what it returns" in {
     val df = mock[DataFrame]
     when(df.toString).thenReturn("")
     when(df.count).thenReturn(1)
