@@ -54,6 +54,19 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     checkResult2.prologue shouldBe s"It has a total number of ${df2Columns.size} columns and $df2Count rows."
   }
 
+  it should "show the display name in the header if it is set" in {
+    val df = mock[DataFrame]
+    when(df.toString).thenReturn("")
+    when(df.count).thenReturn(1)
+    when(df.columns).thenReturn(Array.empty[String])
+
+    val displayName = "Amaze DataFrame"
+    val check = Check(df, Some(displayName), None, Seq(Constraint(df => ConstraintSuccess("success"))))
+    val checkResult = Runner.run(List(check), List.empty).head
+
+    checkResult.header shouldBe s"Checking $displayName"
+  }
+
   it should "run with multiple reporters" in {
     val df = mock[DataFrame]
     when(df.toString).thenReturn("")
