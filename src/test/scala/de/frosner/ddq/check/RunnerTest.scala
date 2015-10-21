@@ -4,7 +4,9 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 
 import de.frosner.ddq.reporters.{Reporter, ConsoleReporter, MarkdownReporter}
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.storage.StorageLevel
 import org.mockito.Mockito._
+import org.mockito.verification.VerificationMode
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -65,6 +67,36 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     val checkResult = Runner.run(List(check), List.empty).head
 
     checkResult.header shouldBe s"Checking $displayName"
+  }
+
+  it should "persist and unpersist the data frame if a persist method is specified" in {
+    val storageLevel = StorageLevel.MEMORY_AND_DISK
+    val df = mock[DataFrame]
+    when(df.toString).thenReturn("")
+    when(df.count).thenReturn(1)
+    when(df.columns).thenReturn(Array.empty[String])
+    when(df.persist(storageLevel)).thenReturn(df.asInstanceOf[df.type])
+
+    val displayName = "Amaze DataFrame"
+    val check = Check(df, Some(displayName), Some(storageLevel), Seq(Constraint(df => ConstraintSuccess("success"))))
+    val checkResult = Runner.run(List(check), List.empty).head
+
+    verify(df).persist(storageLevel)
+    verify(df).unpersist()
+  }
+
+  it should "not persist and unpersist the data frame if a no persist method is specified" in {
+    val df = mock[DataFrame]
+    when(df.toString).thenReturn("")
+    when(df.count).thenReturn(1)
+    when(df.columns).thenReturn(Array.empty[String])
+
+    val displayName = "Amaze DataFrame"
+    val check = Check(df, Some(displayName), None, Seq(Constraint(df => ConstraintSuccess("success"))))
+    val checkResult = Runner.run(List(check), List.empty).head
+
+    verify(df, never()).persist()
+    verify(df, never()).unpersist()
   }
 
   it should "report to all reporters what it returns" in {
