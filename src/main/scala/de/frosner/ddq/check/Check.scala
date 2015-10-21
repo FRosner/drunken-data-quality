@@ -191,17 +191,9 @@ case class Check(dataFrame: DataFrame,
    * @param reporters iterable of reporters to produce output on the check result
    * @return check result
    **/
-  def run(reporters: Iterable[Reporter]): CheckResult = {
+  def run(reporters: Reporter*): CheckResult = {
+    val actualReporters = if (reporters.isEmpty) Array(ConsoleReporter(System.out)) else reporters
     Runner.run(List(this), reporters).head
-  }
-
-  /**
-   * Run check with all the previously specified constraints and report to the console reporter
-   *
-   * @return check result
-   **/
-  def run(): CheckResult = {
-    run(List(ConsoleReporter(System.out)))
   }
 
 }
