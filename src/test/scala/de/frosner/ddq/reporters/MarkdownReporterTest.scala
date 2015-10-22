@@ -25,12 +25,12 @@ class MarkdownReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val check = Check(mock[DataFrame], Some("df"), Option.empty, constraints.keys.toSeq)
 
     markdownReporter.report(CheckResult(header, prologue, constraints, check))
-    val expectedOutput = s"""# $header
+    val expectedOutput = s"""**$header**
 
 $prologue
 
-* [success]: ${success.message}
-* [failure]: ${failure.message}
+- *SUCCESS*: ${success.message}
+- *FAILURE*: ${failure.message}
 """
 
     baos.toString shouldBe expectedOutput
@@ -45,7 +45,7 @@ $prologue
     val check = Check(mock[DataFrame], Some("df"), Option.empty, Seq.empty)
 
     markdownReporter.report(CheckResult(header, prologue, Map.empty, check))
-    val expectedOutput = s"""# $header
+    val expectedOutput = s"""**$header**
 
 $prologue
 

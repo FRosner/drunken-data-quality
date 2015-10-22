@@ -17,12 +17,12 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
    * @param checkResult The [[CheckResult]] to be reported
    */
   override def report(checkResult: CheckResult): Unit = {
-    stream.println(s"# ${checkResult.header}\n")
+    stream.println(s"**${checkResult.header}**\n")
     stream.println(s"${checkResult.prologue}\n")
     if (checkResult.constraintResults.nonEmpty)
       checkResult.constraintResults.foreach {
-        case (_, ConstraintSuccess(message)) => stream.println("* [success]: " + message)
-        case (_, ConstraintFailure(message)) => stream.println("* [failure]: " + message)
+        case (_, ConstraintSuccess(message)) => stream.println("- *SUCCESS*: " + message)
+        case (_, ConstraintFailure(message)) => stream.println("- *FAILURE*: " + message)
       }
     else
       stream.println("Nothing to check!")
