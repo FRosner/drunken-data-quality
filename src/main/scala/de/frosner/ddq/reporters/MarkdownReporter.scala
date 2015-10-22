@@ -8,7 +8,8 @@ import de.frosner.ddq.core.{ConstraintSuccess, ConstraintFailure, CheckResult}
 /**
  * A class which produces a markdown report of [[CheckResult]].
  *
- * @param stream The [[java.io.PrintStream]] to put the output
+ * @param stream The [[java.io.PrintStream]] to put the output. The stream will not be closed internally and can
+ *               be reused.
  **/
 case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
 
