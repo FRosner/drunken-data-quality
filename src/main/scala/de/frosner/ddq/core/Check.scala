@@ -1,9 +1,9 @@
-package de.frosner.ddq.check
+package de.frosner.ddq.core
 
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
-import de.frosner.ddq.check
+import de.frosner.ddq.core
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.hive.HiveContext
@@ -35,7 +35,7 @@ case class Check(dataFrame: DataFrame,
    *
    * @param columnName name of the first column that is supposed to be part of the unique key
    * @param columnNames names of the other columns that are supposed to be part of the unique key
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def hasUniqueKey(columnName: String, columnNames: String*): Check = addConstraint(Check.hasUniqueKey(columnName, columnNames:_*))
 
@@ -44,7 +44,7 @@ case class Check(dataFrame: DataFrame,
    * can just write it the same way that you would put it inside a `WHERE` clause.
    *
    * @param constraint The constraint that needs to be satisfied for all columns
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def satisfies(constraint: String): Check = addConstraint(Check.satisfies(constraint))
 
@@ -53,7 +53,7 @@ case class Check(dataFrame: DataFrame,
     * [[org.apache.spark.sql.Column]] class.
     *
     * @param constraint The constraint that needs to be satisfied for all columns
-    * @return [[check.Check]] object including this constraint
+    * @return [[core.Check]] object including this constraint
    */
   def satisfies(constraint: Column): Check = addConstraint(Check.satisfies(constraint))
 
@@ -66,7 +66,7 @@ case class Check(dataFrame: DataFrame,
    * }}}
    *
    * @param conditional The constraint that needs to be satisfied for all columns
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def satisfies(conditional: (Column, Column)): Check = addConstraint(Check.satisfies(conditional))
 
@@ -74,7 +74,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name contains no null values.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isNeverNull(columnName: String) = addConstraint(Check.isNeverNull(columnName))
 
@@ -82,7 +82,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name contains only null values.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isAlwaysNull(columnName: String) = addConstraint(Check.isAlwaysNull(columnName))
 
@@ -90,7 +90,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the table has exactly the given number of rows.
    *
    * @param expected Expected number of rows.
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def hasNumRowsEqualTo(expected: Long): Check = addConstraint(Check.hasNumRowsEqualTo(expected))
 
@@ -98,7 +98,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name can be converted to an integer.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isConvertibleToInt(columnName: String) = addConstraint(Check.isConvertibleToInt(columnName))
 
@@ -106,7 +106,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name can be converted to a double.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isConvertibleToDouble(columnName: String) = addConstraint(Check.isConvertibleToDouble(columnName))
 
@@ -114,7 +114,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name can be converted to a long.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isConvertibleToLong(columnName: String) = addConstraint(Check.isConvertibleToLong(columnName))
 
@@ -123,7 +123,7 @@ case class Check(dataFrame: DataFrame,
    *
    * @param columnName Name of the column to check
    * @param dateFormat Date format to use for conversion
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isConvertibleToDate(columnName: String, dateFormat: SimpleDateFormat) = addConstraint(
     Check.isConvertibleToDate(columnName, dateFormat))
@@ -133,7 +133,7 @@ case class Check(dataFrame: DataFrame,
    *
    * @param columnName Name of the column to check
    * @param allowed Set of allowed values
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isAnyOf(columnName: String, allowed: Set[Any]) = addConstraint(Check.isAnyOf(columnName, allowed))
 
@@ -142,7 +142,7 @@ case class Check(dataFrame: DataFrame,
    *
    * @param columnName Name of the column to check
    * @param regex Regular expression that needs to match
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isMatchingRegex(columnName: String, regex: String) = addConstraint(Check.isMatchingRegex(columnName, regex))
 
@@ -154,7 +154,7 @@ case class Check(dataFrame: DataFrame,
    * @param trueValue String value to treat as true
    * @param falseValue String value to treat as false
    * @param isCaseSensitive Whether parsing should be case sensitive
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isConvertibleToBoolean(columnName: String, trueValue: String = "true", falseValue: String = "false",
                              isCaseSensitive: Boolean = false) =
@@ -166,7 +166,7 @@ case class Check(dataFrame: DataFrame,
    * @param referenceTable Table to which the foreign key is pointing
    * @param keyMap Column mapping from this table to the reference one (`"column1" -> "base_column1"`)
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
     Check.hasForeignKey(referenceTable, keyMap, keyMaps: _*)
@@ -179,7 +179,7 @@ case class Check(dataFrame: DataFrame,
    * @param referenceTable Table to join with
    * @param keyMap Column mapping from this table to the reference one (`"column1" -> "base_column1"`)
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
-   * @return [[check.Check]] object including this constraint
+   * @return [[core.Check]] object including this constraint
    */
   def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
     Check.isJoinableWith(referenceTable, keyMap, keyMaps: _*)
@@ -228,7 +228,7 @@ object Check {
    *
    * @param columnName name of the first column that is supposed to be part of the unique key
    * @param columnNames names of the other columns that are supposed to be part of the unique key
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def hasUniqueKey(columnName: String, columnNames: String*): Constraint = Constraint(
     df => {
@@ -245,7 +245,7 @@ object Check {
    * Check whether the table has exactly the given number of rows.
    *
    * @param expected Expected number of rows.
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def hasNumRowsEqualTo(expected: Long): Constraint = Constraint(
     df => {
@@ -273,7 +273,7 @@ object Check {
    * can just write it the same way that you would put it inside a `WHERE` clause.
    *
    * @param constraint The constraint that needs to be satisfied for all columns
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def satisfies(constraint: String): Constraint = Check.satisfies(
     (df: DataFrame) => df.filter(constraint),
@@ -285,7 +285,7 @@ object Check {
    * [[org.apache.spark.sql.Column]] class.
    *
    * @param constraint The constraint that needs to be satisfied for all columns
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def satisfies(constraint: Column): Constraint = Check.satisfies(
     (df: DataFrame) => df.filter(constraint),
@@ -301,7 +301,7 @@ object Check {
    * }}}
    *
    * @param conditional The constraint that needs to be satisfied for all columns
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def satisfies(conditional: (Column, Column)): Constraint = {
     val (statement, implication) = conditional
@@ -315,7 +315,7 @@ object Check {
    * Check whether the column with the given name contains only null values.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isAlwaysNull(columnName: String) = Constraint(
     df => {
@@ -331,7 +331,7 @@ object Check {
    * Check whether the column with the given name contains no null values.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isNeverNull(columnName: String) = Constraint(
     df => {
@@ -348,7 +348,7 @@ object Check {
    * Check whether the column with the given name can be converted to an integer.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isConvertibleToInt(columnName: String) = Constraint(
     df => {
@@ -365,7 +365,7 @@ object Check {
    * Check whether the column with the given name can be converted to a double.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isConvertibleToDouble(columnName: String) = Constraint(
     df => {
@@ -382,7 +382,7 @@ object Check {
    * Check whether the column with the given name can be converted to a long.
    *
    * @param columnName Name of the column to check
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isConvertibleToLong(columnName: String) = Constraint(
     df => {
@@ -399,7 +399,7 @@ object Check {
    *
    * @param columnName Name of the column to check
    * @param dateFormat Date format to use for conversion
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isConvertibleToDate(columnName: String, dateFormat: SimpleDateFormat) = Constraint(
     df => {
@@ -417,7 +417,7 @@ object Check {
    *
    * @param columnName Name of the column to check
    * @param allowed Set of allowed values
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isAnyOf(columnName: String, allowed: Set[Any]) = Constraint(
     df => {
@@ -436,7 +436,7 @@ object Check {
    *
    * @param columnName Name of the column to check
    * @param regex Regular expression that needs to match
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isMatchingRegex(columnName: String, regex: String) = Constraint(
     df => {
@@ -458,7 +458,7 @@ object Check {
    * @param trueValue String value to treat as true
    * @param falseValue String value to treat as false
    * @param isCaseSensitive Whether parsing should be case sensitive
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isConvertibleToBoolean(columnName: String, trueValue: String = "true", falseValue: String = "false",
                              isCaseSensitive: Boolean = false) = Constraint(
@@ -486,7 +486,7 @@ object Check {
    * @param referenceTable Table to which the foreign key is pointing
    * @param keyMap Column mapping from this table to the reference one (`"column1" -> "base_column1"`)
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = Constraint(
     df => {
@@ -529,7 +529,7 @@ object Check {
    * @param referenceTable Table to join with
    * @param keyMap Column mapping from this table to the reference one (`"column1" -> "base_column1"`)
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
-   * @return [[check.Constraint]] object
+   * @return [[core.Constraint]] object
    */
   def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = Constraint(
     df => {

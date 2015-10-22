@@ -1,6 +1,6 @@
 package de.frosner.ddq.reporters
 
-import de.frosner.ddq.check.CheckResult
+import de.frosner.ddq.core.CheckResult
 
 trait Reporter {
 

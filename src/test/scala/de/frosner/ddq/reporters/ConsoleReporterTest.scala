@@ -2,7 +2,7 @@ package de.frosner.ddq.reporters
 
 import java.io.{ByteArrayOutputStream, PrintStream}
 
-import de.frosner.ddq.check._
+import de.frosner.ddq.core._
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar

@@ -1,6 +1,6 @@
-package de.frosner.ddq.check
+package de.frosner.ddq.core
 
-import de.frosner.ddq.check.Constraint.ConstraintFunction
+import de.frosner.ddq.core.Constraint.ConstraintFunction
 import org.apache.spark.sql.DataFrame
 
 case class Constraint(fun: ConstraintFunction)

@@ -1,4 +1,4 @@
-package de.frosner.ddq.check
+package de.frosner.ddq.core
 
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.util._

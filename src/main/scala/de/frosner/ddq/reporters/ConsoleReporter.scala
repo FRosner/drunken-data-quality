@@ -3,7 +3,7 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.check.{ConstraintFailure, ConstraintSuccess, CheckResult}
+import de.frosner.ddq.core.{ConstraintFailure, ConstraintSuccess, CheckResult}
 
 // TODO give iterable of checks
 // TODO document that the stream will not be closed automatically

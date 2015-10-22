@@ -1,4 +1,4 @@
-package de.frosner.ddq.check
+package de.frosner.ddq.core
 
 import java.io.{ByteArrayOutputStream, PrintStream}
 

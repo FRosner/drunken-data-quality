@@ -3,7 +3,7 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.check.{ConstraintSuccess, ConstraintFailure, CheckResult}
+import de.frosner.ddq.core.{ConstraintSuccess, ConstraintFailure, CheckResult}
 
 /**
  * A class which produces a markdown report of [[CheckResult]].
