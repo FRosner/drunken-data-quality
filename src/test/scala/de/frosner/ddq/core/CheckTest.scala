@@ -1,5 +1,6 @@
 package de.frosner.ddq.core
 
+import java.io.{PrintStream, ByteArrayOutputStream}
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
@@ -9,7 +10,7 @@ import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
-import de.frosner.ddq.reporters.Reporter
+import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar {
 
@@ -132,13 +133,20 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     when(df.count).thenReturn(1)
     when(df.columns).thenReturn(Array.empty[String])
 
+    val defaultBaos = new ByteArrayOutputStream()
+    System.setOut(new PrintStream(defaultBaos))
+
+    val consoleBaos = new ByteArrayOutputStream()
+    val consoleReporter = new ConsoleReporter(new PrintStream(consoleBaos))
+
     val constraints = Seq.empty[Constraint]
     val check = Check(df, None, None, constraints)
     val result = check.run()
+    check.run(consoleReporter)
 
     result.check shouldBe check
     result.constraintResults shouldBe Map.empty
-    // now you actually have to look at the console output of the test :D
+    defaultBaos.toString shouldBe consoleBaos.toString
   }
 
   "A number of rows equality check" should "" in {
