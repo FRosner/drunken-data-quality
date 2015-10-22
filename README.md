@@ -36,6 +36,7 @@ Check(customers)
 ### Authors
 
 - [Frank Rosner](https://github.com/FRosner) (Creator)
+- [Aleksandr Sorokoumov](https://github.com/Gerrrr) (Contributor)
 - [Slavo N.](https://github.com/mfsny) (Contributor)
 
 ### License 
