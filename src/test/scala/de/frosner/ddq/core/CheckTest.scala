@@ -1,6 +1,6 @@
 package de.frosner.ddq.core
 
-import java.io.{PrintStream, ByteArrayOutputStream}
+import java.io.{FileOutputStream, FileDescriptor, PrintStream, ByteArrayOutputStream}
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
@@ -147,6 +147,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     result.check shouldBe check
     result.constraintResults shouldBe Map.empty
     defaultBaos.toString shouldBe consoleBaos.toString
+
+    // reset System.out
+    System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)))
   }
 
   "A number of rows equality check" should "" in {
