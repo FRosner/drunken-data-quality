@@ -587,11 +587,21 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val check = Check(makeIntegersDf(
       List(1, 2, 1),
       List(9, 9, 9),
+      List(9, 9, 9),
       List(3, 4, 3),
       List(7, 7, 7)
-    )).hasFunctionalDependency(Seq("column0", "column1"), Seq("column2", "column3"))
+    )).hasFunctionalDependency(Seq("column0", "column1"), Seq("column2", "column3", "column4"))
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns [column2, column3] are functionally dependent on [column0, column1]")
+    val result = ConstraintSuccess("Columns [column2, column3, column4] are functionally dependent on [column0, column1]")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "succeed if determinant and dependent is the same column" in {
+    val check = Check(makeIntegerDf(
+      List(1, 2, 3)
+    )).hasFunctionalDependency(Seq("column0"), Seq("column0"))
+    val constraint = check.constraints.head
+    val result = ConstraintSuccess("Columns [column0] are functionally dependent on [column0]")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
