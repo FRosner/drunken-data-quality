@@ -185,6 +185,10 @@ case class Check(dataFrame: DataFrame,
     Check.isJoinableWith(referenceTable, keyMap, keyMaps: _*)
   )
 
+  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = addConstraint(
+    Check.hasFunctionalDependency(determinantSet, dependentSet)
+  )
+
   /**
    * Run check with all the previously specified constraints and report to every reporter passed as an argument
    *
@@ -561,6 +565,35 @@ object Check {
         ConstraintFailure(s"Columns $columnsString cannot be used for joining (no rows match)")
     }
   )
+
+  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = Constraint(
+    df => {
+      val determinantIndexes = df.columns.zipWithIndex.filter({
+        case (name, idx) => determinantSet.contains(name)
+      }).map(_._2)
+      val dependentIndexes = df.columns.zipWithIndex.filter({
+        case (name, idx) => dependentSet.contains(name)
+      }).map(_._2)
+      val rdd = df.map(row => (
+        determinantIndexes.map(idx => row(idx)).toVector,
+        dependentIndexes.map(idx => row(idx)).toVector)).
+        aggregateByKey(Set():Set[Any])((acc, el) => acc + el, (s1, s2) => s1 | s2)
+
+      val keyCount = rdd.count()
+      val fdKeyCount = rdd.filter({
+          case (k, v) => v.size == 1
+        }).count()
+
+      val determinantString = s"[${determinantSet.mkString(", ")}]"
+      val dependentString = s"[${dependentSet.mkString(", ")}]"
+
+      if (fdKeyCount == keyCount)
+        ConstraintSuccess(s"Columns $dependentString are functionally dependent on $determinantString")
+      else
+        ConstraintFailure(s"Columns $dependentString are not functionally dependent on $determinantString")
+    }
+  )
+
 
   /**
    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
