@@ -185,6 +185,12 @@ case class Check(dataFrame: DataFrame,
     Check.isJoinableWith(referenceTable, keyMap, keyMaps: _*)
   )
 
+  /**
+   * Check whether columns in the dependent set have functional dependency on determinant set.
+   * @param determinantSet sequence of column names which form a determinant set
+   * @param dependentSet sequence of column names which form a dependent set
+   * @return [[core.Check]] object including this constraint
+   */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = addConstraint(
     Check.hasFunctionalDependency(determinantSet, dependentSet)
   )
@@ -566,6 +572,12 @@ object Check {
     }
   )
 
+  /**
+   * Check whether columns in the dependent set have functional dependency on determinant set.
+   * @param determinantSet sequence of column names which form a determinant set
+   * @param dependentSet sequence of column names which form a dependent set
+   * @return [[core.Constraint]] object
+   */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = Constraint(
     df => {
       val determinantIndexes = df.columns.zipWithIndex.filter({
