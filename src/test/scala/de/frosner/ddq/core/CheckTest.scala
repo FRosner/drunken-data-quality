@@ -628,10 +628,11 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if column values in determinant set don't always correspond to column values in dependent set" in {
     val check = Check(makeIntegersDf(
       List(1, 2, 2),
+      List(7, 7, 7),
       List(4, 5, 6)
-    )).hasFunctionalDependency(Seq("column0"), Seq("column1"))
+    )).hasFunctionalDependency(Seq("column0"), Seq("column1", "column2"))
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns [column1] are not functionally dependent on [column0]")
+    val result = ConstraintFailure("Columns [column1, column2] are not functionally dependent on [column0]")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
