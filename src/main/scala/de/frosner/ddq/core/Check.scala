@@ -580,21 +580,21 @@ object Check {
    */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = Constraint(
     df => {
-      val determinantIndexes = df.columns.zipWithIndex.filter({
-        case (name, idx) => determinantSet.contains(name)
-      }).map(_._2)
-      val dependentIndexes = df.columns.zipWithIndex.filter({
-        case (name, idx) => dependentSet.contains(name)
-      }).map(_._2)
+      val determinantIndexes = df.columns.zipWithIndex.filter {
+        case (name, index) => determinantSet.contains(name)
+      }.map { case (name, index) => index }
+      val dependentIndexes = df.columns.zipWithIndex.filter {
+        case (name, index) => dependentSet.contains(name)
+      }.map { case (name, index) => index }
       val rdd = df.map(row => (
-        determinantIndexes.map(idx => row(idx)).toVector,
-        dependentIndexes.map(idx => row(idx)).toVector)).
-        aggregateByKey(Set():Set[Any])((acc, el) => acc + el, (s1, s2) => s1 | s2)
+        determinantIndexes.map(index => row(index)).toVector,
+        dependentIndexes.map(index => row(index)).toVector)).
+        aggregateByKey(Set(): Set[Any])((acc, el) => acc + el, (s1, s2) => s1 | s2)
 
       val keyCount = rdd.count()
-      val fdKeyCount = rdd.filter({
+      val fdKeyCount = rdd.filter {
           case (k, v) => v.size == 1
-        }).count()
+      }.count()
 
       val determinantString = s"[${determinantSet.mkString(", ")}]"
       val dependentString = s"[${dependentSet.mkString(", ")}]"
