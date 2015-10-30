@@ -60,7 +60,7 @@ check.run(List(consoleReporter, markdownReporter))) // report to console and mar
 ```
 
 ### Runner
-Runner is used to generate the reports for multiple checks with the same reporters.
+You can use a runner to generate the reports for multiple checks with the same reporters.
 
 ```scala
 val check1 = Check(customers)
