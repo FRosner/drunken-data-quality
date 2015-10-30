@@ -20,64 +20,85 @@ If you are not using any of the dependency management systems supported by JitPa
 
 ### Getting Started
 
+Create two example tables to play with (or use your existing ones).
+
+```scala
+import org.apache.spark.sql._
+val sqlContext = new SQLContext(sc)
+import sqlContext.implicits._
+
+case class Customer(id: Int, name: String)
+case class Contract(id: Int, customerId: Int, duration: Int)
+
+val customers = sc.parallelize(List(
+  Customer(0, "Frank"),
+  Customer(1, "Alex"),
+  Customer(2, "Slavo")
+)).toDF
+
+val contracts = sc.parallelize(List(
+  Contract(0, 0, 5),
+  Contract(1, 0, 10),
+  Contract(0, 1, 6)
+)).toDF
+```
+
+Run some checks and see the results on the console.
+
 ```scala
 import de.frosner.ddq.core._
 
-val customers = sqlContext.table("customers")
-val contracts = sqlContext.table("contracts")
 Check(customers)
-  .hasNumRowsEqualTo(100000)
-  .isNeverNull("customer_id")
-  .hasUniqueKey("customer_id")
-  .satisfies("customer_age > 0")
-  .isConvertibleToDate("customer_birthday", new SimpleDateFormat("yyyy-MM-dd"))
-  .hasForeignKey(contracts, "customer_id" -> "contract_owner_id")
+  .hasNumRowsEqualTo(3)
+  .hasUniqueKey("id")
+  .run()
+
+Check(contracts)
+  .hasNumRowsEqualTo(3)
+  .hasUniqueKey("id", "customerId")
+  .satisfies("duration > 0")
+  .hasForeignKey(customers, "customerId" -> "id")
   .run()
 ```
 
-### Reporters
-By default the check result will be printed to stdout using ANSI escape codes to highlight the output. To have a report in another format, you can specify the reporter.
+### Custom Reporters
+
+By default the check result will be printed to stdout using ANSI escape codes to highlight the output. To have a report in another format, you can specify one a more custom reporters.
+
 ```scala
-import de.frosner.ddq.core._
-import de.frosner.ddq.reporters.{MarkdownReporter, ConsoleReporter}
+import de.frosner.ddq.reporters.MarkdownReporter
 
-val customers = sqlContext.table("customers")
-val contracts = sqlContext.table("contracts")
-
-val check = Check(customers)
-  .hasNumRowsEqualTo(100000)
-  .isNeverNull("customer_id")
-  .hasUniqueKey("customer_id")
-  .satisfies("customer_age > 0")
-  .isConvertibleToDate("customer_birthday", new SimpleDateFormat("yyyy-MM-dd"))
-  .hasForeignKey(contracts, "customer_id" -> "contract_owner_id")
-
-check.run(new MarkdownReporter(System.out)) // will printed to stdout in Markdown format
-// it also works with multiple Reporters
-val consoleReporter = new ConsoleReporter(System.out)
-val markdownReporter = new MarkdownReporter(new PrintStream(new File ("report.md"))
-check.run(List(consoleReporter, markdownReporter))) // report to console and markdown file
+Check(customers)
+  .hasNumRowsEqualTo(3)
+  .hasUniqueKey("id")
+  .run(MarkdownReporter(System.err))
 ```
 
-### Runner
-You can use a runner to generate the reports for multiple checks with the same reporters.
+### Running multiple checks
+
+You can use a runner to generate reports for multiple checks at once. It will execute all the checks and report the results to the specified reporters.
 
 ```scala
+import de.frosner.ddq.reporters.ConsoleReporter
+import java.io.{PrintStream, File}
+
 val check1 = Check(customers)
-  .hasNumRowsEqualTo(100000)
-  .isNeverNull("customer_id")
-  .hasUniqueKey("customer_id")
+  .hasNumRowsEqualTo(3)
+  .hasUniqueKey("id")
 
 val check2 = Check(contracts)
-  .hasNumRowsEqualTo(100000)
-  .isNeverNull("contract_id")
-  .hasUniqueKey("contract_id")
+  .hasNumRowsEqualTo(3)
+  .hasUniqueKey("id", "customerId")
+  .satisfies("duration > 0")
+  .hasForeignKey(customers, "customerId" -> "id")
 
 val consoleReporter = new ConsoleReporter(System.out)
-val markdownReporter = new MarkdownReporter(new PrintStream(new File ("report.md"))
+val markdownMd = new PrintStream(new File("report.md"))
+val markdownReporter = new MarkdownReporter(markdownMd)
 
-// will generate console and markdown report for both checks
 Runner.run(Seq(check1, check2), Seq(consoleReporter, markdownReporter))
+
+markdownMd.close()
 ```
 
 ## Authors
