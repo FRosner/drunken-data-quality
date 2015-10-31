@@ -27,5 +27,6 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
       }
     else
       stream.println("Nothing to check!")
+    stream.println("")
   }
 }

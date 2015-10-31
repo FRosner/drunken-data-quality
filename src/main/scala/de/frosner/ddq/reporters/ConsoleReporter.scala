@@ -27,6 +27,7 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
       }
     else
       stream.println(Console.BLUE + "Nothing to check!" + Console.RESET)
+    stream.println("")
   }
 
 }

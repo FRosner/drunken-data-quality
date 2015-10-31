@@ -31,6 +31,7 @@ $prologue
 
 - *SUCCESS*: ${success.message}
 - *FAILURE*: ${failure.message}
+
 """
 
     baos.toString shouldBe expectedOutput
@@ -50,6 +51,7 @@ $prologue
 $prologue
 
 Nothing to check!
+
 """
 
     baos.toString shouldBe expectedOutput

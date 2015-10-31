@@ -29,6 +29,7 @@ class ConsoleReporterTest extends FlatSpec with Matchers with MockitoSugar {
 ${Console.BLUE}$prologue${Console.RESET}
 ${Console.GREEN}- ${success.message}${Console.RESET}
 ${Console.RED}- ${failure.message}${Console.RESET}
+
 """
 
     baos.toString shouldBe expectedOutput
@@ -46,6 +47,7 @@ ${Console.RED}- ${failure.message}${Console.RESET}
     val expectedOutput = s"""${Console.BLUE}$header${Console.RESET}
 ${Console.BLUE}$prologue${Console.RESET}
 ${Console.BLUE}Nothing to check!${Console.RESET}
+
 """
 
     baos.toString shouldBe expectedOutput
