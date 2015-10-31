@@ -204,7 +204,7 @@ case class Check(dataFrame: DataFrame,
    **/
   def run(reporters: Reporter*): CheckResult = {
     val actualReporters = if (reporters.isEmpty) List(ConsoleReporter(System.out)) else reporters
-    Runner.run(List(this), actualReporters).head
+    Runner.run(List(this), actualReporters)(this)
   }
 
 }

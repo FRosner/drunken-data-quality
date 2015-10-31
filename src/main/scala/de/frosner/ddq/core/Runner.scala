@@ -15,7 +15,7 @@ object Runner {
    * @param reporters An iterable of reporters
    * @return Result for every check passed as an argument
    */
-  def run(checks: Iterable[Check], reporters: Iterable[Reporter]): Iterable[CheckResult] = {
+  def run(checks: Iterable[Check], reporters: Iterable[Reporter]): Map[Check, CheckResult] = {
     checks.map(check => {
       val potentiallyPersistedDf = check.cacheMethod.map(check.dataFrame.persist(_)).getOrElse(check.dataFrame)
 
@@ -29,8 +29,8 @@ object Runner {
       if (check.cacheMethod.isDefined) potentiallyPersistedDf.unpersist()
 
       reporters.foreach(_.report(checkResult))
-      checkResult
-    })
+      (check, checkResult)
+    }).toMap
   }
 
 }
