@@ -550,10 +550,13 @@ object Check {
       }:_*)
 
       // check if join yields some values
-      val join = renamedDf.distinct.join(renamedRef, renamedColumns.map{
+      val renamedDfDistinct = renamedDf.distinct
+      val distinctBefore = renamedDfDistinct.count
+      val join = renamedDfDistinct.join(renamedRef, renamedColumns.map{
         case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
       }.reduce(_ && _))
-      val matchingRows = join.count
+      val matchingRows = join.distinct.count
+      val mergeRate = matchingRows.toFloat/distinctBefore
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
         ConstraintSuccess(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
