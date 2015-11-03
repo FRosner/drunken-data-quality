@@ -187,10 +187,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if there are rows that do not satisfy the given condition" in {
+  it should "fail if there is a row that does not satisfy the given condition" in {
     val check = Check(makeIntegerDf(List(1, 2, 3))).satisfies(new Column("column") > 1)
     val constraint = check.constraints.head
     val result = ConstraintFailure("One row did not satisfy constraint (column > 1)")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if there are rows that do not satisfy the given condition" in {
+    val check = Check(makeIntegerDf(List(-1, 0, 1, 2, 3))).satisfies(new Column("column") > 1)
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("3 rows did not satisfy constraint (column > 1)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -318,10 +325,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if at least one element cannot be converted to Int" in {
+  it should "fail if one element cannot be converted to Int" in {
     val check = Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToInt("column")
     val constraint = check.constraints.head
     val result = ConstraintFailure("Column column contains one row that cannot be converted to Int")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if multiple elements cannot be converted to Int" in {
+    val check = Check(makeNullableStringDf(List("1", "hallo", "3", "frank"))).isConvertibleToInt("column")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains 2 rows that cannot be converted to Int")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -360,10 +374,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if at least one element cannot be converted to Long" in {
+  it should "fail if one element cannot be converted to Long" in {
     val check = Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToLong("column")
     val constraint = check.constraints.head
     val result = ConstraintFailure("Column column contains one row that cannot be converted to Long")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if several elements cannot be converted to Long" in {
+    val check = Check(makeNullableStringDf(List("1", "hallo", "3", "frank"))).isConvertibleToLong("column")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains 2 rows that cannot be converted to Long")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -525,7 +546,14 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if there are values not satisfying the regex" in {
+  it should "fail if there is a single row not satisfying the regex" in {
+    val check = Check(makeNullableStringDf(List("Hello A", "Hello A", "Hello B"))).isMatchingRegex("column", "^Hello A$")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains one row that does not match ^Hello A$")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if there are multiple rows not satisfying the regex" in {
     val check = Check(makeNullableStringDf(List("Hello A", "Hello B", "Hello C"))).isMatchingRegex("column", "^Hello A$")
     val constraint = check.constraints.head
     val result = ConstraintFailure("Column column contains 2 rows that do not match ^Hello A$")

@@ -458,7 +458,7 @@ object Check {
       if (doesNotMatchCount == 0)
         ConstraintSuccess(s"Column $columnName matches $regex")
       else
-        ConstraintFailure(s"Column $columnName contains ${if(doesNotMatchCount == 1) "one row" else s"$doesNotMatchCount rows"} that do not match $regex")
+        ConstraintFailure(s"Column $columnName contains ${if(doesNotMatchCount == 1) "one row that does not" else s"$doesNotMatchCount rows that do not"} match $regex")
     }
   )
 
