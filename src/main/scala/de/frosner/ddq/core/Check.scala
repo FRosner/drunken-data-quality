@@ -273,10 +273,11 @@ object Check {
     df => {
       val succeedingRows = succeedingRowsFunction(df).count
       val count = df.count
+      val failingRows = count - succeedingRows
       if (succeedingRows == count)
         ConstraintSuccess(s"Constraint $constraintString is satisfied")
       else
-        ConstraintFailure(s"${if((count - succeedingRows) == 1) "One row" else s"${count - succeedingRows} rows"} did not satisfy constraint $constraintString")
+        ConstraintFailure(s"""${if(failingRows == 1) "One row" else s"$failingRows rows"} did not satisfy constraint $constraintString""")
     }
   )
 
@@ -529,7 +530,7 @@ object Check {
         if (notMatchingRefs == 0)
           ConstraintSuccess(s"${if(columns.length == 1) s"Column $columnsString defines a foreign key" else s"Columns $columnsString define a foreign key"}")
         else
-          ConstraintFailure(s"${if(columns.length == 1) s"Column $columnsString does not define a foreign key" else s"Columns $columnsString do not define a foreign key"} (${ if(notMatchingRefs == 1) "One record does not match" else s"$notMatchingRefs records do not match"})")
+          ConstraintFailure(s"${if(columns.length == 1) s"Column $columnsString does not define a foreign key" else s"Columns $columnsString do not define a foreign key"} (${ if(notMatchingRefs == 1) "one record does not match" else s"$notMatchingRefs records do not match"})")
       }
     }
   )
@@ -568,7 +569,7 @@ object Check {
       val matchingRows = join.count
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (${ if(matchingRows == 1) "One distinct row" else s"$matchingRows distinct rows"} match)")
+        ConstraintSuccess(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (${ if(matchingRows == 1) "one distinct row" else s"$matchingRows distinct rows"} match)")
       else
         ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
     }
