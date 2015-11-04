@@ -559,7 +559,7 @@ object Check {
       val mergeRate = matchingRows.toFloat/distinctBefore
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
+        ConstraintSuccess(f"""Columns $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, merge rate: $mergeRate%.2f)""")
       else
         ConstraintFailure(s"Columns $columnsString cannot be used for joining (no rows match)")
     }
