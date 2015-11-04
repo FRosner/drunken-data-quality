@@ -583,4 +583,86 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
+  "A functional dependency check" should "succeed if the column values in the determinant set always correspond to the column values in the dependent set" in {
+    val check = Check(makeIntegersDf(
+      List(1, 2, 1, 1),
+      List(9, 9, 9, 2),
+      List(9, 9, 9, 3),
+      List(3, 4, 3, 4),
+      List(7, 7, 7, 5)
+    )).hasFunctionalDependency(Seq("column1", "column2"), Seq("column3"))
+    val constraint = check.constraints.head
+    val result = ConstraintSuccess("Columns [column3] are functionally dependent on [column1, column2]")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "succeed also for dependencies where the determinant and dependent sets are not distinct" in {
+    val check = Check(makeIntegersDf(
+      List(1, 2, 3, 1),
+      List(9, 9, 9, 2),
+      List(9, 9, 9, 3),
+      List(3, 4, 3, 4),
+      List(7, 7, 7, 5)
+    )).hasFunctionalDependency(Seq("column1", "column2"), Seq("column2", "column3"))
+    val constraint = check.constraints.head
+    val result = ConstraintSuccess("Columns [column2, column3] are functionally dependent on [column1, column2]")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "succeed if the determinant and dependent sets are equal" in {
+    val check = Check(makeIntegerDf(
+      List(1, 2, 3)
+    )).hasFunctionalDependency(Seq("column"), Seq("column"))
+    val constraint = check.constraints.head
+    val result = ConstraintSuccess("Columns [column] are functionally dependent on [column]")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if the column values in the determinant set don't always correspond to the column values in the dependent set" in {
+    val check = Check(makeIntegersDf(
+      List(1, 2, 1, 1),
+      List(9, 9, 9, 1),
+      List(9, 9, 8, 1),
+      List(3, 4, 3, 1),
+      List(7, 7, 7, 1),
+      List(7, 7, 6, 1)
+    )).hasFunctionalDependency(Seq("column1", "column2"), Seq("column3"))
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Columns [column3] are not functionally dependent on [column1, column2] " +
+      "(2 violating determinant values)")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail also for dependencies where the determinant and dependent sets are not distinct" in {
+    val check = Check(makeIntegersDf(
+      List(1, 2, 1, 1),
+      List(9, 9, 9, 1),
+      List(9, 9, 8, 1),
+      List(3, 4, 3, 1),
+      List(7, 7, 7, 1)
+    )).hasFunctionalDependency(Seq("column1", "column2"), Seq("column2", "column3"))
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Columns [column2, column3] are not functionally dependent on [column1, column2] " +
+      "(1 violating determinant values)")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "require the determinant set to be non-empty" in {
+    intercept[IllegalArgumentException] {
+      Check(makeIntegersDf(
+        List(1, 2, 3),
+        List(4, 5, 6)
+      )).hasFunctionalDependency(Seq.empty, Seq("column0"))
+    }
+  }
+
+  it should "require the dependent set to be non-empty" in {
+    intercept[IllegalArgumentException] {
+      Check(makeIntegersDf(
+        List(1, 2, 3),
+        List(4, 5, 6)
+      )).hasFunctionalDependency(Seq("column0"), Seq.empty)
+    }
+  }
+
 }

@@ -186,6 +186,17 @@ case class Check(dataFrame: DataFrame,
   )
 
   /**
+   * Check whether the columns in the dependent set have a functional dependency on determinant set.
+   *
+   * @param determinantSet sequence of column names which form a determinant set
+   * @param dependentSet sequence of column names which form a dependent set
+   * @return [[core.Check]] object including this constraint
+   */
+  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = addConstraint(
+    Check.hasFunctionalDependency(determinantSet, dependentSet)
+  )
+
+  /**
    * Run check with all the previously specified constraints and report to every reporter passed as an argument
    *
    * @param reporters iterable of reporters to produce output on the check result
@@ -561,6 +572,38 @@ object Check {
         ConstraintFailure(s"Columns $columnsString cannot be used for joining (no rows match)")
     }
   )
+
+  /**
+   * Check whether the columns in the dependent set have a functional dependency on determinant set.
+   *
+   * @param determinantSet sequence of column names which form a determinant set
+   * @param dependentSet sequence of column names which form a dependent set
+   * @return [[core.Constraint]] object
+   */
+  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = {
+    require(determinantSet.nonEmpty, "determinantSet must not be empty")
+    require(dependentSet.nonEmpty, "dependentSet must not be empty")
+    Constraint(
+      df => {
+        val determinantColumns = determinantSet.map(columnName => new Column(columnName))
+        val dependentColumns = dependentSet.map(columnName => new Column(columnName))
+        val relevantSelection = df.select((determinantColumns ++ dependentColumns): _*)
+
+        val determinantValueCounts = relevantSelection.distinct.groupBy(determinantColumns: _*).count
+        val violatingDeterminantValuesCount = determinantValueCounts.filter(new Column("count") !== 1).count
+
+        val determinantString = s"[${determinantSet.mkString(", ")}]"
+        val dependentString = s"[${dependentSet.mkString(", ")}]"
+
+        if (violatingDeterminantValuesCount == 0)
+          ConstraintSuccess(s"Columns $dependentString are functionally dependent on $determinantString")
+        else
+          ConstraintFailure(s"Columns $dependentString are not functionally dependent on " +
+            s"$determinantString ($violatingDeterminantValuesCount violating determinant values)")
+      }
+    )
+  }
+
 
   /**
    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
