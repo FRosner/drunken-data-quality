@@ -471,7 +471,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2, 5))
     val check = Check(base).isJoinableWith(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Column column->column can be used for joining (2 distinct rows match)")
+    val result = ConstraintSuccess("Column column->column can be used for joining (number of distinct rows in base table: 3, number of distinct rows after joining: 2, merge rate: 0.67)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -480,7 +480,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 5, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (one distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (number of distinct rows in base table: 2, number of distinct rows after joining: 1, merge rate: 0.50)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -489,7 +489,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 3, 100), List(1, 500, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (one distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (number of distinct rows in base table: 2, number of distinct rows after joining: 1, merge rate: 0.50)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 

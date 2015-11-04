@@ -26,7 +26,7 @@ case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = Check.DEFAULT_CACHE_METHOD,
                  constraints: Seq[Constraint] = Seq.empty) {
-  
+
   def addConstraint(c: Constraint): Check =
     Check(dataFrame, displayName, cacheMethod, constraints ++ List(c))
 
@@ -572,7 +572,7 @@ object Check {
       val mergeRate = matchingRows.toFloat/distinctBefore
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (${ if(matchingRows == 1) "one distinct row" else s"$matchingRows distinct rows"} match)")
+        ConstraintSuccess(f"""${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, merge rate: $mergeRate%.2f)""")
       else
         ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
     }
