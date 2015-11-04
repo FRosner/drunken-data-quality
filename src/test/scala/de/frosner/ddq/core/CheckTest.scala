@@ -444,7 +444,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2))
     val check = Check(base).hasForeignKey(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column->column does not define a foreign key (One record does not match)")
+    val result = ConstraintFailure("Column column->column does not define a foreign key (one record does not match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -453,7 +453,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 3, 100))
     val check = Check(base).hasForeignKey(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns column1->column1, column2->column2 do not define a foreign key (One record does not match)")
+    val result = ConstraintFailure("Columns column1->column1, column2->column2 do not define a foreign key (one record does not match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -480,7 +480,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 5, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (One distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (one distinct row match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -489,7 +489,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 3, 100), List(1, 500, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (One distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (one distinct row match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
