@@ -101,6 +101,40 @@ Runner.run(Seq(check1, check2), Seq(consoleReporter, markdownReporter))
 markdownMd.close()
 ```
 
+### Unit Tests
+
+You can also use DDQ to write automated quality tests for your data. After running a check or a series of checks, you can inspect the results programmatically.
+
+```scala
+def allConstraintsSatisfied(checkResult: CheckResult): Boolean =
+  checkResult.constraintResults.map {
+    case (constraint, ConstraintSuccess(_)) => true
+    case (constraint, ConstraintFailure(_)) => false
+  }.reduce(_ && _)
+
+val results = Runner.run(Seq(check1, check2), Seq.empty)
+assert(allConstraintsSatisfied(results(check1)))
+assert(allConstraintsSatisfied(results(check2)))
+```
+
+If you want to fail the data load if the number of rows and the unique key constraints are not satisfied, but the duration constraint can be violated, you can write individual assertions for each constraint result.
+
+```scala
+val numRowsConstraint = Check.hasNumRowsEqualTo(3)
+val uniqueKeyConstraint = Check.hasUniqueKey("id", "customerId")
+val durationConstraint = Check.satisfies("duration > 0")
+
+val check = Check(contracts)
+  .addConstraint(numRowsConstraint)
+  .addConstraint(uniqueKeyConstraint)
+  .addConstraint(durationConstraint)
+
+val results = Runner.run(Seq(check), Seq.empty)
+val constraintResults = results(check).constraintResults
+assert(constraintResults(numRowsConstraint).isInstanceOf[ConstraintSuccess])
+assert(constraintResults(uniqueKeyConstraint).isInstanceOf[ConstraintSuccess])
+```
+
 ## Authors
 
 - [Frank Rosner](https://github.com/FRosner) (Creator)
