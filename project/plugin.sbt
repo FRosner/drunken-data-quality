@@ -5,5 +5,3 @@ resolvers += "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releas
 addSbtPlugin("org.spark-packages" % "sbt-spark-package" % "0.2.3")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.3")
-
-addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.2.1")
