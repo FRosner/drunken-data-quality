@@ -4,4 +4,8 @@ scala:
    - 2.11.6
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.ivy2
 after_success: "sbt coveralls"
