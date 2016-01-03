@@ -8,4 +8,6 @@ cache:
   directories:
   - $HOME/.m2
   - $HOME/.ivy2
-after_success: "sbt coveralls"
+after_success:
+  - sbt coverageReport
+  - sbt codacyCoverage
