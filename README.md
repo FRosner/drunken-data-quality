@@ -1,4 +1,4 @@
-# Drunken Data Quality (DDQ) [![Build Status](https://travis-ci.org/FRosner/drunken-data-quality.svg?branch=master)](https://travis-ci.org/FRosner/drunken-data-quality) [![Codacy Badge](https://api.codacy.com/project/badge/grade/b738700bad0a4b6da14e06c0dd508a21)](https://www.codacy.com/app/frank_7/drunken-data-quality) [![Coverage Status](https://coveralls.io/repos/FRosner/drunken-data-quality/badge.svg?branch=master&service=github)](https://coveralls.io/github/FRosner/drunken-data-quality?branch=master)
+# Drunken Data Quality (DDQ) [![Build Status](https://travis-ci.org/FRosner/drunken-data-quality.svg?branch=master)](https://travis-ci.org/FRosner/drunken-data-quality) [![Codacy Badge](https://api.codacy.com/project/badge/grade/b738700bad0a4b6da14e06c0dd508a21)](https://www.codacy.com/app/frank_7/drunken-data-quality) [![codecov.io](https://codecov.io/github/FRosner/drunken-data-quality/coverage.svg?branch=master)](https://codecov.io/github/FRosner/drunken-data-quality?branch=master)
 
 ## Description
 
