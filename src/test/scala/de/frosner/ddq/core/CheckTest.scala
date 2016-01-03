@@ -176,7 +176,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if there are rows that do not satisfy the given condition" in {
     val check = Check(makeIntegerDf(List(1, 2, 3))).satisfies("column > 1")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("1 rows did not satisfy constraint column > 1")
+    val result = ConstraintFailure("One row did not satisfy constraint column > 1")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -187,10 +187,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if there are rows that do not satisfy the given condition" in {
+  it should "fail if there is a row that does not satisfy the given condition" in {
     val check = Check(makeIntegerDf(List(1, 2, 3))).satisfies(new Column("column") > 1)
     val constraint = check.constraints.head
-    val result = ConstraintFailure("1 rows did not satisfy constraint (column > 1)")
+    val result = ConstraintFailure("One row did not satisfy constraint (column > 1)")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if there are rows that do not satisfy the given condition" in {
+    val check = Check(makeIntegerDf(List(-1, 0, 1, 2, 3))).satisfies(new Column("column") > 1)
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("3 rows did not satisfy constraint (column > 1)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -223,7 +230,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
       List(3, 0)
     )).satisfies((new Column("column1") === 1) -> (new Column("column2") === 0))
     val constraint = check.constraints.head
-    val result = ConstraintFailure("1 rows did not satisfy constraint (column1 = 1) -> (column2 = 0)")
+    val result = ConstraintFailure("One row did not satisfy constraint (column1 = 1) -> (column2 = 0)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -235,7 +242,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     )
     val check = Check(df).hasUniqueKey("column1")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1 are a key")
+    val result = ConstraintSuccess("Column column1 is a key")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -259,7 +266,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     )
     val check = Check(df).hasUniqueKey("column1")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns column1 are not a key")
+    val result = ConstraintFailure("Column column1 is not a key")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -286,7 +293,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if the column is not always null" in {
     val check = Check(makeNullableStringDf(List("a", null, null))).isAlwaysNull("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column has 1 non-null rows although it should be null")
+    val result = ConstraintFailure("Column column has one non-null row although it should be null")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -300,7 +307,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if the column contains null values" in {
     val check = Check(makeNullableStringDf(List("a", "b", null))).isNeverNull("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column has 1 null rows although it should not be null")
+    val result = ConstraintFailure("Column column has one null row although it should not be null")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -318,10 +325,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if at least one element cannot be converted to Int" in {
+  it should "fail if one element cannot be converted to Int" in {
     val check = Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToInt("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Int")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Int")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if multiple elements cannot be converted to Int" in {
+    val check = Check(makeNullableStringDf(List("1", "hallo", "3", "frank"))).isConvertibleToInt("column")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains 2 rows that cannot be converted to Int")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -342,7 +356,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if at least one element cannot be converted to Double" in {
     val check = Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToDouble("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Double")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Double")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -360,10 +374,17 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if at least one element cannot be converted to Long" in {
+  it should "fail if one element cannot be converted to Long" in {
     val check = Check(makeNullableStringDf(List("1", "hallo", "3"))).isConvertibleToLong("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Long")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Long")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if several elements cannot be converted to Long" in {
+    val check = Check(makeNullableStringDf(List("1", "hallo", "3", "frank"))).isConvertibleToLong("column")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains 2 rows that cannot be converted to Long")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -387,7 +408,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val check =  Check(makeNullableStringDf(List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
       isConvertibleToDate("column", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Date")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Date")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -396,7 +417,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2, 3))
     val check = Check(base).hasForeignKey(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column->column define a foreign key")
+    val result = ConstraintSuccess("Column column->column defines a foreign key")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -423,7 +444,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2))
     val check = Check(base).hasForeignKey(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns column->column do not define a foreign key (1 records do not match)")
+    val result = ConstraintFailure("Column column->column does not define a foreign key (one record does not match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -432,7 +453,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 3, 100))
     val check = Check(base).hasForeignKey(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns column1->column1, column2->column2 do not define a foreign key (1 records do not match)")
+    val result = ConstraintFailure("Columns column1->column1, column2->column2 do not define a foreign key (one record does not match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -450,7 +471,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2, 5))
     val check = Check(base).isJoinableWith(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column->column can be used for joining (2 distinct rows match)")
+    val result = ConstraintSuccess("Column column->column can be used for joining (2 distinct rows match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -459,7 +480,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 5, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (1 distinct rows match)")
+    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (one distinct row match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -468,7 +489,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 3, 100), List(1, 500, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (1 distinct rows match)")
+    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (one distinct row match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -486,7 +507,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2, 3))
     val check = Check(base).isJoinableWith(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Columns column->column cannot be used for joining (no rows match)")
+    val result = ConstraintFailure("Column column->column cannot be used for joining (no rows match)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -525,7 +546,14 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if there are values not satisfying the regex" in {
+  it should "fail if there is a single row not satisfying the regex" in {
+    val check = Check(makeNullableStringDf(List("Hello A", "Hello A", "Hello B"))).isMatchingRegex("column", "^Hello A$")
+    val constraint = check.constraints.head
+    val result = ConstraintFailure("Column column contains one row that does not match ^Hello A$")
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if there are multiple rows not satisfying the regex" in {
     val check = Check(makeNullableStringDf(List("Hello A", "Hello B", "Hello C"))).isMatchingRegex("column", "^Hello A$")
     val constraint = check.constraints.head
     val result = ConstraintFailure("Column column contains 2 rows that do not match ^Hello A$")
@@ -542,7 +570,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if column values are not true and false only" in {
     val check = Check(makeNullableStringDf(List("true", "false", "error"))).isConvertibleToBoolean("column")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Boolean")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Boolean")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -572,7 +600,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   it should "fail if column values are not 1 and 0 only" in {
     val check = Check(makeNullableStringDf(List("1", "0", "2"))).isConvertibleToBoolean("column", "1", "0")
     val constraint = check.constraints.head
-    val result = ConstraintFailure("Column column contains 1 rows that cannot be converted to Boolean")
+    val result = ConstraintFailure("Column column contains one row that cannot be converted to Boolean")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 

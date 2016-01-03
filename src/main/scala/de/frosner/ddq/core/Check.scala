@@ -243,12 +243,13 @@ object Check {
    */
   def hasUniqueKey(columnName: String, columnNames: String*): Constraint = Constraint(
     df => {
-      val columnsString = (columnName :: columnNames.toList).mkString(",")
+      val columnsList = columnName :: columnNames.toList
+      val columnsString = columnsList.mkString(",")
       val nonUniqueRows = df.groupBy(columnName, columnNames:_*).count.filter(new Column("count") > 1).count
       if (nonUniqueRows == 0)
-        ConstraintSuccess(s"""Columns $columnsString are a key""")
+        ConstraintSuccess(s"""${if(columnsList.length == 1) s"Column $columnsString is a key" else s"Columns $columnsString are a key"}""")
       else
-        ConstraintFailure(s"""Columns $columnsString are not a key""")
+        ConstraintFailure(s"""${if(columnsList.length == 1) s"Column $columnsString is not a key" else s"Columns $columnsString are not a key"}""")
     }
   )
 
@@ -272,10 +273,11 @@ object Check {
     df => {
       val succeedingRows = succeedingRowsFunction(df).count
       val count = df.count
+      val failingRows = count - succeedingRows
       if (succeedingRows == count)
         ConstraintSuccess(s"Constraint $constraintString is satisfied")
       else
-        ConstraintFailure(s"${count - succeedingRows} rows did not satisfy constraint $constraintString")
+        ConstraintFailure(s"""${if(failingRows == 1) "One row" else s"$failingRows rows"} did not satisfy constraint $constraintString""")
     }
   )
 
@@ -334,7 +336,7 @@ object Check {
       if (notNullCount == 0)
         ConstraintSuccess(s"Column $columnName is null")
       else
-        ConstraintFailure(s"Column $columnName has $notNullCount non-null rows although it should be null")
+        ConstraintFailure(s"Column $columnName has ${if(notNullCount == 1) "one non-null row" else s"$notNullCount non-null rows"} although it should be null")
     }
   )
 
@@ -350,7 +352,7 @@ object Check {
       if (nullCount == 0)
         ConstraintSuccess(s"Column $columnName is not null")
       else
-        ConstraintFailure(s"Column $columnName has $nullCount null rows although it should not be null")
+        ConstraintFailure(s"Column $columnName has ${if(nullCount == 1) "one null row" else s"$nullCount null rows"} although it should not be null")
     }
   )
 
@@ -367,7 +369,7 @@ object Check {
       if (cannotBeIntCount == 0)
         ConstraintSuccess(s"Column $columnName can be converted to Int")
       else
-        ConstraintFailure(s"Column $columnName contains $cannotBeIntCount rows that cannot be converted to Int")
+        ConstraintFailure(s"Column $columnName contains ${if(cannotBeIntCount == 1) "one row" else s"$cannotBeIntCount rows"} that cannot be converted to Int")
     }
   )
 
@@ -384,7 +386,7 @@ object Check {
       if (cannotBeDoubleCount == 0)
         ConstraintSuccess(s"Column $columnName can be converted to Double")
       else
-        ConstraintFailure(s"Column $columnName contains $cannotBeDoubleCount rows that cannot be converted to Double")
+        ConstraintFailure(s"Column $columnName contains ${if(cannotBeDoubleCount == 1) "one row" else s"$cannotBeDoubleCount rows"} that cannot be converted to Double")
     }
   )
 
@@ -401,7 +403,7 @@ object Check {
       if (cannotBeLongCount == 0)
         ConstraintSuccess(s"Column $columnName can be converted to Long")
       else
-        ConstraintFailure(s"Column $columnName contains $cannotBeLongCount rows that cannot be converted to Long")
+        ConstraintFailure(s"Column $columnName contains ${if(cannotBeLongCount == 1) "one row" else s"$cannotBeLongCount rows"} that cannot be converted to Long")
     }
   )
 
@@ -419,7 +421,7 @@ object Check {
       if (cannotBeDateCount == 0)
         ConstraintSuccess(s"Column $columnName can be converted to Date")
       else
-        ConstraintFailure(s"Column $columnName contains $cannotBeDateCount rows that cannot be converted to Date")
+        ConstraintFailure(s"Column $columnName contains ${if(cannotBeDateCount == 1) "one row" else s"$cannotBeDateCount rows"} that cannot be converted to Date")
     }
   )
 
@@ -438,7 +440,7 @@ object Check {
       if (notAllowedCount == 0)
         ConstraintSuccess(s"Column $columnName contains only values in $allowed")
       else
-        ConstraintFailure(s"Column $columnName contains $notAllowedCount rows that are not in $allowed")
+        ConstraintFailure(s"Column $columnName contains ${if(notAllowedCount == 1) "one row" else s"$notAllowedCount rows"} that are not in $allowed")
     }
   )
 
@@ -457,7 +459,7 @@ object Check {
       if (doesNotMatchCount == 0)
         ConstraintSuccess(s"Column $columnName matches $regex")
       else
-        ConstraintFailure(s"Column $columnName contains $doesNotMatchCount rows that do not match $regex")
+        ConstraintFailure(s"Column $columnName contains ${if(doesNotMatchCount == 1) "one row that does not" else s"$doesNotMatchCount rows that do not"} match $regex")
     }
   )
 
@@ -487,7 +489,7 @@ object Check {
       if (cannotBeBooleanCount == 0)
         ConstraintSuccess(s"Column $columnName can be converted to Boolean")
       else
-        ConstraintFailure(s"Column $columnName contains $cannotBeBooleanCount rows that cannot be converted to Boolean")
+        ConstraintFailure(s"Column $columnName contains ${if(cannotBeBooleanCount == 1) "one row" else s"$cannotBeBooleanCount rows"} that cannot be converted to Boolean")
     }
   )
 
@@ -526,9 +528,9 @@ object Check {
         val notMatchingRefs = leftOuterJoin.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count
         val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
         if (notMatchingRefs == 0)
-          ConstraintSuccess(s"""Columns $columnsString define a foreign key""")
+          ConstraintSuccess(s"${if(columns.length == 1) s"Column $columnsString defines a foreign key" else s"Columns $columnsString define a foreign key"}")
         else
-          ConstraintFailure(s"Columns $columnsString do not define a foreign key ($notMatchingRefs records do not match)")
+          ConstraintFailure(s"${if(columns.length == 1) s"Column $columnsString does not define a foreign key" else s"Columns $columnsString do not define a foreign key"} (${ if(notMatchingRefs == 1) "one record does not match" else s"$notMatchingRefs records do not match"})")
       }
     }
   )
@@ -567,9 +569,9 @@ object Check {
       val matchingRows = join.count
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(s"""Columns $columnsString can be used for joining ($matchingRows distinct rows match)""")
+        ConstraintSuccess(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (${ if(matchingRows == 1) "one distinct row" else s"$matchingRows distinct rows"} match)")
       else
-        ConstraintFailure(s"Columns $columnsString cannot be used for joining (no rows match)")
+        ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
     }
   )
 
