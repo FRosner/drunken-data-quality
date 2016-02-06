@@ -493,6 +493,21 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
+  it should "compute the merge rate in an commutative way" in {
+    val base = makeIntegerDf(List(1, 1, 1, 1, 1, 1, 1, 1, 1, 2))
+    val ref = makeIntegerDf(List(1))
+
+    val check1 = Check(base).isJoinableWith(ref, "column" -> "column")
+    val constraint1 = check1.constraints.head
+    val result1 = ConstraintSuccess("Column column->column can be used for joining (number of distinct rows in base table: 2, number of distinct rows after joining: 1, merge rate: 0.50)")
+    check1.run().constraintResults shouldBe Map(constraint1 -> result1)
+
+    val check2 = Check(ref).isJoinableWith(base, "column" -> "column")
+    val constraint2 = check2.constraints.head
+    val result2 = ConstraintSuccess("Column column->column can be used for joining (number of distinct rows in base table: 1, number of distinct rows after joining: 1, merge rate: 0.50)")
+    check2.run().constraintResults shouldBe Map(constraint2 -> result2)
+  }
+
   it should "fail if a join on the given columns yields no result" in {
     val base = makeIntegersDf(List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
     val ref = makeIntegersDf(List(1, 1, 100), List(1, 10, 100))
