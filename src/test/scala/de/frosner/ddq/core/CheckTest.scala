@@ -499,7 +499,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "compute the matched keys in base table correctly" in {
+  it should "compute the matched keys in a non-commutative way" in {
     val base = makeIntegerDf(List(1, 1, 1, 1, 1, 1, 1, 1, 1, 2))
     val ref = makeIntegerDf(List(1))
 
