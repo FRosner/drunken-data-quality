@@ -569,10 +569,10 @@ object Check {
         case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
       }.reduce(_ && _))
       val matchingRows = join.distinct.count
-      val mergeRate = matchingRows.toFloat/distinctBefore
+      val unmatchedKeysPercentage = matchingRows.toFloat/distinctBefore
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(f"""${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, merge rate: $mergeRate%.2f)""")
+        ConstraintSuccess(f"""${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, unmatched keys in base table: $unmatchedKeysPercentage%.2f)""")
       else
         ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
     }
