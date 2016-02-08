@@ -570,11 +570,13 @@ object Check {
       }.reduce(_ && _))
       val matchingRows = join.distinct.count
       val unmatchedKeysPercentage = ((matchingRows.toDouble / distinctBefore) * 100).round
+
+      val columnNoun = if(columns.length == 1) "Column" else "Columns"
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(f"""${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, unmatched keys in base table: $unmatchedKeysPercentage""" + "%)")
+        ConstraintSuccess(f"""$columnNoun $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, unmatched keys in base table: $unmatchedKeysPercentage""" + "%)")
       else
-        ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
+        ConstraintFailure(s"$columnNoun $columnsString cannot be used for joining (no rows match)")
     }
   )
 
