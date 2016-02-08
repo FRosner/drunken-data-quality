@@ -574,7 +574,10 @@ object Check {
       val columnNoun = if(columns.length == 1) "Column" else "Columns"
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(f"""$columnNoun $columnsString can be used for joining (number of distinct rows in base table: $distinctBefore, number of distinct rows after joining: $matchingRows, unmatched keys in base table: $unmatchedKeysPercentage""" + "%)")
+        ConstraintSuccess(s"$columnNoun $columnsString can be used for joining (" +
+          s"number of distinct rows in base table: $distinctBefore, " +
+          s"number of distinct rows after joining: $matchingRows, " +
+          s"unmatched keys in base table: $unmatchedKeysPercentage" + "%)")
       else
         ConstraintFailure(s"$columnNoun $columnsString cannot be used for joining (no rows match)")
     }
