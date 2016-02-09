@@ -471,7 +471,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegerDf(List(1, 2, 5))
     val check = Check(base).isJoinableWith(ref, "column" -> "column")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Column column->column can be used for joining (2 distinct rows match)")
+    val result = ConstraintSuccess("Column column->column can be used for joining (" +
+      "join columns cardinality in base table: 3, " +
+      "join columns cardinality after joining: 2 (67%)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -480,7 +482,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 2, 100), List(1, 5, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column2" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (one distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column2->column2 can be used for joining (" +
+      "join columns cardinality in base table: 2, " +
+      "join columns cardinality after joining: 1 (50%)")
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
@@ -489,8 +493,29 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val ref = makeIntegersDf(List(1, 3, 100), List(1, 500, 100))
     val check = Check(base).isJoinableWith(ref, "column1" -> "column1", "column3" -> "column2")
     val constraint = check.constraints.head
-    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (one distinct row match)")
+    val result = ConstraintSuccess("Columns column1->column1, column3->column2 can be used for joining (" +
+      "join columns cardinality in base table: 2, " +
+      "join columns cardinality after joining: 1 (50%)")
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "compute the matched keys in a non-commutative way" in {
+    val base = makeIntegerDf(List(1, 1, 1, 1, 1, 1, 1, 1, 1, 2))
+    val ref = makeIntegerDf(List(1))
+
+    val check1 = Check(base).isJoinableWith(ref, "column" -> "column")
+    val constraint1 = check1.constraints.head
+    val result1 = ConstraintSuccess("Column column->column can be used for joining (" +
+      "join columns cardinality in base table: 2, " +
+      "join columns cardinality after joining: 1 (50%)")
+    check1.run().constraintResults shouldBe Map(constraint1 -> result1)
+
+    val check2 = Check(ref).isJoinableWith(base, "column" -> "column")
+    val constraint2 = check2.constraints.head
+    val result2 = ConstraintSuccess("Column column->column can be used for joining (" +
+      "join columns cardinality in base table: 1, " +
+      "join columns cardinality after joining: 1 (100%)")
+    check2.run().constraintResults shouldBe Map(constraint2 -> result2)
   }
 
   it should "fail if a join on the given columns yields no result" in {

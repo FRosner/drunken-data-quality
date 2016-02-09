@@ -26,7 +26,7 @@ case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = Check.DEFAULT_CACHE_METHOD,
                  constraints: Seq[Constraint] = Seq.empty) {
-  
+
   def addConstraint(c: Constraint): Check =
     Check(dataFrame, displayName, cacheMethod, constraints ++ List(c))
 
@@ -563,15 +563,22 @@ object Check {
       }:_*)
 
       // check if join yields some values
-      val join = renamedDf.distinct.join(renamedRef, renamedColumns.map{
+      val renamedDfDistinct = renamedDf.distinct
+      val distinctBefore = renamedDfDistinct.count
+      val join = renamedDfDistinct.join(renamedRef, renamedColumns.map{
         case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
       }.reduce(_ && _))
-      val matchingRows = join.count
+      val matchingRows = join.distinct.count
+      val unmatchedKeysPercentage = ((matchingRows.toDouble / distinctBefore) * 100).round
+
+      val columnNoun = if(columns.length == 1) "Column" else "Columns"
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
-        ConstraintSuccess(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString can be used for joining (${ if(matchingRows == 1) "one distinct row" else s"$matchingRows distinct rows"} match)")
+        ConstraintSuccess(s"$columnNoun $columnsString can be used for joining (" +
+          s"join columns cardinality in base table: $distinctBefore, " +
+          s"join columns cardinality after joining: $matchingRows ($unmatchedKeysPercentage" + "%)")
       else
-        ConstraintFailure(s"${if(columns.length == 1) "Column" else "Columns"} $columnsString cannot be used for joining (no rows match)")
+        ConstraintFailure(s"$columnNoun $columnsString cannot be used for joining (no rows match)")
     }
   )
 
