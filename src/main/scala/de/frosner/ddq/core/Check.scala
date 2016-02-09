@@ -569,14 +569,14 @@ object Check {
         case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
       }.reduce(_ && _))
       val matchingRows = join.distinct.count
-      val unmatchedKeysPercentage = ((matchingRows.toDouble / distinctBefore) * 100).round
+      val matchedKeysPercentage = ((matchingRows.toDouble / distinctBefore) * 100).round
 
       val columnNoun = if(columns.length == 1) "Column" else "Columns"
       val columnsString = columns.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
       if (matchingRows > 0)
         ConstraintSuccess(s"$columnNoun $columnsString can be used for joining (" +
           s"join columns cardinality in base table: $distinctBefore, " +
-          s"join columns cardinality after joining: $matchingRows ($unmatchedKeysPercentage" + "%)")
+          s"join columns cardinality after joining: $matchingRows ($matchedKeysPercentage" + "%)")
       else
         ConstraintFailure(s"$columnNoun $columnsString cannot be used for joining (no rows match)")
     }
