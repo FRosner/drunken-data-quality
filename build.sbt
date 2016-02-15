@@ -34,4 +34,4 @@ fork := true
 
 javaOptions += "-Xmx2G"
 
-javaOptions += "-XX:MaxPermSize=128m"
+javaOptions += "-XX:MaxPermSize=512m"
