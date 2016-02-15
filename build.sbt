@@ -18,7 +18,7 @@ libraryDependencies += "org.apache.spark" %% "spark-hive" % sparkVersion.value %
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.8.4" % "test"
 
-spName := "frosner/drunken-data-quality"
+spName := "FRosner/drunken-data-quality"
 
 spAppendScalaVersion := true
 
