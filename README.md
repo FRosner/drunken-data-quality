@@ -4,17 +4,21 @@
 
 DDQ is a small library for checking constraints on Spark data structures. It can be used to assure a certain data quality, especially when continuous imports happen.
 
-## Getting DDQ [![Latest Release](https://img.shields.io/github/tag/FRosner/drunken-data-quality.svg?label=JitPack)](https://jitpack.io/#FRosner/drunken-data-quality)
+## Getting DDQ 
 
-In order to use DDQ, you can add it as a dependency to your project using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality). Just add it to your `build.sbt` like this:
+### Spark Package
 
-```scala
-resolvers += "jitpack" at "https://jitpack.io"
+DDQ is available as a [spark package](http://spark-packages.org/package/FRosner/drunken-data-quality). You can add it to your spark-shell, spark-submit or pyspark using the `--packages` command line option:
 
-libraryDependencies += "com.github.FRosner" % "drunken-data-quality" % "x.y.z"
+```sh
+spark-shell --packages FRosner:drunken-data-quality:2.1.0-s_2.10
 ```
 
-If you are not using any of the dependency management systems supported by JitPack, feel free to download one of the compiled artifacts in the [release section](https://github.com/FRosner/drunken-data-quality/releases). Alternatively you may of course also build from source.
+### Project Dependency [![Latest Release](https://img.shields.io/github/tag/FRosner/drunken-data-quality.svg?label=JitPack)](https://jitpack.io/#FRosner/drunken-data-quality)
+
+In order to use DDQ in your project, you can add it as a library dependency. This can be done through the [SBT spark package plugin](https://github.com/databricks/sbt-spark-package), or you can add it using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality).
+
+If neither of the above-mentioned ways work for you, feel free to download one of the compiled artifacts in the [release section](https://github.com/FRosner/drunken-data-quality/releases). Alternatively you may of course also build from source.
 
 ## Using DDQ
 
