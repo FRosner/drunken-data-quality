@@ -6,6 +6,8 @@ name          := "drunken-data-quality"
 
 scalaVersion  := "2.10.5"
 
+crossScalaVersions := Seq("2.10.5", "2.11.7")
+
 sparkVersion := "1.3.0"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
