@@ -4,6 +4,8 @@ import java.io.{FileOutputStream, FileDescriptor, PrintStream, ByteArrayOutputSt
 import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.hive.test.TestHive
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
 import org.mockito.Mockito._
@@ -14,14 +16,14 @@ import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar {
 
-  private val sc = new SparkContext("local[1]", "CheckTest")
+  private val hive = TestHive
+  hive.setConf("spark.sql.shuffle.partitions", "5")
+  private val sc = hive.sparkContext
   private val sql = new SQLContext(sc)
   sql.setConf("spark.sql.shuffle.partitions", "5")
-  private val hive = new TestHiveContext(sc)
-  hive.setConf("spark.sql.shuffle.partitions", "5")
 
   override def afterAll(): Unit = {
-    hive.deletePaths()
+    hive.reset()
   }
 
   private def makeIntegerDf(numbers: Seq[Int], sql: SQLContext): DataFrame =
