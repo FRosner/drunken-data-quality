@@ -27,6 +27,8 @@ case class Check(dataFrame: DataFrame,
                  cacheMethod: Option[StorageLevel] = Check.DEFAULT_CACHE_METHOD,
                  constraints: Seq[Constraint] = Seq.empty) {
 
+  val name = displayName.getOrElse(dataFrame.toString)
+
   def addConstraint(c: Constraint): Check =
     Check(dataFrame, displayName, cacheMethod, constraints ++ List(c))
 
