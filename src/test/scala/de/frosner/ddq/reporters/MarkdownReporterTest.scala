@@ -19,7 +19,6 @@ class MarkdownReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val dfColumns = Array("1", "2")
     val dfCount = 5
     when(df.columns).thenReturn(dfColumns)
-    when(df.count()).thenReturn(dfCount)
 
     val header = s"Checking $dfName"
     val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
@@ -31,7 +30,7 @@ class MarkdownReporterTest extends FlatSpec with Matchers with MockitoSugar {
     )
     val check = Check(df, Some(dfName), Option.empty, constraints.keys.toSeq)
 
-    markdownReporter.report(CheckResult(constraints, check))
+    markdownReporter.report(CheckResult(constraints, check, dfCount))
     val expectedOutput = s"""**$header**
 
 $prologue
@@ -53,13 +52,12 @@ $prologue
     val dfColumns = Array("1", "2")
     val dfCount = 5
     when(df.columns).thenReturn(dfColumns)
-    when(df.count()).thenReturn(dfCount)
 
     val header = s"Checking $dfName"
     val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
     val check = Check(df, Some(dfName), Option.empty, Seq.empty)
 
-    markdownReporter.report(CheckResult(Map.empty, check))
+    markdownReporter.report(CheckResult(Map.empty, check, dfCount))
     val expectedOutput = s"""**$header**
 
 $prologue
