@@ -22,8 +22,8 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
     stream.println(s"$prologue\n")
     if (checkResult.constraintResults.nonEmpty)
       checkResult.constraintResults.foreach {
-        case (_, ConstraintSuccess(message)) => stream.println("- *SUCCESS*: " + message)
-        case (_, ConstraintFailure(message)) => stream.println("- *FAILURE*: " + message)
+        case (_, ConstraintSuccess(message)) => stream.println(s"- *${ConstraintSuccess.Status.toUpperCase}*: " + message)
+        case (_, ConstraintFailure(message)) => stream.println(s"- *${ConstraintFailure.Status.toUpperCase}*: " + message)
       }
     else
       stream.println("Nothing to check!")
