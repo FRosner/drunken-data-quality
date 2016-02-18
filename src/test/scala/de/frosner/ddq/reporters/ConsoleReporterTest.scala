@@ -14,17 +14,25 @@ class ConsoleReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val baos = new ByteArrayOutputStream()
     val consoleReporter = new ConsoleReporter(new PrintStream(baos))
 
-    val header = "Header"
-    val prologue = "Prologue"
+    val df = mock[DataFrame]
+    val displayName = "myDf"
+    val dfColumns = Array("1", "2")
+    val dfCount = 5
+    when(df.columns).thenReturn(dfColumns)
+    when(df.count()).thenReturn(dfCount)
+
+    val header = s"Checking $displayName"
+    val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
+
     val success = ConstraintSuccess("success")
     val failure = ConstraintFailure("failure")
     val constraints = Map(
       Constraint(df => success) -> success,
       Constraint(df => failure) -> failure
     )
-    val check = Check(mock[DataFrame], Some("df"), Option.empty, constraints.keys.toSeq)
+    val check = Check(df, Some(displayName), Option.empty, constraints.keys.toSeq)
 
-    consoleReporter.report(CheckResult(header, prologue, constraints, check))
+    consoleReporter.report(CheckResult(constraints, check))
     val expectedOutput = s"""${Console.BLUE}$header${Console.RESET}
 ${Console.BLUE}$prologue${Console.RESET}
 ${Console.GREEN}- ${success.message}${Console.RESET}
@@ -39,11 +47,18 @@ ${Console.RED}- ${failure.message}${Console.RESET}
     val baos = new ByteArrayOutputStream()
     val consoleReporter = new ConsoleReporter(new PrintStream(baos))
 
-    val header = "Header"
-    val prologue = "Prologue"
-    val check = Check(mock[DataFrame], Some("df"), Option.empty, Seq.empty)
+    val df = mock[DataFrame]
+    val displayName = "myDf"
+    val dfColumns = Array("1", "2")
+    val dfCount = 5
+    when(df.columns).thenReturn(dfColumns)
+    when(df.count()).thenReturn(dfCount)
 
-    consoleReporter.report(CheckResult(header, prologue, Map.empty, check))
+    val header = s"Checking $displayName"
+    val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
+    val check = Check(df, Some(displayName), Option.empty, Seq.empty)
+
+    consoleReporter.report(CheckResult(Map.empty, check))
     val expectedOutput = s"""${Console.BLUE}$header${Console.RESET}
 ${Console.BLUE}$prologue${Console.RESET}
 ${Console.BLUE}Nothing to check!${Console.RESET}

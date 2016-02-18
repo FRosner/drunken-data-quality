@@ -19,12 +19,10 @@ object Runner {
     checks.map(check => {
       val potentiallyPersistedDf = check.cacheMethod.map(check.dataFrame.persist(_)).getOrElse(check.dataFrame)
 
-      val header = s"Checking ${check.displayName.getOrElse(check.dataFrame.toString)}"
-      val prologue = s"It has a total number of ${potentiallyPersistedDf.columns.length} columns " +
-        s"and ${potentiallyPersistedDf.count} rows."
+
       val constraintResults = check.constraints.map(c => (c, c.fun(potentiallyPersistedDf))).toMap
 
-      val checkResult = CheckResult(header, prologue, constraintResults, check)
+      val checkResult = CheckResult(constraintResults, check)
 
       if (check.cacheMethod.isDefined) potentiallyPersistedDf.unpersist()
 

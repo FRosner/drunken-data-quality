@@ -14,17 +14,24 @@ class MarkdownReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val baos = new ByteArrayOutputStream()
     val markdownReporter = new MarkdownReporter(new PrintStream(baos))
 
-    val header = "Header"
-    val prologue = "Prologue"
+    val df = mock[DataFrame]
+    val dfName = "myDf"
+    val dfColumns = Array("1", "2")
+    val dfCount = 5
+    when(df.columns).thenReturn(dfColumns)
+    when(df.count()).thenReturn(dfCount)
+
+    val header = s"Checking $dfName"
+    val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
     val success = ConstraintSuccess("success")
     val failure = ConstraintFailure("failure")
     val constraints = Map(
       Constraint(df => success) -> success,
       Constraint(df => failure) -> failure
     )
-    val check = Check(mock[DataFrame], Some("df"), Option.empty, constraints.keys.toSeq)
+    val check = Check(df, Some(dfName), Option.empty, constraints.keys.toSeq)
 
-    markdownReporter.report(CheckResult(header, prologue, constraints, check))
+    markdownReporter.report(CheckResult(constraints, check))
     val expectedOutput = s"""**$header**
 
 $prologue
@@ -41,11 +48,18 @@ $prologue
     val baos = new ByteArrayOutputStream()
     val markdownReporter = new MarkdownReporter(new PrintStream(baos))
 
-    val header = "Header"
-    val prologue = "Prologue"
-    val check = Check(mock[DataFrame], Some("df"), Option.empty, Seq.empty)
+    val df = mock[DataFrame]
+    val dfName = "myDf"
+    val dfColumns = Array("1", "2")
+    val dfCount = 5
+    when(df.columns).thenReturn(dfColumns)
+    when(df.count()).thenReturn(dfCount)
 
-    markdownReporter.report(CheckResult(header, prologue, Map.empty, check))
+    val header = s"Checking $dfName"
+    val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
+    val check = Check(df, Some(dfName), Option.empty, Seq.empty)
+
+    markdownReporter.report(CheckResult(Map.empty, check))
     val expectedOutput = s"""**$header**
 
 $prologue

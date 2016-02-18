@@ -47,13 +47,9 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
 
     checkResult1.check shouldBe check1
     checkResult1.constraintResults shouldBe Map((constraint1, result1))
-    checkResult1.header shouldBe s"Checking $df1ToString"
-    checkResult1.prologue shouldBe s"It has a total number of ${df1Columns.size} columns and $df1Count rows."
 
     checkResult2.check shouldBe check2
     checkResult2.constraintResults shouldBe Map((constraint2, result2))
-    checkResult2.header shouldBe s"Checking $df2ToString"
-    checkResult2.prologue shouldBe s"It has a total number of ${df2Columns.size} columns and $df2Count rows."
   }
 
   it should "show the display name in the header if it is set" in {
@@ -65,12 +61,11 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     val displayName = "Amaze DataFrame"
     val check = Check(df, Some(displayName), None, Seq(Constraint(df => ConstraintSuccess("success"))))
     val checkResult = Runner.run(List(check), List.empty)(check)
-
-    checkResult.header shouldBe s"Checking $displayName"
   }
 
   it should "persist and unpersist the data frame if a persist method is specified" in {
     val storageLevel = StorageLevel.MEMORY_AND_DISK
+
     val df = mock[DataFrame]
     when(df.toString).thenReturn("")
     when(df.count).thenReturn(1)

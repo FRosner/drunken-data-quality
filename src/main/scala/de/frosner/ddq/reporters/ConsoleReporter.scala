@@ -17,9 +17,9 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
    * Output console report of a given checkResult to the stream passed to the constructor
    * @param checkResult The [[CheckResult]] to be reported
    */
-  override def report(checkResult: CheckResult): Unit = {
-    stream.println(Console.BLUE + checkResult.header + Console.RESET)
-    stream.println(Console.BLUE + checkResult.prologue + Console.RESET)
+  override def report(checkResult: CheckResult, header: String, prologue: String): Unit = {
+    stream.println(Console.BLUE + header + Console.RESET)
+    stream.println(Console.BLUE + prologue + Console.RESET)
     if (checkResult.constraintResults.nonEmpty)
       checkResult.constraintResults.foreach {
         case (_, ConstraintSuccess(message)) => stream.println(Console.GREEN + "- " + message + Console.RESET)
