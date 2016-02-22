@@ -1,6 +1,7 @@
 package de.frosner.ddq.core
 
 import java.text.SimpleDateFormat
+import java.util.UUID
 import java.util.regex.Pattern
 
 import de.frosner.ddq.constraints._
@@ -27,7 +28,8 @@ import scala.util.Try
 case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
                  cacheMethod: Option[StorageLevel] = Check.DEFAULT_CACHE_METHOD,
-                 constraints: Seq[Constraint] = Seq.empty) {
+                 constraints: Seq[Constraint] = Seq.empty,
+                 id: String = UUID.randomUUID.toString) {
 
   val name = displayName.getOrElse(dataFrame.toString)
 
