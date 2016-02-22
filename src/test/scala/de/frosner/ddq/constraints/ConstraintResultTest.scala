@@ -2,7 +2,6 @@ package de.frosner.ddq.constraints
 
 import java.text.SimpleDateFormat
 
-import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
 import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.apache.spark.sql.{DataFrame, Column}
 import org.scalatest.mock.MockitoSugar
