@@ -3,7 +3,8 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.core.{ConstraintFailure, ConstraintSuccess, CheckResult}
+import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.core.CheckResult
 
 /**
  * A class which produces a console report of [[CheckResult]].
@@ -20,13 +21,18 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
   override def report(checkResult: CheckResult, header: String, prologue: String): Unit = {
     stream.println(Console.BLUE + header + Console.RESET)
     stream.println(Console.BLUE + prologue + Console.RESET)
-    if (checkResult.constraintResults.nonEmpty)
+    if (checkResult.constraintResults.nonEmpty) {
       checkResult.constraintResults.foreach {
-        case (_, ConstraintSuccess(message)) => stream.println(Console.GREEN + "- " + message + Console.RESET)
-        case (_, ConstraintFailure(message)) => stream.println(Console.RED + "- " + message + Console.RESET)
+        case (_, constraintResult) => {
+          constraintResult.status match {
+            case ConstraintSuccess => stream.println(Console.GREEN + "- " + constraintResult.message + Console.RESET)
+            case ConstraintFailure => stream.println(Console.RED + "- " + constraintResult.message + Console.RESET)
+          }
+        }
       }
-    else
+    } else {
       stream.println(Console.BLUE + "Nothing to check!" + Console.RESET)
+    }
     stream.println("")
   }
 

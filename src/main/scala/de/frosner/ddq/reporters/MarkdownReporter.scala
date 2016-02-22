@@ -3,7 +3,8 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.core.{ConstraintSuccess, ConstraintFailure, CheckResult}
+import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.core.CheckResult
 
 /**
  * A class which produces a markdown report of [[CheckResult]].
@@ -20,13 +21,18 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
   override def report(checkResult: CheckResult, header: String, prologue: String): Unit = {
     stream.println(s"**$header**\n")
     stream.println(s"$prologue\n")
-    if (checkResult.constraintResults.nonEmpty)
+    if (checkResult.constraintResults.nonEmpty) {
       checkResult.constraintResults.foreach {
-        case (_, ConstraintSuccess(message)) => stream.println(s"- *${ConstraintSuccess.Status.toUpperCase}*: " + message)
-        case (_, ConstraintFailure(message)) => stream.println(s"- *${ConstraintFailure.Status.toUpperCase}*: " + message)
+        case (_, constraintResult) => {
+          constraintResult.status match {
+            case ConstraintSuccess => stream.println(s"- *${ConstraintSuccess.stringValue.toUpperCase}*: " + constraintResult.message)
+            case ConstraintFailure => stream.println(s"- *${ConstraintFailure.stringValue.toUpperCase}*: " + constraintResult.message)
+          }
+        }
       }
-    else
+    } else {
       stream.println("Nothing to check!")
+    }
     stream.println("")
   }
 
