@@ -27,7 +27,7 @@ object Log4jReporter {
    So this class will print the correct JSNull, because non-Strings will not be enclosed by
    */
   private[reporters] case class JSONMaybe[T](maybe: Option[T])(implicit val numeric: Numeric[T] = null) {
-    override def toString = {
+    override def toString: String = {
       val maybeEnclosingQuotes = if (numeric == null) "\"" else ""
       maybe.map(m => s"$maybeEnclosingQuotes$m$maybeEnclosingQuotes").getOrElse("null")
     }
