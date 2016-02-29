@@ -42,7 +42,7 @@ object Log4jReporter {
   private[reporters] val constraintTypeKey = "constraint"
   private[reporters] val constraintStatusKey = "status"
   private[reporters] val constraintMessageKey = "message"
-  
+
   private[reporters] val failedInstancesKey = "failed"
   private[reporters] val columnKey = "column"
   private[reporters] val columnsKey = "columns"
