@@ -17,13 +17,10 @@ object Runner {
    */
   def run(checks: Iterable[Check], reporters: Iterable[Reporter]): Map[Check, CheckResult] = {
     checks.map(check => {
-      val potentiallyPersistedDf = check.cacheMethod.map(check.dataFrame.persist(_)).getOrElse(check.dataFrame)
-
-
+      val potentiallyPersistedDf = check.cacheMethod.map(check.dataFrame.persist).getOrElse(check.dataFrame)
       val constraintResults = check.constraints.map(c => (c, c.fun(potentiallyPersistedDf))).toMap
-
-      val checkResult = CheckResult(constraintResults, check)
-
+      val numRows = potentiallyPersistedDf.count
+      val checkResult = CheckResult(constraintResults, check, numRows)
       if (check.cacheMethod.isDefined) potentiallyPersistedDf.unpersist()
 
       reporters.foreach(_.report(checkResult))

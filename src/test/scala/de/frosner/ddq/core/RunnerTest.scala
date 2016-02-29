@@ -1,12 +1,11 @@
 package de.frosner.ddq.core
 
-import java.io.{ByteArrayOutputStream, PrintStream}
 
-import de.frosner.ddq.reporters.{Reporter, ConsoleReporter, MarkdownReporter}
+import de.frosner.ddq.constraints.{DummyConstraint, ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.reporters.Reporter
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.storage.StorageLevel
 import org.mockito.Mockito._
-import org.mockito.verification.VerificationMode
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -14,26 +13,17 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
 
   "A runner" should "run with multiple checks" in {
     val df1 = mock[DataFrame]
-    val df1ToString = "[column: IntegerType]"
-    val df1Count = 3
-    val df1Columns = Array("column")
-    when(df1.toString).thenReturn(df1ToString)
-    when(df1.count).thenReturn(df1Count)
-    when(df1.columns).thenReturn(df1Columns)
-
     val df2 = mock[DataFrame]
-    val df2ToString = "[id: StringType]"
-    val df2Count = 5
-    val df2Columns = Array("id")
-    when(df2.toString).thenReturn(df2ToString)
-    when(df2.count).thenReturn(df2Count)
-    when(df2.columns).thenReturn(df2Columns)
 
-    val result1 = ConstraintSuccess("The number of rows is equal to 3")
-    val constraint1 = Constraint(df => result1)
+    val message1 = "1"
+    val status1 = ConstraintSuccess
+    val constraint1 = DummyConstraint(message1, status1)
+    val result1 = constraint1.fun(df1)
 
-    val result2 = ConstraintFailure("The actual number of rows 3 is not equal to the expected 4")
-    val constraint2 = Constraint(df => result2)
+    val message2 = "2"
+    val status2 = ConstraintFailure
+    val constraint2 = DummyConstraint(message2, status2)
+    val result2 = constraint2.fun(df2)
 
     val check1 = Check(df1, None, None, Seq(constraint1))
     val check2 = Check(df2, None, None, Seq(constraint2))
@@ -52,42 +42,23 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
     checkResult2.constraintResults shouldBe Map((constraint2, result2))
   }
 
-  it should "show the display name in the header if it is set" in {
-    val df = mock[DataFrame]
-    when(df.toString).thenReturn("")
-    when(df.count).thenReturn(1)
-    when(df.columns).thenReturn(Array.empty[String])
-
-    val displayName = "Amaze DataFrame"
-    val check = Check(df, Some(displayName), None, Seq(Constraint(df => ConstraintSuccess("success"))))
-    val checkResult = Runner.run(List(check), List.empty)(check)
-  }
-
   it should "persist and unpersist the data frame if a persist method is specified" in {
     val storageLevel = StorageLevel.MEMORY_AND_DISK
 
     val df = mock[DataFrame]
-    when(df.toString).thenReturn("")
-    when(df.count).thenReturn(1)
-    when(df.columns).thenReturn(Array.empty[String])
     when(df.persist(storageLevel)).thenReturn(df.asInstanceOf[df.type])
 
-    val displayName = "Amaze DataFrame"
-    val check = Check(df, Some(displayName), Some(storageLevel), Seq(Constraint(df => ConstraintSuccess("success"))))
+    val check = Check(df, None, Some(storageLevel), Seq(DummyConstraint("test", ConstraintSuccess)))
     val checkResult = Runner.run(List(check), List.empty)(check)
 
     verify(df).persist(storageLevel)
     verify(df).unpersist()
   }
 
-  it should "not persist and unpersist the data frame if a no persist method is specified" in {
+  it should "not persist and unpersist the data frame if no persist method is specified" in {
     val df = mock[DataFrame]
-    when(df.toString).thenReturn("")
-    when(df.count).thenReturn(1)
-    when(df.columns).thenReturn(Array.empty[String])
 
-    val displayName = "Amaze DataFrame"
-    val check = Check(df, Some(displayName), None, Seq(Constraint(df => ConstraintSuccess("success"))))
+    val check = Check(df, None, None, Seq(DummyConstraint("test", ConstraintSuccess)))
     val checkResult = Runner.run(List(check), List.empty)(check)
 
     verify(df, never()).persist()
@@ -96,11 +67,8 @@ class RunnerTest extends FlatSpec with Matchers with MockitoSugar {
 
   it should "report to all reporters what it returns" in {
     val df = mock[DataFrame]
-    when(df.toString).thenReturn("")
-    when(df.count).thenReturn(1)
-    when(df.columns).thenReturn(Array.empty[String])
 
-    val check = Check(df, None, None, Seq(Constraint(df => ConstraintSuccess("success"))))
+    val check = Check(df, None, None, Seq(DummyConstraint("test", ConstraintSuccess)))
     val checkResult = Runner.run(List(check), List.empty)(check)
 
     val reporter1 = mock[Reporter]

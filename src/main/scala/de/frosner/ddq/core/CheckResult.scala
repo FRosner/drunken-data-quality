@@ -1,3 +1,5 @@
 package de.frosner.ddq.core
 
-case class CheckResult(constraintResults: Map[Constraint, ConstraintResult], check: Check)
+import de.frosner.ddq.constraints.{ConstraintResult, Constraint}
+
+case class CheckResult(constraintResults: Map[Constraint, ConstraintResult[Constraint]], check: Check, numRows: Long)

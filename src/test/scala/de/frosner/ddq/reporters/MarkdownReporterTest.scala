@@ -2,6 +2,7 @@ package de.frosner.ddq.reporters
 
 import java.io.{PrintStream, ByteArrayOutputStream}
 
+import de.frosner.ddq.constraints._
 import de.frosner.ddq.core._
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
@@ -19,25 +20,33 @@ class MarkdownReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val dfColumns = Array("1", "2")
     val dfCount = 5
     when(df.columns).thenReturn(dfColumns)
-    when(df.count()).thenReturn(dfCount)
 
     val header = s"Checking $dfName"
     val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
-    val success = ConstraintSuccess("success")
-    val failure = ConstraintFailure("failure")
-    val constraints = Map(
-      Constraint(df => success) -> success,
-      Constraint(df => failure) -> failure
+    val message1 = "1"
+    val status1 = ConstraintSuccess
+    val constraint1 = DummyConstraint(message1, status1)
+    val result1 = constraint1.fun(df)
+
+    val message2 = "2"
+    val status2 = ConstraintFailure
+    val constraint2 = DummyConstraint(message2, status2)
+    val result2 = constraint2.fun(df)
+
+    val constraints = Map[Constraint, ConstraintResult[Constraint]](
+      constraint1 -> result1,
+      constraint2 -> result2
     )
+
     val check = Check(df, Some(dfName), Option.empty, constraints.keys.toSeq)
 
-    markdownReporter.report(CheckResult(constraints, check))
+    markdownReporter.report(CheckResult(constraints, check, dfCount))
     val expectedOutput = s"""**$header**
 
 $prologue
 
-- *SUCCESS*: ${success.message}
-- *FAILURE*: ${failure.message}
+- *SUCCESS*: ${result1.message}
+- *FAILURE*: ${result2.message}
 
 """
 
@@ -53,13 +62,12 @@ $prologue
     val dfColumns = Array("1", "2")
     val dfCount = 5
     when(df.columns).thenReturn(dfColumns)
-    when(df.count()).thenReturn(dfCount)
 
     val header = s"Checking $dfName"
     val prologue = s"It has a total number of ${dfColumns.size} columns and $dfCount rows."
     val check = Check(df, Some(dfName), Option.empty, Seq.empty)
 
-    markdownReporter.report(CheckResult(Map.empty, check))
+    markdownReporter.report(CheckResult(Map.empty, check, dfCount))
     val expectedOutput = s"""**$header**
 
 $prologue

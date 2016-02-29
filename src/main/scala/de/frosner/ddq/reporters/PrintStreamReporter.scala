@@ -13,9 +13,9 @@ abstract class PrintStreamReporter extends Reporter {
     val df = check.dataFrame
     report(
       checkResult = checkResult,
-      header = s"Checking ${check.displayName.getOrElse(check.dataFrame.toString)}",
+      header = s"Checking ${check.name}",
       prologue = s"It has a total number of ${df.columns.length} columns " +
-        s"and ${df.count} rows."
+        s"and ${checkResult.numRows} rows."
     )
   }
 
