@@ -55,7 +55,9 @@ object Log4jReporter {
     ))}.toList
   )
 
-  private[reporters] def constraintResultToJson[T <: Constraint](checkResult: CheckResult, constraintResult: ConstraintResult[T], date: Date): JSONObject = {
+  private[reporters] def constraintResultToJson[T <: Constraint](checkResult: CheckResult,
+                                                                 constraintResult: ConstraintResult[T],
+                                                                 date: Date): JSONObject = {
     val check = checkResult.check
     val constraintType = constraintResult.constraint.getClass.getSimpleName.replace("$", "")
     val constraintStatus = constraintResult.status.stringValue
