@@ -47,7 +47,7 @@ object Log4jReporter {
   private[reporters] val columnKey = "column"
   private[reporters] val columnsKey = "columns"
   private[reporters] val referenceTableKey = "referenceTable"
-  
+
   private def columnsToJsonArray(columns: Seq[(String, String)]) = JSONArray(
     columns.map{ case (baseColumn, referenceColumn) => JSONObject(Map(
       "baseColumn" -> baseColumn,
