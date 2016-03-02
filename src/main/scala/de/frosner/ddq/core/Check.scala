@@ -27,7 +27,7 @@ import scala.util.Try
  */
 case class Check(dataFrame: DataFrame,
                  displayName: Option[String] = Option.empty,
-                 cacheMethod: Option[StorageLevel] = Check.DEFAULT_CACHE_METHOD,
+                 cacheMethod: Option[StorageLevel] = Check.defaultCacheMethod,
                  constraints: Seq[Constraint] = Seq.empty,
                  id: String = UUID.randomUUID.toString) {
 
@@ -189,7 +189,7 @@ case class Check(dataFrame: DataFrame,
 
 object Check {
 
-  private val DEFAULT_CACHE_METHOD = Option(StorageLevel.MEMORY_ONLY)
+  private val defaultCacheMethod = Option(StorageLevel.MEMORY_ONLY)
 
   /**
    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
@@ -202,7 +202,7 @@ object Check {
    */
   def sqlTable(sql: SQLContext,
                table: String,
-               cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
+               cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
     val tryTable = Try(sql.table(table))
     require(tryTable.isSuccess, s"""Failed to reference table $table: ${tryTable.failed.getOrElse("No exception provided")}""")
     Check(
@@ -369,7 +369,7 @@ object Check {
   def hiveTable(hive: HiveContext,
                 database: String,
                 table: String,
-                cacheMethod: Option[StorageLevel] = DEFAULT_CACHE_METHOD): Check = {
+                cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
     hive.sql(s"USE $database")
     sqlTable(hive, table, cacheMethod)
   }
