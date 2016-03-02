@@ -14,7 +14,7 @@ case class JoinableConstraintResult(constraint: JoinableConstraint,
     status match {
       case ConstraintSuccess => s"Key $columnsString can be used for joining. " +
         s"Join columns cardinality in base table: $distinctBefore. " +
-        s"Join columns cardinality after joining: $matchingKeys (${"%.2f".format(matchPercentage)}" + "%)."// TODO number format and percentage
+        s"Join columns cardinality after joining: $matchingKeys (${"%.2f".format(matchPercentage)}" + "%)."
       case ConstraintFailure => s"Key $columnsString cannot be used for joining (no result)."
     }
   }
