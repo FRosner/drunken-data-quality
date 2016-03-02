@@ -82,7 +82,7 @@ case class Check(dataFrame: DataFrame,
    * @param columnName Name of the column to check
    * @return [[core.Check]] object including this constraint
    */
-  def isNeverNull(columnName: String) = addConstraint(Check.isNeverNull(columnName))
+  def isNeverNull(columnName: String): Check = addConstraint(Check.isNeverNull(columnName))
 
   /**
    * Check whether the column with the given name contains only null values.
@@ -90,7 +90,7 @@ case class Check(dataFrame: DataFrame,
    * @param columnName Name of the column to check
    * @return [[core.Check]] object including this constraint
    */
-  def isAlwaysNull(columnName: String) = addConstraint(Check.isAlwaysNull(columnName))
+  def isAlwaysNull(columnName: String): Check = addConstraint(Check.isAlwaysNull(columnName))
 
   /**
    * Check whether the table has exactly the given number of rows.
@@ -117,7 +117,7 @@ case class Check(dataFrame: DataFrame,
    * @param dateFormat Date format to use for conversion
    * @return [[core.Check]] object including this constraint
    */
-  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat) = addConstraint(
+  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat): Check = addConstraint(
     Check.isFormattedAsDate(columnName, dateFormat))
 
   /**
@@ -127,7 +127,7 @@ case class Check(dataFrame: DataFrame,
    * @param allowed Set of allowed values
    * @return [[core.Check]] object including this constraint
    */
-  def isAnyOf(columnName: String, allowed: Set[Any]) = addConstraint(Check.isAnyOf(columnName, allowed))
+  def isAnyOf(columnName: String, allowed: Set[Any]): Check = addConstraint(Check.isAnyOf(columnName, allowed))
 
   /**
    * Check whether the column with the given name is always matching the specified regular expression.
@@ -136,7 +136,7 @@ case class Check(dataFrame: DataFrame,
    * @param regex Regular expression that needs to match
    * @return [[core.Check]] object including this constraint
    */
-  def isMatchingRegex(columnName: String, regex: String) = addConstraint(Check.isMatchingRegex(columnName, regex))
+  def isMatchingRegex(columnName: String, regex: String): Check = addConstraint(Check.isMatchingRegex(columnName, regex))
 
   /**
    * Check whether the columns with the given names define a foreign key to the specified reference table.
@@ -146,7 +146,7 @@ case class Check(dataFrame: DataFrame,
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
    * @return [[core.Check]] object including this constraint
    */
-  def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
+  def hasForeignKey(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*): Check = addConstraint(
     Check.hasForeignKey(referenceTable, keyMap, keyMaps: _*)
   )
 
@@ -159,7 +159,7 @@ case class Check(dataFrame: DataFrame,
    * @param keyMaps Column mappings from this table to the reference one (`"column1" -> "base_column1"`)
    * @return [[core.Check]] object including this constraint
    */
-  def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*) = addConstraint(
+  def isJoinableWith(referenceTable: DataFrame, keyMap: (String, String), keyMaps: (String, String)*): Check = addConstraint(
     Check.isJoinableWith(referenceTable, keyMap, keyMaps: _*)
   )
 
@@ -170,7 +170,7 @@ case class Check(dataFrame: DataFrame,
    * @param dependentSet sequence of column names which form a dependent set
    * @return [[core.Check]] object including this constraint
    */
-  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]) = addConstraint(
+  def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]): Check = addConstraint(
     Check.hasFunctionalDependency(determinantSet, dependentSet)
   )
 
@@ -297,7 +297,7 @@ object Check {
    * @param dateFormat Date format to use for conversion
    * @return [[constraints.Constraint]] object
    */
-  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat) =
+  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat): Constraint =
     DateFormatConstraint(columnName, dateFormat)
 
   /**
@@ -307,7 +307,7 @@ object Check {
    * @param allowed Set of allowed values
    * @return [[constraints.Constraint]] object
    */
-  def isAnyOf(columnName: String, allowed: Set[Any]) = AnyOfConstraint(columnName, allowed)
+  def isAnyOf(columnName: String, allowed: Set[Any]): Constraint = AnyOfConstraint(columnName, allowed)
 
   /**
    * Check whether the column with the given name is always matching the specified regular expression.
@@ -316,7 +316,7 @@ object Check {
    * @param regex Regular expression that needs to match
    * @return [[constraints.Constraint]] object
    */
-  def isMatchingRegex(columnName: String, regex: String) = RegexConstraint(columnName, regex)
+  def isMatchingRegex(columnName: String, regex: String): Constraint = RegexConstraint(columnName, regex)
 
   /**
    * Check whether the columns with the given names define a foreign key to the specified reference table.
