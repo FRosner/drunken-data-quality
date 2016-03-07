@@ -245,7 +245,7 @@ class ConstraintResultTest extends FlatSpec with Matchers with MockitoSugar {
   "A NumberOfRowsConstraintResult" should "have the correct success message" in {
     val constraint = NumberOfRowsConstraint(new Column("count") > 5L)
     val result = NumberOfRowsConstraintResult(constraint, 5L, ConstraintSuccess)
-    result.message shouldBe "The number of rows satisfy (count > 5)."
+    result.message shouldBe "The number of rows satisfies (count > 5)."
   }
 
   it should "have the correct failure message" in {
