@@ -90,22 +90,25 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  "A number of rows equality check" should "succeed if the actual number of rows is equal to the expected" in {
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).hasNumRowsEqualTo(3)
+  "A number of rows check" should "succeed if the actual number of rows is equal to the expected" in {
+    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).hasNumRows(_ === 3)
     val constraint = check.constraints.head
     val result = NumberOfRowsConstraintResult(
-      constraint = NumberOfRowsConstraint(3L),
+      constraint = NumberOfRowsConstraint(new Column(NumberOfRowsConstraint.countKey) === 3),
       actual = 3L,
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
-  it should "fail if the number of rows is not equal to the expected" in {
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).hasNumRowsEqualTo(4)
+  it should "fail if the number of rows is not in the expected range" in {
+    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).hasNumRows(
+      numRows => numRows < 3 || numRows > 3
+    )
     val constraint = check.constraints.head
+    val numRowsColumn = new Column(NumberOfRowsConstraint.countKey)
     val result = NumberOfRowsConstraintResult(
-      constraint = NumberOfRowsConstraint(4L),
+      constraint = NumberOfRowsConstraint(numRowsColumn < 3 || numRowsColumn > 3),
       actual = 3L,
       status = ConstraintFailure
     )

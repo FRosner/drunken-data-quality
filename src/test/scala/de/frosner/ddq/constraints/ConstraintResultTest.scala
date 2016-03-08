@@ -243,15 +243,15 @@ class ConstraintResultTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "A NumberOfRowsConstraintResult" should "have the correct success message" in {
-    val constraint = NumberOfRowsConstraint(5L)
+    val constraint = NumberOfRowsConstraint(new Column("count") > 5L)
     val result = NumberOfRowsConstraintResult(constraint, 5L, ConstraintSuccess)
-    result.message shouldBe "The number of rows is equal to 5."
+    result.message shouldBe "The number of rows satisfies (count > 5)."
   }
 
   it should "have the correct failure message" in {
-    val constraint = NumberOfRowsConstraint(5L)
+    val constraint = NumberOfRowsConstraint(new Column("count") === 5L)
     val result = NumberOfRowsConstraintResult(constraint, 4L, ConstraintFailure)
-    result.message shouldBe "The actual number of rows 4 is not equal to the expected 5."
+    result.message shouldBe "The actual number of rows 4 does not satisfy (count = 5)."
   }
 
   "A RegexConstraintResult" should "have the correct success message" in {

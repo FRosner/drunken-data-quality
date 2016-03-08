@@ -212,7 +212,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   it should "work for NumberOfRowsConstraintResult" in {
-    val expected = 1L
+    val expected = new Column("count") === 1L
     val actual = 1L
     val constraintResult = NumberOfRowsConstraintResult(
       constraint = NumberOfRowsConstraint(expected),
@@ -221,7 +221,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     )
 
     checkJsonOf(constraintResult, Map(
-      "expected" -> expected,
+      "expected" -> expected.toString,
       "actual" -> actual
     ))
   }

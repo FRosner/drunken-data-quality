@@ -4,7 +4,7 @@
 
 DDQ is a small library for checking constraints on Spark data structures. It can be used to assure a certain data quality, especially when continuous imports happen.
 
-## Getting DDQ 
+## Getting DDQ
 
 ### Spark Package
 
@@ -53,12 +53,12 @@ Run some checks and see the results on the console.
 import de.frosner.ddq.core._
 
 Check(customers)
-  .hasNumRowsEqualTo(3)
+  .hasNumRows(_ >= 3)
   .hasUniqueKey("id")
   .run()
 
 Check(contracts)
-  .hasNumRowsEqualTo(3)
+  .hasNumRows(_ > 0)
   .hasUniqueKey("id", "customerId")
   .satisfies("duration > 0")
   .hasForeignKey(customers, "customerId" -> "id")
@@ -73,7 +73,7 @@ By default the check result will be printed to stdout using ANSI escape codes to
 import de.frosner.ddq.reporters.MarkdownReporter
 
 Check(customers)
-  .hasNumRowsEqualTo(3)
+  .hasNumRows(_ >= 3)
   .hasUniqueKey("id")
   .run(MarkdownReporter(System.err))
 ```
@@ -87,11 +87,11 @@ import de.frosner.ddq.reporters.ConsoleReporter
 import java.io.{PrintStream, File}
 
 val check1 = Check(customers)
-  .hasNumRowsEqualTo(3)
+  .hasNumRows(_ >= 3)
   .hasUniqueKey("id")
 
 val check2 = Check(contracts)
-  .hasNumRowsEqualTo(3)
+  .hasNumRows(_ > 0)
   .hasUniqueKey("id", "customerId")
   .satisfies("duration > 0")
   .hasForeignKey(customers, "customerId" -> "id")
@@ -124,7 +124,7 @@ assert(allConstraintsSatisfied(results(check2)))
 If you want to fail the data load if the number of rows and the unique key constraints are not satisfied, but the duration constraint can be violated, you can write individual assertions for each constraint result.
 
 ```scala
-val numRowsConstraint = Check.hasNumRowsEqualTo(3)
+val numRowsConstraint = Check.hasNumRows(_ >= 3)
 val uniqueKeyConstraint = Check.hasUniqueKey("id", "customerId")
 val durationConstraint = Check.satisfies("duration > 0")
 

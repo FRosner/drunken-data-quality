@@ -107,7 +107,7 @@ object Log4jReporter {
         failedInstancesKey -> nullRows
       )
       case NumberOfRowsConstraintResult(NumberOfRowsConstraint(expected), actual, status) => Map(
-        "expected" -> expected,
+        "expected" -> expected.toString,
         "actual" -> actual
       )
       case RegexConstraintResult(RegexConstraint(column, regex), failedRows, status) => Map(

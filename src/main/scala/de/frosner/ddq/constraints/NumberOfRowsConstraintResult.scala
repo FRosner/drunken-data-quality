@@ -7,8 +7,8 @@ case class NumberOfRowsConstraintResult(constraint: NumberOfRowsConstraint,
   val message: String = {
     val expected = constraint.expected
     status match {
-      case ConstraintSuccess => s"The number of rows is equal to $expected."
-      case ConstraintFailure => s"The actual number of rows $actual is not equal to the expected $expected."
+      case ConstraintSuccess => s"The number of rows satisfies $expected."
+      case ConstraintFailure => s"The actual number of rows $actual does not satisfy $expected."
     }
   }
 

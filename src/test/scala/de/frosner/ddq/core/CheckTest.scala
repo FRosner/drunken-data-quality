@@ -33,24 +33,25 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val expectedNumberOfRows1 = 3
     val expectedNumberOfRows2 = 2
     val constraintString = "column > 0"
+    val columnName = "column"
     val check = Check(TestData.makeIntegerDf(sql, List(1,2,3)))
-      .hasNumRowsEqualTo(expectedNumberOfRows1)
-      .hasNumRowsEqualTo(expectedNumberOfRows2)
+      .isAlwaysNull(columnName)
+      .isNeverNull(columnName)
       .satisfies(constraintString)
     val constraint1 = check.constraints(0)
     val constraint2 = check.constraints(1)
     val constraint3 = check.constraints(2)
 
     check.run().constraintResults shouldBe Map(
-      constraint1 -> NumberOfRowsConstraintResult(
-        constraint = NumberOfRowsConstraint(expectedNumberOfRows1),
-        actual = 3L,
-        status = ConstraintSuccess
-      ),
-      constraint2 -> NumberOfRowsConstraintResult(
-        constraint = NumberOfRowsConstraint(expectedNumberOfRows2),
-        actual = 3L,
+      constraint1 -> AlwaysNullConstraintResult(
+        constraint = AlwaysNullConstraint(columnName),
+        nonNullRows = 3L,
         status = ConstraintFailure
+      ),
+      constraint2 -> NeverNullConstraintResult(
+        constraint = NeverNullConstraint(columnName),
+        nullRows = 0L,
+        status = ConstraintSuccess
       ),
       constraint3 -> StringColumnConstraintResult(
         constraint = StringColumnConstraint(constraintString),
@@ -64,10 +65,11 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val df = TestData.makeIntegerDf(sql, List(1,2,3))
     val tableName = "myintegerdf1"
     df.registerTempTable(tableName)
-    val constraint = Check.hasNumRowsEqualTo(3)
-    val result = NumberOfRowsConstraintResult(
-      constraint = NumberOfRowsConstraint(3L),
-      actual = 3L,
+    val columnName = "column"
+    val constraint = Check.isNeverNull(columnName)
+    val result = NeverNullConstraintResult(
+      constraint = NeverNullConstraint(columnName),
+      nullRows = 0L,
       status = ConstraintSuccess
     )
     Check.sqlTable(sql, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
@@ -87,10 +89,11 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val df = TestData.makeIntegerDf(hive, List(1,2,3))
     df.registerTempTable(tableName)
     hive.sql(s"USE default")
-    val constraint = Check.hasNumRowsEqualTo(3)
-    val result = NumberOfRowsConstraintResult(
-      constraint = NumberOfRowsConstraint(3L),
-      actual = 3L,
+    val columnName = "column"
+    val constraint = Check.isNeverNull(columnName)
+    val result = NeverNullConstraintResult(
+      constraint = NeverNullConstraint(columnName),
+      nullRows = 0L,
       status = ConstraintSuccess
     )
     Check.hiveTable(hive, databaseName, tableName).addConstraint(constraint).run().
