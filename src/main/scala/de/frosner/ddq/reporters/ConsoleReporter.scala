@@ -3,7 +3,7 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.constraints.{ConstraintError, ConstraintFailure, ConstraintSuccess}
 import de.frosner.ddq.core.CheckResult
 
 /**
@@ -27,6 +27,7 @@ case class ConsoleReporter(stream: PrintStream) extends PrintStreamReporter {
           constraintResult.status match {
             case ConstraintSuccess => stream.println(Console.GREEN + "- " + constraintResult.message + Console.RESET)
             case ConstraintFailure => stream.println(Console.RED + "- " + constraintResult.message + Console.RESET)
+            case ConstraintError(throwable) => stream.println(Console.YELLOW + "- " + constraintResult.message + Console.RESET)
           }
         }
       }

@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.TestData
 import org.apache.spark.sql.types.{LongType, DoubleType, StringType, IntegerType}
-import org.apache.spark.sql.{Column, SQLContext}
+import org.apache.spark.sql.{AnalysisException, Column, SQLContext}
 import org.apache.spark.sql.hive.test.TestHive
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, FlatSpec}
@@ -220,7 +220,7 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = AlwaysNullConstraintResult(
       constraint = AlwaysNullConstraint(column),
-      nonNullRows = 0L,
+      data = Some(AlwaysNullConstraintResultData(nonNullRows = 0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -232,10 +232,27 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = AlwaysNullConstraintResult(
       constraint = AlwaysNullConstraint(column),
-      nonNullRows = 1L,
+      data = Some(AlwaysNullConstraintResultData(nonNullRows = 1L)),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "error if the column is not existing" in {
+    val column = "notExisting"
+    val check = Check(TestData.makeNullableStringDf(sql, List("a", null, null))).isAlwaysNull(column)
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case AlwaysNullConstraintResult(
+        AlwaysNullConstraint("notExisting"),
+        constraintError: ConstraintError,
+        None
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+      }
+    }
   }
 
   "An is-never-null check" should "succeed if the column contains no null values" in {

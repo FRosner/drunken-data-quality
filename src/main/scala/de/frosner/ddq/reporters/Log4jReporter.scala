@@ -41,6 +41,7 @@ object Log4jReporter {
 
   private[reporters] val constraintTypeKey = "constraint"
   private[reporters] val constraintStatusKey = "status"
+  private[reporters] val constraintExceptionKey = "exception"
   private[reporters] val constraintMessageKey = "message"
 
   private[reporters] val failedInstancesKey = "failed"
@@ -61,11 +62,17 @@ object Log4jReporter {
     val check = checkResult.check
     val constraintType = constraintResult.constraint.getClass.getSimpleName.replace("$", "")
     val constraintStatus = constraintResult.status.stringValue
+    val maybeConstraintException = JSONMaybe(
+      constraintResult.status match {
+        case ConstraintError(throwable) => Some(throwable.toString)
+        case other => None
+      }
+    )
     val constraintMessage = constraintResult.message
     val constraintSpecificFields = constraintResult match {
-      case AlwaysNullConstraintResult(AlwaysNullConstraint(column), nonNullRows, status) => Map(
-        columnKey -> column,
-        failedInstancesKey -> nonNullRows
+      case alwaysNullConstraintResult: AlwaysNullConstraintResult => Map(
+        columnKey -> alwaysNullConstraintResult.constraint.columnName,
+        failedInstancesKey -> JSONMaybe(alwaysNullConstraintResult.data.map(_.nonNullRows))
       )
       case AnyOfConstraintResult(AnyOfConstraint(column, allowed), failedRows, status) => Map(
         columnKey -> column,
@@ -140,6 +147,7 @@ object Log4jReporter {
       )),
       constraintTypeKey -> constraintType,
       constraintStatusKey -> constraintStatus,
+      constraintExceptionKey -> maybeConstraintException,
       constraintMessageKey -> constraintMessage
     ).++(constraintSpecificFields))
   }

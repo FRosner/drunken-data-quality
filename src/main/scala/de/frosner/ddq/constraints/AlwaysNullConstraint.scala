@@ -2,14 +2,18 @@ package de.frosner.ddq.constraints
 
 import org.apache.spark.sql.{Column, DataFrame}
 
+import scala.util.Try
+
 case class AlwaysNullConstraint(columnName: String) extends Constraint {
 
   override val fun = (df: DataFrame) => {
-    val notNullCount = df.filter(new Column(columnName).isNotNull).count
+    val tryNotNullCount = Try(df.filter(new Column(columnName).isNotNull).count)
     AlwaysNullConstraintResult(
-      this,
-      notNullCount,
-      if (notNullCount == 0) ConstraintSuccess else ConstraintFailure
+      constraint = this,
+      status = tryNotNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
+        case throwable => Try(ConstraintError(throwable))
+      }.get,
+      data = tryNotNullCount.toOption.map(n => AlwaysNullConstraintResultData(nonNullRows = n))
     )
   }
 

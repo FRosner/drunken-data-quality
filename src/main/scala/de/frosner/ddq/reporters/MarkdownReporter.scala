@@ -3,7 +3,7 @@ package de.frosner.ddq.reporters
 import java.io.PrintStream
 
 import de.frosner.ddq._
-import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.constraints.{ConstraintError, ConstraintFailure, ConstraintSuccess}
 import de.frosner.ddq.core.CheckResult
 
 /**
@@ -23,12 +23,8 @@ case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
     stream.println(s"$prologue\n")
     if (checkResult.constraintResults.nonEmpty) {
       checkResult.constraintResults.foreach {
-        case (_, constraintResult) => {
-          constraintResult.status match {
-            case ConstraintSuccess => stream.println(s"- *${ConstraintSuccess.stringValue.toUpperCase}*: " + constraintResult.message)
-            case ConstraintFailure => stream.println(s"- *${ConstraintFailure.stringValue.toUpperCase}*: " + constraintResult.message)
-          }
-        }
+        case (_, constraintResult) =>
+          stream.println(s"- *${constraintResult.status.stringValue.toUpperCase}*: " + constraintResult.message)
       }
     } else {
       stream.println("Nothing to check!")

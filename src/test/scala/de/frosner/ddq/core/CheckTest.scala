@@ -45,7 +45,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     check.run().constraintResults shouldBe Map(
       constraint1 -> AlwaysNullConstraintResult(
         constraint = AlwaysNullConstraint(columnName),
-        nonNullRows = 3L,
+        data = Some(AlwaysNullConstraintResultData(3L)),
         status = ConstraintFailure
       ),
       constraint2 -> NeverNullConstraintResult(
