@@ -34,9 +34,15 @@ class ConsoleReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraint2 = DummyConstraint(message2, status2)
     val result2 = constraint2.fun(df)
 
+    val message3 = "3"
+    val status3 = ConstraintError(new IllegalArgumentException())
+    val constraint3 = DummyConstraint(message3, status3)
+    val result3 = DummyConstraintResult(constraint3, message3, status3)
+
     val constraints = Map[Constraint, ConstraintResult[Constraint]](
       constraint1 -> result1,
-      constraint2 -> result2
+      constraint2 -> result2,
+      constraint3 -> result3
     )
     val check = Check(df, Some(displayName), Option.empty, constraints.keys.toSeq)
 
@@ -45,6 +51,7 @@ class ConsoleReporterTest extends FlatSpec with Matchers with MockitoSugar {
 ${Console.BLUE}$prologue${Console.RESET}
 ${Console.GREEN}- ${result1.message}${Console.RESET}
 ${Console.RED}- ${result2.message}${Console.RESET}
+${Console.YELLOW}- ${result3.message}${Console.RESET}
 
 """
 
