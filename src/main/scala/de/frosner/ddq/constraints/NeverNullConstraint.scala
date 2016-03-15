@@ -2,14 +2,18 @@ package de.frosner.ddq.constraints
 
 import org.apache.spark.sql.{Column, DataFrame}
 
+import scala.util.Try
+
 case class NeverNullConstraint(columnName: String) extends Constraint {
 
   val fun = (df: DataFrame) => {
-    val nullCount = df.filter(new Column(columnName).isNull).count
+    val tryNullCount = Try(df.filter(new Column(columnName).isNull).count)
     NeverNullConstraintResult(
-      this,
-      nullCount,
-      if (nullCount == 0) ConstraintSuccess else ConstraintFailure
+      constraint = this,
+      data = tryNullCount.toOption.map(n => NeverNullConstraintResultData(nullRows = n)),
+      status = tryNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
+        case throwable => Try(ConstraintError(throwable))
+      }.get
     )
   }
 

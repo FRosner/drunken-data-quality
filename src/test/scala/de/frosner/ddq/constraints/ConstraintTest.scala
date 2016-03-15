@@ -261,7 +261,7 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(column),
-      nullRows = 0L,
+      data = Some(NeverNullConstraintResultData(0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -273,10 +273,27 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(column),
-      nullRows = 1L,
+      data = Some(NeverNullConstraintResultData(1L)),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "error if the column is not existing" in {
+    val column = "notExisting"
+    val check = Check(TestData.makeNullableStringDf(sql, List("a", null, null))).isNeverNull(column)
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case NeverNullConstraintResult(
+      NeverNullConstraint("notExisting"),
+      None,
+      constraintError: ConstraintError
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+      }
+    }
   }
 
   "A conversion check" should "succeed if all elements can be converted" in {

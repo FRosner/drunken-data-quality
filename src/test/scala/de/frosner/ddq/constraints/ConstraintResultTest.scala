@@ -249,20 +249,43 @@ class ConstraintResultTest extends FlatSpec with Matchers with MockitoSugar {
 
   "A NeverNullConstraintResult" should "have the correct success message" in {
     val constraint = NeverNullConstraint("c")
-    val result = NeverNullConstraintResult(constraint, 0L, ConstraintSuccess)
+    val result = NeverNullConstraintResult(
+      constraint = constraint,
+      data = Some(NeverNullConstraintResultData(0L)),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Column c is never null."
   }
 
   it should "have the correct failure message (one row)" in {
     val constraint = NeverNullConstraint("c")
-    val result = NeverNullConstraintResult(constraint, 1L, ConstraintFailure)
+    val result = NeverNullConstraintResult(
+      constraint = constraint,
+      data = Some(NeverNullConstraintResultData(1L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Column c contains 1 row that is null (should never be null)."
   }
 
   it should "have the correct failure message (multiple rows)" in {
     val constraint = NeverNullConstraint("c")
-    val result = NeverNullConstraintResult(constraint, 2L, ConstraintFailure)
+    val result = NeverNullConstraintResult(
+      constraint = constraint,
+      data = Some(NeverNullConstraintResultData(2L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Column c contains 2 rows that are null (should never be null)."
+  }
+
+  it should "have the correct error message" in {
+    val constraint = NeverNullConstraint("c")
+    val result = NeverNullConstraintResult(
+      constraint = constraint,
+      status = ConstraintError(new IllegalArgumentException("column c not found")),
+      data = None
+    )
+    result.message shouldBe "Checking column c for being never null failed: " +
+      "java.lang.IllegalArgumentException: column c not found"
   }
 
   "A NumberOfRowsConstraintResult" should "have the correct success message" in {

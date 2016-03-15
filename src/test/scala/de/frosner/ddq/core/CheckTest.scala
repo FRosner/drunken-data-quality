@@ -50,7 +50,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
       ),
       constraint2 -> NeverNullConstraintResult(
         constraint = NeverNullConstraint(columnName),
-        nullRows = 0L,
+        data = Some(NeverNullConstraintResultData(0L)),
         status = ConstraintSuccess
       ),
       constraint3 -> StringColumnConstraintResult(
@@ -69,7 +69,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val constraint = Check.isNeverNull(columnName)
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(columnName),
-      nullRows = 0L,
+      data = Some(NeverNullConstraintResultData(0L)),
       status = ConstraintSuccess
     )
     Check.sqlTable(sql, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
@@ -93,7 +93,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     val constraint = Check.isNeverNull(columnName)
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(columnName),
-      nullRows = 0L,
+      data = Some(NeverNullConstraintResultData(0L)),
       status = ConstraintSuccess
     )
     Check.hiveTable(hive, databaseName, tableName).addConstraint(constraint).run().

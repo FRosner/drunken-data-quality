@@ -111,7 +111,7 @@ object Log4jReporter {
       )
       case NeverNullConstraintResult(NeverNullConstraint(column), nullRows, status) => Map(
         columnKey -> column,
-        failedInstancesKey -> nullRows
+        failedInstancesKey -> JSONMaybe(nullRows.map(_.nullRows))
       )
       case NumberOfRowsConstraintResult(NumberOfRowsConstraint(expected), actual, status) => Map(
         "expected" -> expected.toString,
