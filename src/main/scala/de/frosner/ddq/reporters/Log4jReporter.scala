@@ -74,10 +74,10 @@ object Log4jReporter {
         columnKey -> alwaysNullConstraintResult.constraint.columnName,
         failedInstancesKey -> JSONMaybe(alwaysNullConstraintResult.data.map(_.nonNullRows))
       )
-      case AnyOfConstraintResult(AnyOfConstraint(column, allowed), failedRows, status) => Map(
-        columnKey -> column,
-        "allowed" -> JSONArray(allowed.map(_.toString).toList),
-        failedInstancesKey -> failedRows
+      case anyOfConstraintResult: AnyOfConstraintResult => Map(
+        columnKey -> anyOfConstraintResult.constraint.columnName,
+        "allowed" -> JSONArray(anyOfConstraintResult.constraint.allowedValues.map(_.toString).toList),
+        failedInstancesKey -> JSONMaybe(anyOfConstraintResult.data.map(_.failedRows))
       )
       case ColumnColumnConstraintResult(ColumnColumnConstraint(column), violatingRows, status) => Map(
         columnKey -> column.toString,

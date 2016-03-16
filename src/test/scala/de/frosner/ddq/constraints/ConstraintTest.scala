@@ -580,7 +580,7 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint("column", allowed),
-      failedRows = 0,
+      data = Some(AnyOfConstraintResultData(failedRows = 0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -593,7 +593,7 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint("column", allowed),
-      failedRows = 0,
+      data = Some(AnyOfConstraintResultData(failedRows = 0)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -606,10 +606,28 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint(column, allowed),
-      failedRows = 2,
+      data = Some(AnyOfConstraintResultData(failedRows = 2L)),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "error if there are values not inside" in {
+    val column = "column"
+    val allowed = Set[Any]("a", "b", "d")
+    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c", "c"))).isAnyOf("notExisting", allowed)
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case AnyOfConstraintResult(
+        AnyOfConstraint("notExisting", actualAllowed),
+        None,
+        constraintError: ConstraintError
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+      }
+    }
   }
 
   "A check if a column satisfies the given regex" should "succeed if all values satisfy the regex" in {

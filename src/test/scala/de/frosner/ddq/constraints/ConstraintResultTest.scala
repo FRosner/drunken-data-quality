@@ -53,20 +53,43 @@ class ConstraintResultTest extends FlatSpec with Matchers with MockitoSugar {
 
   "An AnyOfConstraintResult" should "have the correct success message" in {
     val constraint = AnyOfConstraint("c", Set("a", "b"))
-    val result = AnyOfConstraintResult(constraint, 0L, ConstraintSuccess)
+    val result = AnyOfConstraintResult(
+      constraint = constraint,
+      data = Some(AnyOfConstraintResultData(failedRows = 0L)),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Column c contains only values in Set(a, b)."
   }
 
   it should "have the correct failure message (one row)" in {
     val constraint = AnyOfConstraint("c", Set("a", "b"))
-    val result = AnyOfConstraintResult(constraint, 1L, ConstraintFailure)
+    val result = AnyOfConstraintResult(
+      constraint = constraint,
+      data = Some(AnyOfConstraintResultData(failedRows = 1L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Column c contains 1 row that is not in Set(a, b)."
   }
 
   it should "have the correct failure message (multiple rows)" in {
     val constraint = AnyOfConstraint("c", Set("a", "b"))
-    val result = AnyOfConstraintResult(constraint, 2L, ConstraintFailure)
+    val result = AnyOfConstraintResult(
+      constraint = constraint,
+      data = Some(AnyOfConstraintResultData(failedRows = 2L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Column c contains 2 rows that are not in Set(a, b)."
+  }
+
+  it should "have the correct error message" in {
+    val constraint = AnyOfConstraint("c", Set("a", "b"))
+    val result = AnyOfConstraintResult(
+      constraint = constraint,
+      data = None,
+      status = ConstraintError(new IllegalArgumentException("reason"))
+    )
+    result.message shouldBe "Checking whether column c contains only values in Set(a, b) failed: " +
+      "java.lang.IllegalArgumentException: reason"
   }
 
   "A ColumnColumnConstraintResult" should "have the correct success message" in {
