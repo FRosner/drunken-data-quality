@@ -12,7 +12,7 @@ case class AlwaysNullConstraintResult(constraint: AlwaysNullConstraint,
     (status, maybeNonNullRows, maybePluralS) match {
       case (ConstraintError(throwable), None, None) =>
         s"Checking column $columnName for being always null failed: $throwable"
-      case (ConstraintSuccess, _, Some(pluralS)) =>
+      case (ConstraintSuccess, Some(0), Some(pluralS)) =>
         s"Column $columnName is always null."
       case (ConstraintFailure, Some(nonNullRows), Some(pluralS)) =>
         s"Column $columnName contains $nonNullRows non-null row$pluralS (should always be null)."

@@ -9,7 +9,7 @@ case class NeverNullConstraintResult(constraint: NeverNullConstraint,
     val maybePluralS = maybeNullRows.map(nullRows => if (nullRows == 1) "" else "s")
     val maybeVerb = maybeNullRows.map(nullRows => if (nullRows == 1) "is" else "are")
     (status, maybeNullRows, maybePluralS, maybeVerb) match {
-      case (ConstraintSuccess, Some(nullRows), Some(pluralS), Some(verb)) =>
+      case (ConstraintSuccess, Some(0), Some(pluralS), Some(verb)) =>
         s"Column $columnName is never null."
       case (ConstraintFailure, Some(nullRows), Some(pluralS), Some(verb)) =>
         s"Column $columnName contains $nullRows row$pluralS that $verb null (should never be null)."

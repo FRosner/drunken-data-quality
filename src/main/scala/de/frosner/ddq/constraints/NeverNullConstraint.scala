@@ -10,7 +10,7 @@ case class NeverNullConstraint(columnName: String) extends Constraint {
     val tryNullCount = Try(df.filter(new Column(columnName).isNull).count)
     NeverNullConstraintResult(
       constraint = this,
-      data = tryNullCount.toOption.map(n => NeverNullConstraintResultData(nullRows = n)),
+      data = tryNullCount.toOption.map(NeverNullConstraintResultData),
       status = tryNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
         case throwable => Try(ConstraintError(throwable))
       }.get

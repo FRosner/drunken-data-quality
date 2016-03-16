@@ -13,7 +13,7 @@ case class AlwaysNullConstraint(columnName: String) extends Constraint {
       status = tryNotNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
         case throwable => Try(ConstraintError(throwable))
       }.get,
-      data = tryNotNullCount.toOption.map(n => AlwaysNullConstraintResultData(nonNullRows = n))
+      data = tryNotNullCount.toOption.map(AlwaysNullConstraintResultData)
     )
   }
 
