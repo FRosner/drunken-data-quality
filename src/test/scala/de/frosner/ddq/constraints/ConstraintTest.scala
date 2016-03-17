@@ -145,7 +145,7 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = ColumnColumnConstraintResult(
       constraint = ColumnColumnConstraint(constraintColumn),
-      violatingRows = 0L,
+      data = Some(ColumnColumnConstraintResultData(failedRows = 0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -157,10 +157,27 @@ class ConstraintTest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val constraint = check.constraints.head
     val result = ColumnColumnConstraintResult(
       constraint = ColumnColumnConstraint(constraintColumn),
-      violatingRows = 1L,
+      data = Some(ColumnColumnConstraintResultData(failedRows = 1L)),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "error if the condition references a non-existing column" in {
+    val constraintColumn = new Column("notExisting") > 1
+    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintColumn)
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case ColumnColumnConstraintResult(
+        ColumnColumnConstraint(column),
+        None,
+        constraintError: ConstraintError
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+      }
+    }
   }
 
   "A conditional satisfies check" should "succeed if all rows where the statement is true, satisfy the given condition" in {

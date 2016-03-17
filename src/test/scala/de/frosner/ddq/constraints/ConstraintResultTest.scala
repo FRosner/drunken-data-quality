@@ -94,21 +94,45 @@ class ConstraintResultTest extends FlatSpec with Matchers with MockitoSugar {
 
   "A ColumnColumnConstraintResult" should "have the correct success message" in {
     val constraint = ColumnColumnConstraint(new Column("c") === 5)
-    val result = ColumnColumnConstraintResult(constraint, 0L, ConstraintSuccess)
+    val result = ColumnColumnConstraintResult(
+      constraint = constraint,
+      data = Some(ColumnColumnConstraintResultData(failedRows = 0L)),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Constraint (c = 5) is satisfied."
   }
 
   it should "have the correct failure message (one row)" in {
     val constraint = ColumnColumnConstraint(new Column("c") === 5)
-    val result = ColumnColumnConstraintResult(constraint, 1L, ConstraintFailure)
+    val result = ColumnColumnConstraintResult(
+      constraint = constraint,
+      data = Some(ColumnColumnConstraintResultData(failedRows = 1L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "1 row did not satisfy constraint (c = 5)."
   }
 
   it should "have the correct failure message (multiple rows)" in {
     val constraint = ColumnColumnConstraint(new Column("c") === 5)
-    val result = ColumnColumnConstraintResult(constraint, 2L, ConstraintFailure)
+    val result = ColumnColumnConstraintResult(
+      constraint = constraint,
+      data = Some(ColumnColumnConstraintResultData(failedRows = 2L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "2 rows did not satisfy constraint (c = 5)."
   }
+
+  it should "have the correct error message" in {
+    val constraint = ColumnColumnConstraint(new Column("c") === 5)
+    val result = ColumnColumnConstraintResult(
+      constraint = constraint,
+      data = None,
+      status = ConstraintError(new IllegalArgumentException("column c not found"))
+    )
+    result.message shouldBe "Checking constraint (c = 5) failed: " +
+      "java.lang.IllegalArgumentException: column c not found"
+  }
+
 
   "A ConditionalColumnConstraintResult" should "have the correct success message" in {
     val constraint = ConditionalColumnConstraint(new Column("c") === 5, new Column("d") === 2 )
