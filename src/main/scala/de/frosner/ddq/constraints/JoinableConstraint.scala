@@ -3,6 +3,7 @@ package de.frosner.ddq.constraints
 import org.apache.spark.sql.{Column, DataFrame}
 
 case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable: DataFrame) extends Constraint {
+
   val fun = (df: DataFrame) => {
     val columnsMap = columnNames.toMap
     val renamedColumns = columnNames.map{ case (baseColumn, refColumn) => ("b_" + baseColumn, "r_" + refColumn)}
@@ -34,5 +35,26 @@ case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable
       matchingKeys = matchingRows,
       status = if (matchingRows > 0) ConstraintSuccess else ConstraintFailure
     )
+  }
+
+}
+
+case class JoinableConstraintResult(constraint: JoinableConstraint,
+                                    distinctBefore: Long,
+                                    matchingKeys: Long,
+                                    status: ConstraintStatus) extends ConstraintResult[JoinableConstraint] {
+
+  val matchRatio: Double = matchingKeys.toDouble / distinctBefore
+
+  val message: String = {
+    val columnNames = constraint.columnNames
+    val columnsString = columnNames.map{ case (baseCol, refCol) => baseCol + "->" + refCol }.mkString(", ")
+    val matchPercentage = matchRatio * 100.0
+    status match {
+      case ConstraintSuccess => s"Key $columnsString can be used for joining. " +
+        s"Join columns cardinality in base table: $distinctBefore. " +
+        s"Join columns cardinality after joining: $matchingKeys (${"%.2f".format(matchPercentage)}" + "%)."
+      case ConstraintFailure => s"Key $columnsString cannot be used for joining (no result)."
+    }
   }
 }

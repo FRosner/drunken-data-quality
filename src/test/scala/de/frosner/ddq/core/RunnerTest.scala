@@ -1,8 +1,9 @@
 package de.frosner.ddq.core
 
 
-import de.frosner.ddq.constraints.{DummyConstraint, ConstraintFailure, ConstraintSuccess}
+import de.frosner.ddq.constraints.{ConstraintFailure, ConstraintSuccess}
 import de.frosner.ddq.reporters.Reporter
+import de.frosner.ddq.testutils.DummyConstraint
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.storage.StorageLevel
 import org.mockito.Mockito._

@@ -6,6 +6,7 @@ import java.util.Date
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core._
 import de.frosner.ddq.reporters.Log4jReporter.JSONMaybe
+import de.frosner.ddq.testutils.DummyConstraint
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.apache.spark.sql.{Column, DataFrame}

@@ -1,33 +1,21 @@
 package de.frosner.ddq.core
 
 import java.io.{FileOutputStream, FileDescriptor, PrintStream, ByteArrayOutputStream}
-import java.text.SimpleDateFormat
 
 import de.frosner.ddq.constraints._
-import de.frosner.ddq.testutils.TestData
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.sql.hive.test.TestHive
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Column, DataFrame, Row, SQLContext}
+import de.frosner.ddq.testutils.{SparkContexts, TestData}
+import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 
-class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar {
-
-  private val hive = TestHive
-  hive.setConf("spark.sql.shuffle.partitions", "5")
-  private val sc = hive.sparkContext
-  private val sql = new SQLContext(sc)
-  sql.setConf("spark.sql.shuffle.partitions", "5")
+class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar with SparkContexts {
 
   override def afterAll(): Unit = {
     hive.reset()
   }
-
 
   "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
     val expectedNumberOfRows1 = 3
