@@ -88,10 +88,10 @@ object Log4jReporter {
         "implication" -> conditionalColumnConstraintResult.constraint.implication.toString,
         failedInstancesKey -> JSONMaybe(conditionalColumnConstraintResult.data.map(_.failedRows))
       )
-      case DateFormatConstraintResult(DateFormatConstraint(column, format), failedRows, status) => Map(
-        columnKey -> column,
-        "dateFormat" -> format.toPattern,
-        failedInstancesKey -> failedRows
+      case dateFormatConstraintResult: DateFormatConstraintResult => Map(
+        columnKey -> dateFormatConstraintResult.constraint.columnName,
+        "dateFormat" -> dateFormatConstraintResult.constraint.format.toPattern,
+        failedInstancesKey -> JSONMaybe(dateFormatConstraintResult.data.map(_.failedRows))
       )
       case ForeignKeyConstraintResult(ForeignKeyConstraint(columns, ref), nonMatchingRows, status) => Map(
         columnsKey -> columnsToJsonArray(columns),
