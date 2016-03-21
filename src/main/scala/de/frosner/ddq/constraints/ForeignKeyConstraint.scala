@@ -2,6 +2,8 @@ package de.frosner.ddq.constraints
 
 import org.apache.spark.sql.{Column, DataFrame}
 
+import scala.util.Try
+
 case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTable: DataFrame) extends Constraint {
 
   val fun = (df: DataFrame) => {
@@ -10,32 +12,36 @@ case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTab
     val (renamedBaseColumns, renamedRefColumns) = renamedColumns.unzip
 
     // check if foreign key is a key in reference table
-    val nonUniqueRows = referenceTable.groupBy(refColumns.map(new Column(_)):_*).count.filter(new Column("count") > 1).count
-    if (nonUniqueRows > 0) {
+    val maybeNonUniqueRows = Try(
+      referenceTable.groupBy(refColumns.map(new Column(_)):_*).count.filter(new Column("count") > 1).count
+    )
+    if (maybeNonUniqueRows.toOption.exists(_ > 0)) {
       ForeignKeyConstraintResult(
         constraint = this,
-        numNonMatchingRefs = None,
+        data = Some(ForeignKeyConstraintResultData(numNonMatchingRefs = None)),
         status = ConstraintFailure
       )
     } else {
       // rename all columns to avoid ambiguous column references
-      val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
+      val maybeRenamedDf = maybeNonUniqueRows.map(_ => df.select(baseColumns.zip(renamedBaseColumns).map {
         case (original, renamed) => new Column(original).as(renamed)
-      }: _*)
-      val renamedRef = referenceTable.select(refColumns.zip(renamedRefColumns).map {
+      }: _*))
+      val maybeRenamedRef = maybeRenamedDf.map(_ => referenceTable.select(refColumns.zip(renamedRefColumns).map {
         case (original, renamed) => new Column(original).as(renamed)
-      }: _*)
+      }: _*))
 
       // check if left outer join yields some null values
-      val leftOuterJoin = renamedDf.distinct.join(renamedRef, renamedColumns.map {
+      val maybeLeftOuterJoin = maybeRenamedRef.map(renamedRef => maybeRenamedDf.get.distinct.join(renamedRef, renamedColumns.map {
         case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
-      }.reduce(_ && _), "outer")
-      val notMatchingRefs = leftOuterJoin.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count
+      }.reduce(_ && _), "outer"))
+      val maybeNotMatchingRefs = maybeLeftOuterJoin.map(_.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count)
 
       ForeignKeyConstraintResult(
         constraint = this,
-        numNonMatchingRefs = Some(notMatchingRefs),
-        status = if (notMatchingRefs == 0) ConstraintSuccess else ConstraintFailure
+        data = maybeNotMatchingRefs.toOption.map(Some(_)).map(ForeignKeyConstraintResultData),
+        status = maybeNotMatchingRefs.map(notMatchingRefs => if (notMatchingRefs == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
+          case throwable => Try(ConstraintError(throwable))
+        }.get
       )
     }
   }
@@ -43,7 +49,7 @@ case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTab
 }
 
 case class ForeignKeyConstraintResult(constraint: ForeignKeyConstraint,
-                                      numNonMatchingRefs: Option[Long],
+                                      data: Option[ForeignKeyConstraintResultData],
                                       status: ConstraintStatus) extends ConstraintResult[ForeignKeyConstraint] {
 
   val message: String = {
@@ -54,16 +60,22 @@ case class ForeignKeyConstraintResult(constraint: ForeignKeyConstraint,
     val (columnDo, columnDefine, columnIs, columnPluralS) =
       if (isPlural) ("do", "define", "are", "s") else ("does", "defines", "is", "")
     val columnNoun = "Column" + columnPluralS
-    (status, numNonMatchingRefs) match {
-      case (ConstraintSuccess, _) => s"$columnNoun $columnsString $columnDefine a foreign key " +
+    val maybeNumNonMatchingRefs = data.map(_.numNonMatchingRefs)
+    (status, maybeNumNonMatchingRefs) match {
+      case (ConstraintSuccess, Some(Some(0))) =>
+        s"$columnNoun $columnsString $columnDefine a foreign key " +
         s"pointing to the reference table $referenceTable."
-      case (ConstraintFailure, None) => s"$columnNoun $columnsString $columnIs not a key in the reference table."
-      case (ConstraintFailure, Some(nonMatching)) => {
+      case (ConstraintFailure, Some(None)) =>
+        s"$columnNoun $columnsString $columnIs not a key in the reference table."
+      case (ConstraintFailure, Some(Some(nonMatching))) =>
         val (rowsNoun, rowsDo) = if (nonMatching != 1) ("rows", "do") else ("row", "does")
         s"$columnNoun $columnsString $columnDo not define a foreign key " +
           s"pointing to $referenceTable. $nonMatching $rowsNoun $rowsDo not match."
-      }
+      case (ConstraintError(throwable), None) =>
+        s"Checking whether ${columnNoun.toLowerCase} $columnsString $columnDefine a foreign key failed: $throwable"
     }
   }
 
 }
+
+case class ForeignKeyConstraintResultData(numNonMatchingRefs: Option[Long])

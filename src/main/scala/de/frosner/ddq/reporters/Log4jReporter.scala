@@ -96,7 +96,7 @@ object Log4jReporter {
       case ForeignKeyConstraintResult(ForeignKeyConstraint(columns, ref), nonMatchingRows, status) => Map(
         columnsKey -> columnsToJsonArray(columns),
         referenceTableKey -> ref.toString,
-        failedInstancesKey -> JSONMaybe(nonMatchingRows)
+        failedInstancesKey -> JSONMaybe(nonMatchingRows.flatMap(_.numNonMatchingRefs))
       )
       case FunctionalDependencyConstraintResult(FunctionalDependencyConstraint(determinantSet, dependentSet), failedRows, status) => Map(
         "determinantSet" -> JSONArray(determinantSet.toList),

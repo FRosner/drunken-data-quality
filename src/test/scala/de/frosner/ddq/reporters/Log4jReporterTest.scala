@@ -137,10 +137,8 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     ))
   }
 
-  it should "work for ForeignKeyConstraintResult" in {
+  it should "work for ForeignKeyConstraintResult (failed rows)" in {
     val columns = Seq("c" -> "d")
-    val formatString = "yyyy"
-    val format = new SimpleDateFormat(formatString)
     val failedRows = 1L
     val df = mock[DataFrame]
     val dfName = "df"
@@ -149,7 +147,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = ForeignKeyConstraintResult(
       constraint = ForeignKeyConstraint(columns, df),
       status = ConstraintFailure,
-      numNonMatchingRefs = Some(failedRows)
+      data = Some(ForeignKeyConstraintResultData(Some(failedRows)))
     )
 
     checkJsonOf(constraintResult, Map(
@@ -158,6 +156,48 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
       )),
       "referenceTable" -> dfName,
       Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
+    ))
+  }
+
+  it should "work for ForeignKeyConstraintResult (no failed rows)" in {
+    val columns = Seq("c" -> "d")
+    val df = mock[DataFrame]
+    val dfName = "df"
+    when(df.toString).thenReturn(dfName)
+
+    val constraintResult = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(columns, df),
+      status = ConstraintFailure,
+      data = Some(ForeignKeyConstraintResultData(None))
+    )
+
+    checkJsonOf(constraintResult, Map(
+      Log4jReporter.columnsKey -> JSONArray(List(
+        JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
+      )),
+      "referenceTable" -> dfName,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Option.empty[Long])
+    ))
+  }
+
+  it should "work for ForeignKeyConstraintResult (error)" in {
+    val columns = Seq("c" -> "d")
+    val df = mock[DataFrame]
+    val dfName = "df"
+    when(df.toString).thenReturn(dfName)
+
+    val constraintResult = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(columns, df),
+      status = ConstraintError(new IllegalArgumentException()),
+      data = None
+    )
+
+    checkJsonOf(constraintResult, Map(
+      Log4jReporter.columnsKey -> JSONArray(List(
+        JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
+      )),
+      "referenceTable" -> dfName,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Option.empty[Long])
     ))
   }
 
@@ -305,8 +345,16 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val dfName = "myDf"
     val numRows = 10
 
-    val result1 = ForeignKeyConstraintResult(ForeignKeyConstraint(Seq(("a", "b")), df), None, ConstraintFailure)
-    val result2 = ForeignKeyConstraintResult(ForeignKeyConstraint(Seq(("a", "b"), ("c", "d")), df), Some(5), ConstraintFailure)
+    val result1 = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(Seq(("a", "b")), df),
+      data = Some(ForeignKeyConstraintResultData(None)),
+      status = ConstraintFailure
+    )
+    val result2 = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(Seq(("a", "b"), ("c", "d")), df),
+      data = Some(ForeignKeyConstraintResultData(Some(5L))),
+      status = ConstraintFailure
+    )
 
     val constraints = Map[Constraint, ConstraintResult[Constraint]](
       result1.constraint -> result1,
