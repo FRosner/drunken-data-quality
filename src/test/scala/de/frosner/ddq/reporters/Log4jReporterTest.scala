@@ -228,8 +228,10 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     when(df.toString).thenReturn(dfName)
     val constraintResult = JoinableConstraintResult(
       constraint = JoinableConstraint(columns, df),
-      distinctBefore = 5L,
-      matchingKeys = 3L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 5L,
+        matchingKeys = 3L
+      )),
       status = ConstraintFailure
     )
 
@@ -238,8 +240,8 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
         JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
       )),
       "referenceTable" -> dfName,
-      "distinctBefore" -> 5L,
-      "matchingKeys" -> 3L
+      "distinctBefore" -> JSONMaybe(Some(5L)),
+      "matchingKeys" -> JSONMaybe(Some(3L))
     ))
   }
 

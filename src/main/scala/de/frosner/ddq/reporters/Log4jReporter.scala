@@ -103,11 +103,11 @@ object Log4jReporter {
         "dependentSet" -> JSONArray(functionalDependencyConstraintResult.constraint.dependentSet.toList),
         failedInstancesKey -> JSONMaybe(functionalDependencyConstraintResult.data.map(_.failedRows))
       )
-      case JoinableConstraintResult(JoinableConstraint(columns, ref), distinctBefore, matchingKeys, status) => Map(
-        columnsKey -> columnsToJsonArray(columns),
-        referenceTableKey -> ref.toString,
-        "distinctBefore" -> distinctBefore,
-        "matchingKeys" -> matchingKeys
+      case joinableConstraintResult: JoinableConstraintResult => Map(
+        columnsKey -> columnsToJsonArray(joinableConstraintResult.constraint.columnNames),
+        referenceTableKey -> joinableConstraintResult.constraint.referenceTable.toString,
+        "distinctBefore" -> JSONMaybe(joinableConstraintResult.data.map(_.distinctBefore)),
+        "matchingKeys" -> JSONMaybe(joinableConstraintResult.data.map(_.matchingKeys))
       )
       case NeverNullConstraintResult(NeverNullConstraint(column), nullRows, status) => Map(
         columnKey -> column,

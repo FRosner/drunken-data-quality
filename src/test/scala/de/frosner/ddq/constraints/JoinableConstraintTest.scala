@@ -2,7 +2,7 @@ package de.frosner.ddq.constraints
 
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{TestData, SparkContexts}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{AnalysisException, DataFrame}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
@@ -17,8 +17,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns), ref),
-      distinctBefore = 3L,
-      matchingKeys = 2L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 3L,
+        matchingKeys = 2L
+      )),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -33,8 +35,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns1, columns2), ref),
-      distinctBefore = 2L,
-      matchingKeys = 1L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 1L
+      )),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -49,8 +53,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns1, columns2), ref),
-      distinctBefore = 2L,
-      matchingKeys = 1L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 1L
+      )),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -66,8 +72,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint1 = check1.constraints.head
     val result1 = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns), ref),
-      distinctBefore = 2L,
-      matchingKeys = 1L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 1L
+      )),
       status = ConstraintSuccess
     )
     check1.run().constraintResults shouldBe Map(constraint1 -> result1)
@@ -76,8 +84,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint2 = check2.constraints.head
     val result2 = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns), base),
-      distinctBefore = 1L,
-      matchingKeys = 1L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 1L,
+        matchingKeys = 1L
+      )),
       status = ConstraintSuccess
     )
     check2.run().constraintResults shouldBe Map(constraint2 -> result2)
@@ -92,8 +102,10 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns1, columns2), ref),
-      distinctBefore = 2L,
-      matchingKeys = 0L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 0L
+      )),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -107,18 +119,54 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
       constraint = JoinableConstraint(Seq(columns), ref),
-      distinctBefore = 2L,
-      matchingKeys = 0L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 0L
+      )),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  private def checkError(checkRef: Boolean) = {
+    val columns = if (checkRef) "column" -> "notExisting" else "notExisting" -> "column"
+    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 2, 2, 3))
+    val ref = TestData.makeIntegerDf(sql, List(1, 2, 5))
+    val check = Check(base).isJoinableWith(ref, columns)
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case JoinableConstraintResult(
+      JoinableConstraint(_, _),
+      None,
+      constraintError: ConstraintError
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+      }
+    }
+  }
+
+  it should "error if a column does not exist in the base table" in {
+    checkError(checkRef = false)
+  }
+
+  it should "error if a column does not exist in the reference table" in {
+    checkError(checkRef = true)
   }
 
   "A JoinableConstraintResult" should "have the correct success message" in {
     val ref = mock[DataFrame]
     when(ref.toString).thenReturn("ref")
     val constraint = JoinableConstraint(Seq("c1" -> "c2"), ref)
-    val result = JoinableConstraintResult(constraint, 1L, 1L, ConstraintSuccess)
+    val result = JoinableConstraintResult(
+      constraint = constraint,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 1L,
+        matchingKeys = 1L
+      )),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Key c1->c2 can be used for joining. " +
       "Join columns cardinality in base table: 1. " +
       "Join columns cardinality after joining: 1 (100.00%)."
@@ -128,7 +176,14 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val ref = mock[DataFrame]
     when(ref.toString).thenReturn("ref")
     val constraint = JoinableConstraint(Seq("c1" -> "c2"), ref)
-    val result = JoinableConstraintResult(constraint, 2L, 1L, ConstraintSuccess)
+    val result = JoinableConstraintResult(
+      constraint = constraint,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 2L,
+        matchingKeys = 1L
+      )),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Key c1->c2 can be used for joining. " +
       "Join columns cardinality in base table: 2. " +
       "Join columns cardinality after joining: 1 (50.00%)."
@@ -138,8 +193,28 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
     val ref = mock[DataFrame]
     when(ref.toString).thenReturn("ref")
     val constraint = JoinableConstraint(Seq("c1" -> "c2", "c5" -> "c2"), ref)
-    val result = JoinableConstraintResult(constraint, 5L, 0L, ConstraintFailure)
+    val result = JoinableConstraintResult(
+      constraint = constraint,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 5L,
+        matchingKeys = 0L
+      )),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Key c1->c2, c5->c2 cannot be used for joining (no result)."
+  }
+
+  it should "have the correct error message" in {
+    val ref = mock[DataFrame]
+    when(ref.toString).thenReturn("ref")
+    val constraint = JoinableConstraint(Seq("c1" -> "c2"), ref)
+    val result = JoinableConstraintResult(
+      constraint = constraint,
+      data = None,
+      status = ConstraintError(new IllegalArgumentException("error"))
+    )
+    result.message shouldBe "Checking whether c1->c2 can be used for joining failed: " +
+      "java.lang.IllegalArgumentException: error"
   }
 
 }
