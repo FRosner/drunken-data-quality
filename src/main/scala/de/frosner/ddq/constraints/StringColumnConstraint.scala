@@ -2,33 +2,44 @@ package de.frosner.ddq.constraints
 
 import org.apache.spark.sql.DataFrame
 
+import scala.util.Try
+
 case class StringColumnConstraint(constraintString: String) extends Constraint {
 
   val fun = (df: DataFrame) => {
-    val succeedingRows = df.filter(constraintString).count
+    val maybeSucceedingRows = Try(df.filter(constraintString).count)
     val count = df.count
-    val failingRows = count - succeedingRows
+    val maybeFailingRows = maybeSucceedingRows.map(succeedingRows => count - succeedingRows)
     StringColumnConstraintResult(
       constraint = this,
-      violatingRows = failingRows,
-      if (failingRows == 0) ConstraintSuccess else ConstraintFailure
+      data = maybeFailingRows.toOption.map(StringColumnConstraintResultData),
+      status = maybeFailingRows.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
+        case throwable => Try(ConstraintError(throwable))
+      }.get
     )
   }
 
 }
 
 case class StringColumnConstraintResult(constraint: StringColumnConstraint,
-                                        violatingRows: Long,
+                                        data: Option[StringColumnConstraintResultData],
                                         status: ConstraintStatus) extends ConstraintResult[StringColumnConstraint] {
 
   val message: String = {
     val constraintString = constraint.constraintString
-    val pluralS = if (violatingRows == 1) "" else "s"
-    status match {
-      case ConstraintSuccess => s"Constraint $constraintString is satisfied."
-      case ConstraintFailure => s"$violatingRows row$pluralS did not satisfy constraint $constraintString."
+    val maybeViolatingRows = data.map(_.failedRows)
+    val maybePluralS = maybeViolatingRows.map(violatingRows => if (violatingRows == 1) "" else "s")
+    (status, maybeViolatingRows, maybePluralS) match {
+      case (ConstraintSuccess, Some(0), _) =>
+        s"Constraint $constraintString is satisfied."
+      case (ConstraintFailure, Some(violatingRows), Some(pluralS)) =>
+        s"$violatingRows row$pluralS did not satisfy constraint $constraintString."
+      case (ConstraintError(throwable), None, None) =>
+        s"Checking constraint $constraintString failed: $throwable"
     }
   }
 
 }
+
+case class StringColumnConstraintResultData(failedRows: Long)
 

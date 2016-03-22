@@ -43,7 +43,7 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
       ),
       constraint3 -> StringColumnConstraintResult(
         constraint = StringColumnConstraint(constraintString),
-        violatingRows = 0L,
+        data = Some(StringColumnConstraintResultData(0L)),
         status = ConstraintSuccess
       )
     )

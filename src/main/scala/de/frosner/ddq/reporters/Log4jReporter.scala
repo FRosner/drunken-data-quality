@@ -122,9 +122,9 @@ object Log4jReporter {
         "regex" -> regexConstraintResult.constraint.regex,
         failedInstancesKey -> JSONMaybe(regexConstraintResult.data.map(_.failedRows))
       )
-      case StringColumnConstraintResult(StringColumnConstraint(constraint), violatingRules, status) => Map(
-        columnKey -> constraint,
-        failedInstancesKey -> violatingRules
+      case stringColumnConstraintResult: StringColumnConstraintResult => Map(
+        columnKey -> stringColumnConstraintResult.constraint.constraintString,
+        failedInstancesKey -> JSONMaybe(stringColumnConstraintResult.data.map(_.failedRows))
       )
       case TypeConversionConstraintResult(TypeConversionConstraint(column, convertedType), originalType, failedRows, status) => Map(
         columnKey -> column,
