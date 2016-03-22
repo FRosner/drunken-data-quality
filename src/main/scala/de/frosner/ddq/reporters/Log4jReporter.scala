@@ -109,9 +109,9 @@ object Log4jReporter {
         "distinctBefore" -> JSONMaybe(joinableConstraintResult.data.map(_.distinctBefore)),
         "matchingKeys" -> JSONMaybe(joinableConstraintResult.data.map(_.matchingKeys))
       )
-      case NeverNullConstraintResult(NeverNullConstraint(column), nullRows, status) => Map(
-        columnKey -> column,
-        failedInstancesKey -> JSONMaybe(nullRows.map(_.nullRows))
+      case neverNullConstraintResult: NeverNullConstraintResult => Map(
+        columnKey -> neverNullConstraintResult.constraint.columnName,
+        failedInstancesKey -> JSONMaybe(neverNullConstraintResult.data.map(_.nullRows))
       )
       case NumberOfRowsConstraintResult(NumberOfRowsConstraint(expected), actual, status) => Map(
         "expected" -> expected.toString,
