@@ -208,13 +208,13 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = FunctionalDependencyConstraintResult(
       constraint = FunctionalDependencyConstraint(determinantSet, dependentSet),
       status = ConstraintFailure,
-      failedRows = failedRows
+      data = Some(FunctionalDependencyConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       "determinantSet" -> JSONArray(List("a", "b")),
       "dependentSet" -> JSONArray(List("c", "d")),
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 

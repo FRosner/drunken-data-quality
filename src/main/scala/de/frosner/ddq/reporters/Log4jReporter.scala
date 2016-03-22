@@ -98,10 +98,10 @@ object Log4jReporter {
         referenceTableKey -> ref.toString,
         failedInstancesKey -> JSONMaybe(nonMatchingRows.flatMap(_.numNonMatchingRefs))
       )
-      case FunctionalDependencyConstraintResult(FunctionalDependencyConstraint(determinantSet, dependentSet), failedRows, status) => Map(
-        "determinantSet" -> JSONArray(determinantSet.toList),
-        "dependentSet" -> JSONArray(dependentSet.toList),
-        failedInstancesKey -> failedRows
+      case functionalDependencyConstraintResult: FunctionalDependencyConstraintResult => Map(
+        "determinantSet" -> JSONArray(functionalDependencyConstraintResult.constraint.determinantSet.toList),
+        "dependentSet" -> JSONArray(functionalDependencyConstraintResult.constraint.dependentSet.toList),
+        failedInstancesKey -> JSONMaybe(functionalDependencyConstraintResult.data.map(_.failedRows))
       )
       case JoinableConstraintResult(JoinableConstraint(columns, ref), distinctBefore, matchingKeys, status) => Map(
         columnsKey -> columnsToJsonArray(columns),
