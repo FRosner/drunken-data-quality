@@ -126,11 +126,11 @@ object Log4jReporter {
         columnKey -> stringColumnConstraintResult.constraint.constraintString,
         failedInstancesKey -> JSONMaybe(stringColumnConstraintResult.data.map(_.failedRows))
       )
-      case TypeConversionConstraintResult(TypeConversionConstraint(column, convertedType), originalType, failedRows, status) => Map(
-        columnKey -> column,
-        "originalType" -> originalType.toString,
-        "convertedType" -> convertedType.toString,
-        failedInstancesKey -> failedRows
+      case typeConversionConstraintResult: TypeConversionConstraintResult => Map(
+        columnKey -> typeConversionConstraintResult.constraint.columnName,
+        "originalType" -> JSONMaybe(typeConversionConstraintResult.data.map(_.originalType.toString)),
+        "convertedType" -> typeConversionConstraintResult.constraint.convertedType.toString,
+        failedInstancesKey -> JSONMaybe(typeConversionConstraintResult.data.map(_.failedRows))
       )
       case UniqueKeyConstraintResult(UniqueKeyConstraint(columns), numNonUniqueTuples, status) => Map(
         columnsKey -> JSONArray(columns.toList),
