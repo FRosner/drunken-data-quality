@@ -2,6 +2,7 @@ package de.frosner.ddq.constraints
 
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{TestData, SparkContexts}
+import org.apache.spark.sql.AnalysisException
 import org.scalatest.{FlatSpec, Matchers}
 
 class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts {
@@ -18,7 +19,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
     val constraint = check.constraints.head
     val result = UniqueKeyConstraintResult(
       constraint = UniqueKeyConstraint(Seq(column)),
-      numNonUniqueTuples = 0L,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -37,7 +38,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
     val constraint = check.constraints.head
     val result = UniqueKeyConstraintResult(
       constraint = UniqueKeyConstraint(Seq(column1, column2)),
-      numNonUniqueTuples = 0L,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 0L)),
       status = ConstraintSuccess
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -55,7 +56,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
     val constraint = check.constraints.head
     val result = UniqueKeyConstraintResult(
       constraint = UniqueKeyConstraint(Seq(column)),
-      numNonUniqueTuples = 1L,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 1L)),
       status = ConstraintFailure
     )
     check.run().constraintResults shouldBe Map(constraint -> result)
@@ -74,35 +75,95 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
     val constraint = check.constraints.head
     val result = UniqueKeyConstraintResult(
       constraint = UniqueKeyConstraint(Seq(column1, column2)),
-      numNonUniqueTuples = 1L,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 1L)),
       status = ConstraintFailure
     )
 
     check.run().constraintResults shouldBe Map(constraint -> result)
   }
 
+  it should "error if the given column does not exist" in {
+    val df = TestData.makeIntegersDf(sql,
+      List(1,2),
+      List(2,3),
+      List(3,3)
+    )
+
+    val check = Check(df).hasUniqueKey("notExisting")
+    val constraint = check.constraints.head
+    val result = check.run().constraintResults(constraint)
+    result match {
+      case UniqueKeyConstraintResult(
+      UniqueKeyConstraint(Seq("notExisting")),
+      None,
+      constraintError: ConstraintError
+      ) => {
+        val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
+        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column1, column2"
+      }
+    }
+  }
+
   "A UniqueKeyConstraintResult" should "have the correct success message (single column)" in {
     val constraint = UniqueKeyConstraint(Seq("column1"))
-    val result = UniqueKeyConstraintResult(constraint, 0L, ConstraintSuccess)
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 0L)),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Column column1 is a key."
   }
 
   it should "have the correct success message (multiple columns)" in {
     val constraint = UniqueKeyConstraint(Seq("column1", "column2"))
-    val result = UniqueKeyConstraintResult(constraint, 0L, ConstraintSuccess)
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 0L)),
+      status = ConstraintSuccess
+    )
     result.message shouldBe "Columns column1, column2 are a key."
   }
 
   it should "have the correct failure message (one column, one row)" in {
     val constraint = UniqueKeyConstraint(Seq("column1"))
-    val result = UniqueKeyConstraintResult(constraint, 1L, ConstraintFailure)
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 1L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Column column1 is not a key (1 non-unique tuple)."
   }
 
   it should "have the correct failure message (multiple columns, multiple rows)" in {
     val constraint = UniqueKeyConstraint(Seq("column1", "column2"))
-    val result = UniqueKeyConstraintResult(constraint, 2L, ConstraintFailure)
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = 2L)),
+      status = ConstraintFailure
+    )
     result.message shouldBe "Columns column1, column2 are not a key (2 non-unique tuples)."
+  }
+
+  it should "have the error success message (single column)" in {
+    val constraint = UniqueKeyConstraint(Seq("column1"))
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = None,
+      status = ConstraintError(new IllegalArgumentException("error"))
+    )
+    result.message shouldBe "Checking whether column column1 is a key failed: " +
+      "java.lang.IllegalArgumentException: error"
+  }
+
+  it should "have the error success message (multiple columns)" in {
+    val constraint = UniqueKeyConstraint(Seq("column1", "column2"))
+    val result = UniqueKeyConstraintResult(
+      constraint = constraint,
+      data = None,
+      status = ConstraintError(new IllegalArgumentException("error"))
+    )
+    result.message shouldBe "Checking whether columns column1, column2 are a key failed: " +
+      "java.lang.IllegalArgumentException: error"
   }
 
 }
