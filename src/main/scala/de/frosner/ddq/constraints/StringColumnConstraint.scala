@@ -13,9 +13,7 @@ case class StringColumnConstraint(constraintString: String) extends Constraint {
     StringColumnConstraintResult(
       constraint = this,
       data = maybeFailingRows.toOption.map(StringColumnConstraintResultData),
-      status = maybeFailingRows.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeFailingRows, _ == 0)
     )
   }
 

@@ -14,9 +14,7 @@ case class AnyOfConstraint(columnName: String, allowedValues: Set[Any]) extends 
     AnyOfConstraintResult(
       constraint = this,
       data = maybeNotAllowedCount.toOption.map(AnyOfConstraintResultData),
-      status = maybeNotAllowedCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeNotAllowedCount, _ == 0)
     )
   }
 

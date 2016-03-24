@@ -13,9 +13,7 @@ case class ConditionalColumnConstraint(statement: Column, implication: Column) e
     ConditionalColumnConstraintResult(
       constraint = this,
       data = maybeFailingRows.toOption.map(ConditionalColumnConstraintResultData),
-      status = maybeFailingRows.map(failingRows => if (failingRows == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeFailingRows, _ == 0)
     )
   }
 

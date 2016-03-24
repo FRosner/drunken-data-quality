@@ -20,11 +20,7 @@ case class TypeConversionConstraint(columnName: String,
         originalType = originalType,
         failedRows = maybeFailedCastsCount.get
       )),
-      status = maybeFailedCastsCount.map(
-        failedCastsCount => if (failedCastsCount == 0) ConstraintSuccess else ConstraintFailure
-      ).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeFailedCastsCount, _ == 0)
     )
   }
 

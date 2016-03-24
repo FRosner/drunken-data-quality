@@ -16,9 +16,7 @@ case class DateFormatConstraint(columnName: String,
     DateFormatConstraintResult(
       this,
       data = maybeCannotBeDateCount.toOption.map(DateFormatConstraintResultData),
-      status = maybeCannotBeDateCount.map(count => if (count == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeCannotBeDateCount, _ == 0)
     )
   }
 

@@ -39,9 +39,7 @@ case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTab
       ForeignKeyConstraintResult(
         constraint = this,
         data = maybeNotMatchingRefs.toOption.map(Some(_)).map(ForeignKeyConstraintResultData),
-        status = maybeNotMatchingRefs.map(notMatchingRefs => if (notMatchingRefs == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-          case throwable => Try(ConstraintError(throwable))
-        }.get
+        status = ConstraintUtil.tryToStatus[Long](maybeNotMatchingRefs, _ == 0)
       )
     }
   }

@@ -11,9 +11,7 @@ case class NeverNullConstraint(columnName: String) extends Constraint {
     NeverNullConstraintResult(
       constraint = this,
       data = tryNullCount.toOption.map(NeverNullConstraintResultData),
-      status = tryNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](tryNullCount, _ == 0)
     )
   }
 

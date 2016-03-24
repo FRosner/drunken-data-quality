@@ -17,11 +17,7 @@ case class RegexConstraint(columnName: String, regex: String) extends Constraint
     RegexConstraintResult(
       constraint = this,
       data = maybeDoesNotMatchCount.toOption.map(RegexConstraintResultData),
-      status = maybeDoesNotMatchCount.map(
-        doesNotMatchCount => if (doesNotMatchCount == 0) ConstraintSuccess else ConstraintFailure
-      ).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeDoesNotMatchCount, _ == 0)
     )
   }
 

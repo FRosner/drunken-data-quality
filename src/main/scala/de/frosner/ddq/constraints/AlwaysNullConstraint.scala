@@ -10,9 +10,7 @@ case class AlwaysNullConstraint(columnName: String) extends Constraint {
     val tryNotNullCount = Try(df.filter(new Column(columnName).isNotNull).count)
     AlwaysNullConstraintResult(
       constraint = this,
-      status = tryNotNullCount.map(c => if (c == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get,
+      status = ConstraintUtil.tryToStatus[Long](tryNotNullCount, _ == 0),
       data = tryNotNullCount.toOption.map(AlwaysNullConstraintResultData)
     )
   }

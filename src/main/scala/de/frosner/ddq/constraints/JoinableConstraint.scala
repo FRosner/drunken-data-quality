@@ -40,9 +40,7 @@ case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable
           distinctBefore = maybeDistinctBefore.get,
           matchingKeys = matchingRows
       )),
-      status = maybeMatchingRows.map(matchingRows => if (matchingRows > 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeMatchingRows, _ > 0)
     )
   }
 

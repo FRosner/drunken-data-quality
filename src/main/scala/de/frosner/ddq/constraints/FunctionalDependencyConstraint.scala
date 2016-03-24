@@ -20,9 +20,7 @@ case class FunctionalDependencyConstraint(determinantSet: Seq[String],
     FunctionalDependencyConstraintResult(
       constraint = this,
       data = maybeViolatingDeterminantValuesCount.toOption.map(FunctionalDependencyConstraintResultData),
-      status = maybeViolatingDeterminantValuesCount.map(count => if (count == 0) ConstraintSuccess else ConstraintFailure).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeViolatingDeterminantValuesCount, _ == 0)
     )
   }
 

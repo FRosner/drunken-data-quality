@@ -14,11 +14,7 @@ case class UniqueKeyConstraint(columnNames: Seq[String]) extends Constraint {
     UniqueKeyConstraintResult(
       constraint = this,
       data = maybeNonUniqueRows.toOption.map(UniqueKeyConstraintResultData),
-      status = maybeNonUniqueRows.map(
-        nonUniqueRows => if (nonUniqueRows == 0) ConstraintSuccess else ConstraintFailure
-      ).recoverWith {
-        case throwable => Try(ConstraintError(throwable))
-      }.get
+      status = ConstraintUtil.tryToStatus[Long](maybeNonUniqueRows, _ == 0)
     )
   }
 
