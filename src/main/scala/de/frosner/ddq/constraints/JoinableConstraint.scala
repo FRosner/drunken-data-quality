@@ -31,8 +31,6 @@ case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable
       case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
     }.reduce(_ && _)))
     val maybeMatchingRows = maybeJoin.map(_.distinct.count)
-    val maybeMatchedKeysPercentage = maybeMatchingRows.map(matchingRows =>
-        ((matchingRows.toDouble / maybeDistinctBefore.get) * 100).round)
 
     JoinableConstraintResult(
       constraint = this,
