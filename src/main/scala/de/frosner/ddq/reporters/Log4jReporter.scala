@@ -3,8 +3,7 @@ package de.frosner.ddq.reporters
 import java.util.Date
 
 import de.frosner.ddq.constraints._
-import de.frosner.ddq.core.{Check, CheckResult}
-
+import de.frosner.ddq.core.CheckResult
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.parsing.json.{JSONArray, JSONObject}

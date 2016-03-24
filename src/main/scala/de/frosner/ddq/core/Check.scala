@@ -2,12 +2,10 @@ package de.frosner.ddq.core
 
 import java.text.SimpleDateFormat
 import java.util.UUID
-import java.util.regex.Pattern
 
 import de.frosner.ddq.constraints._
-import de.frosner.ddq.{constraints, core}
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
-import org.apache.spark.sql.functions._
+import de.frosner.ddq.{constraints, core}
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.{Column, DataFrame, SQLContext}

@@ -2,7 +2,7 @@ package de.frosner.ddq.constraints
 
 import org.apache.spark.sql.{Column, DataFrame}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable: DataFrame) extends Constraint {
 

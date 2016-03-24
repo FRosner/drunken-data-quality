@@ -12,7 +12,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.apache.spark.sql.{Column, DataFrame}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.parsing.json.{JSONArray, JSONObject}
 

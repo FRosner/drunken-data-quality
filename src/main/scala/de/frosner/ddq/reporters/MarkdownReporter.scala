@@ -2,8 +2,6 @@ package de.frosner.ddq.reporters
 
 import java.io.PrintStream
 
-import de.frosner.ddq._
-import de.frosner.ddq.constraints.{ConstraintError, ConstraintFailure, ConstraintSuccess}
 import de.frosner.ddq.core.CheckResult
 
 /**

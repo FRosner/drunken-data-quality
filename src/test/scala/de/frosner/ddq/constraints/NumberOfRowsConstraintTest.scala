@@ -1,8 +1,7 @@
 package de.frosner.ddq.constraints
 
-import de.frosner.ddq.constraints.NumberOfRowsConstraint
 import de.frosner.ddq.core.Check
-import de.frosner.ddq.testutils.{TestData, SparkContexts}
+import de.frosner.ddq.testutils.{SparkContexts, TestData}
 import org.apache.spark.sql.Column
 import org.scalatest.{FlatSpec, Matchers}
 

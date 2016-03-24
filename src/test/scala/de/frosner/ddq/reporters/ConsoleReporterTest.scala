@@ -4,7 +4,7 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core._
-import de.frosner.ddq.testutils.{DummyConstraintResult, DummyConstraint}
+import de.frosner.ddq.testutils.{DummyConstraint, DummyConstraintResult}
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar

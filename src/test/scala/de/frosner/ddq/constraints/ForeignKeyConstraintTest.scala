@@ -1,7 +1,5 @@
 package de.frosner.ddq.constraints
 
-import java.text.SimpleDateFormat
-
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
 import org.apache.spark.sql.{AnalysisException, DataFrame}

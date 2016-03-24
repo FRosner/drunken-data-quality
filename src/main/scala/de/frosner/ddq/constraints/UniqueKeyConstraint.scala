@@ -1,6 +1,6 @@
 package de.frosner.ddq.constraints
 
-import org.apache.spark.sql.{DataFrame, Column}
+import org.apache.spark.sql.{Column, DataFrame}
 
 import scala.util.Try
 

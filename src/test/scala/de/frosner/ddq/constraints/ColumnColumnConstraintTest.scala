@@ -2,7 +2,7 @@ package de.frosner.ddq.constraints
 
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
-import org.apache.spark.sql.{Column, AnalysisException}
+import org.apache.spark.sql.{AnalysisException, Column}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ColumnColumnConstraintTest extends FlatSpec with Matchers with SparkContexts {

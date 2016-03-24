@@ -1,7 +1,7 @@
 package de.frosner.ddq.constraints
 
+import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.{count, lit}
 
 case class NumberOfRowsConstraint private[ddq] (expected: Column) extends Constraint {
 

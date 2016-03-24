@@ -1,7 +1,7 @@
 package de.frosner.ddq.testutils
 
-import org.apache.spark.sql.types.{StringType, IntegerType, StructField, StructType}
-import org.apache.spark.sql.{Row, DataFrame, SQLContext}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 object TestData {
 

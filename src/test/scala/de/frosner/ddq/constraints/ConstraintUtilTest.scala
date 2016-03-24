@@ -1,6 +1,6 @@
 package de.frosner.ddq.constraints
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}
 

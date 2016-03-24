@@ -1,9 +1,9 @@
 package de.frosner.ddq.constraints
 
 import de.frosner.ddq.core.Check
-import de.frosner.ddq.testutils.{TestData, SparkContexts}
+import de.frosner.ddq.testutils.{SparkContexts, TestData}
 import org.apache.spark.sql.AnalysisException
-import org.apache.spark.sql.types.{LongType, DoubleType, StringType, IntegerType}
+import org.apache.spark.sql.types.{DoubleType, IntegerType, LongType, StringType}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkContexts {

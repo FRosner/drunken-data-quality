@@ -1,6 +1,5 @@
 package de.frosner.ddq.constraints
 
-import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 import org.apache.spark.sql.functions._

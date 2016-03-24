@@ -1,15 +1,14 @@
 package de.frosner.ddq.core
 
-import java.io.{FileOutputStream, FileDescriptor, PrintStream, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, FileDescriptor, FileOutputStream, PrintStream}
 
 import de.frosner.ddq.constraints._
+import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
-
-import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar with SparkContexts {
 

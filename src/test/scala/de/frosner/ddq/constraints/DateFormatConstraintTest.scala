@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
-import org.apache.spark.sql.{AnalysisException, Column}
+import org.apache.spark.sql.AnalysisException
 import org.scalatest.{FlatSpec, Matchers}
 
 class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts {
