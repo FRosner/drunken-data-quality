@@ -23,17 +23,26 @@ case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTab
       )
     } else {
       // rename all columns to avoid ambiguous column references
-      val maybeRenamedDf = maybeNonUniqueRows.map(_ => df.select(baseColumns.zip(renamedBaseColumns).map {
-        case (original, renamed) => new Column(original).as(renamed)
-      }: _*))
-      val maybeRenamedRef = maybeRenamedDf.map(_ => referenceTable.select(refColumns.zip(renamedRefColumns).map {
-        case (original, renamed) => new Column(original).as(renamed)
-      }: _*))
+      val maybeRenamedDfAndRef = maybeNonUniqueRows.map(_ => {
+        val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
+          case (original, renamed) => new Column(original).as(renamed)
+        }: _*)
+        val renamedRef = referenceTable.select(refColumns.zip(renamedRefColumns).map {
+          case (original, renamed) => new Column(original).as(renamed)
+        }: _*)
+        (renamedDf, renamedRef)
+      }
+    )
+
 
       // check if left outer join yields some null values
-      val maybeLeftOuterJoin = maybeRenamedRef.map(renamedRef => maybeRenamedDf.get.distinct.join(renamedRef, renamedColumns.map {
-        case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
-      }.reduce(_ && _), "outer"))
+      val maybeLeftOuterJoin = maybeRenamedDfAndRef.map { case (renamedDf, renamedRef) =>
+        val joinCondition = renamedColumns.map {
+          case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
+        }.reduce(_ && _)
+        renamedDf.distinct.join(renamedRef, joinCondition, "outer")
+      }
+
       val maybeNotMatchingRefs = maybeLeftOuterJoin.map(_.filter(renamedRefColumns.map(new Column(_).isNull).reduce(_ && _)).count)
 
       ForeignKeyConstraintResult(
