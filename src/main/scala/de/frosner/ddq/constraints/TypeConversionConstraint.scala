@@ -12,15 +12,22 @@ case class TypeConversionConstraint(columnName: String,
     val originalColumn = new Column(columnName)
     val castedColumnName = columnName + "_casted"
     val maybeCasted = Try(df.select(originalColumn, originalColumn.cast(convertedType).as(castedColumnName)))
-    val maybeFailedCastsCount = maybeCasted.map(_.filter(new Column(castedColumnName).isNull && originalColumn.isNotNull).count)
-    val maybeOriginalType = maybeFailedCastsCount.map(_ => df.schema.find(_.name == columnName).get.dataType)
+    val maybeFailedCastsAndOriginalType = maybeCasted.map(casted => {
+      val failedCastsCount = casted.filter(new Column(castedColumnName).isNull && originalColumn.isNotNull).count
+      val originalType = df.schema.find(_.name == columnName).get.dataType
+      (failedCastsCount, originalType)
+    })
     TypeConversionConstraintResult(
       constraint = this,
-      data = maybeOriginalType.toOption.map(originalType => TypeConversionConstraintResultData(
-        originalType = originalType,
-        failedRows = maybeFailedCastsCount.get
-      )),
-      status = ConstraintUtil.tryToStatus[Long](maybeFailedCastsCount, _ == 0)
+      data = maybeFailedCastsAndOriginalType.toOption.map{ case (failedCastsCount, originalType) =>
+        TypeConversionConstraintResultData(
+          originalType = originalType,
+          failedRows = failedCastsCount
+        )
+      },
+      status = ConstraintUtil.tryToStatus[Long](maybeFailedCastsAndOriginalType.map{
+        case (failedCastsCount, originalType) => failedCastsCount
+      }, _ == 0)
     )
   }
 
