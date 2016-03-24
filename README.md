@@ -67,7 +67,7 @@ Check(contracts)
 
 ### Custom Reporters
 
-By default the check result will be printed to stdout using ANSI escape codes to highlight the output. To have a report in another format, you can specify one a more custom reporters.
+By default the check result will be printed to stdout using ANSI escape codes to highlight the output. To have a report in another format, you can specify one or more custom reporters.
 
 ```scala
 import de.frosner.ddq.reporters.MarkdownReporter
