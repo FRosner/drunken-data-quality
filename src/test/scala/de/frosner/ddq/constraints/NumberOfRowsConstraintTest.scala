@@ -34,13 +34,21 @@ class NumberOfRowsConstraintTest extends FlatSpec with Matchers with SparkContex
 
   "A NumberOfRowsConstraintResult" should "have the correct success message" in {
     val constraint = NumberOfRowsConstraint(new Column("count") > 5L)
-    val result = NumberOfRowsConstraintResult(constraint, 5L, ConstraintSuccess)
+    val result = NumberOfRowsConstraintResult(
+      constraint = constraint,
+      actual = 5L,
+      status = ConstraintSuccess
+    )
     result.message shouldBe "The number of rows satisfies (count > 5)."
   }
 
   it should "have the correct failure message" in {
     val constraint = NumberOfRowsConstraint(new Column("count") === 5L)
-    val result = NumberOfRowsConstraintResult(constraint, 4L, ConstraintFailure)
+    val result = NumberOfRowsConstraintResult(
+      constraint = constraint,
+      actual = 4L,
+      status = ConstraintFailure
+    )
     result.message shouldBe "The actual number of rows 4 does not satisfy (count = 5)."
   }
 
