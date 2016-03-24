@@ -17,28 +17,39 @@ case class JoinableConstraint(columnNames: Seq[(String, String)], referenceTable
     )
 
     // rename all columns to avoid ambiguous column references
-    val maybeRenamedDf = maybeNonUniqueRows.map(_ => df.select(baseColumns.zip(renamedBaseColumns).map {
-      case (original, renamed) => new Column(original).as(renamed)
-    }:_*))
-    val maybeRenamedRef = maybeNonUniqueRows.map(_ => referenceTable.select(refColumns.zip(renamedRefColumns).map {
-      case (original, renamed) => new Column(original).as(renamed)
-    }:_*))
+    val maybeRenamedDfAndRef = maybeNonUniqueRows.map(_ => {
+      val renamedDf = df.select(baseColumns.zip(renamedBaseColumns).map {
+        case (original, renamed) => new Column(original).as(renamed)
+      }: _*)
+      val renamedRef = referenceTable.select(refColumns.zip(renamedRefColumns).map {
+        case (original, renamed) => new Column(original).as(renamed)
+      }: _*)
+      (renamedDf, renamedRef)
+    })
 
     // check if join yields some values
-    val maybeRenamedDfDistinct = maybeRenamedDf.map(_.distinct)
-    val maybeDistinctBefore = maybeRenamedDfDistinct.map(_.count)
-    val maybeJoin = maybeRenamedDfDistinct.map(_.join(maybeRenamedRef.get, renamedColumns.map{
-      case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
-    }.reduce(_ && _)))
-    val maybeMatchingRows = maybeJoin.map(_.distinct.count)
+    val maybeDistinctBeforeAndMatchingRows = maybeRenamedDfAndRef.map { case (renamedDf, renamedRef) =>
+      val renamedDfDistinct = renamedDf.distinct
+      val distinctBefore = renamedDfDistinct.count
+      val joinCondition = renamedColumns.map{
+        case (baseColumn, refColumn) => new Column(baseColumn) === new Column(refColumn)
+      }.reduce(_ && _)
+      val join = renamedDfDistinct.join(renamedRef, joinCondition)
+      val matchingRows = join.distinct.count
+      (distinctBefore, matchingRows)
+    }
 
     JoinableConstraintResult(
       constraint = this,
-      data = maybeMatchingRows.toOption.map(matchingRows => JoinableConstraintResultData(
-          distinctBefore = maybeDistinctBefore.get,
+      data = maybeDistinctBeforeAndMatchingRows.toOption.map{ case (distinctBefore, matchingRows) =>
+        JoinableConstraintResultData(
+          distinctBefore = distinctBefore,
           matchingKeys = matchingRows
-      )),
-      status = ConstraintUtil.tryToStatus[Long](maybeMatchingRows, _ > 0)
+        )
+      },
+      status = ConstraintUtil.tryToStatus[Long](maybeDistinctBeforeAndMatchingRows.map{
+        case (distinctBefore, matchingRows) => matchingRows
+      }, _ > 0)
     )
   }
 
