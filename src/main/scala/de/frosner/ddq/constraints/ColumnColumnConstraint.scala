@@ -7,9 +7,10 @@ import scala.util.Try
 case class ColumnColumnConstraint(constraintColumn: Column) extends Constraint {
 
   val fun = (df: DataFrame) => {
-    val maybeSucceedingRows = Try(df.filter(constraintColumn).count)
-    val maybeCount = maybeSucceedingRows.map(_ => df.count)
-    val maybeFailingRows = maybeCount.map(count => count - maybeSucceedingRows.get)
+    val maybeFailingRows = Try {
+      val succeedingRows = df.filter(constraintColumn).count
+      df.count - succeedingRows
+    }
     ColumnColumnConstraintResult(
       constraint = this,
       data = maybeFailingRows.toOption.map(ColumnColumnConstraintResultData),
