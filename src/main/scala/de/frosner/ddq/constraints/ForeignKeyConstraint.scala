@@ -31,9 +31,7 @@ case class ForeignKeyConstraint(columnNames: Seq[(String, String)], referenceTab
           case (original, renamed) => new Column(original).as(renamed)
         }: _*)
         (renamedDf, renamedRef)
-      }
-    )
-
+      })
 
       // check if left outer join yields some null values
       val maybeLeftOuterJoin = maybeRenamedDfAndRef.map { case (renamedDf, renamedRef) =>
