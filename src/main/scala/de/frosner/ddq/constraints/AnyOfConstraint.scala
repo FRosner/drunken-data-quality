@@ -35,6 +35,7 @@ case class AnyOfConstraintResult(constraint: AnyOfConstraint,
         s"Column $columnName contains $failedRows row$pluralS that $verb not in $allowed."
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether column $columnName contains only values in $allowed failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 }

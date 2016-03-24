@@ -104,4 +104,14 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
     result.message shouldBe "Checking whether column c matches .* failed: java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      RegexConstraintResult(
+        constraint = RegexConstraint("c", ".*"),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

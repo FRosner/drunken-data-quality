@@ -290,4 +290,14 @@ class FunctionalDependencyConstraintTest extends FlatSpec with Matchers with Spa
       "java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      FunctionalDependencyConstraintResult(
+        constraint = FunctionalDependencyConstraint(Seq("a", "b"), Seq("c", "d")),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

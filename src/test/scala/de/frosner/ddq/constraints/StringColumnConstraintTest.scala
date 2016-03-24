@@ -88,5 +88,14 @@ class StringColumnConstraintTest extends FlatSpec with Matchers with SparkContex
     result.message shouldBe "Checking constraint column > 0 failed: java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      StringColumnConstraintResult(
+        constraint = StringColumnConstraint("column > 0"),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
 
 }

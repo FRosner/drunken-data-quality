@@ -39,6 +39,7 @@ case class UniqueKeyConstraintResult(constraint: UniqueKeyConstraint,
         s"$columnNoun $columnsString $columnVerb not a key ($numNonUniqueTuples non-unique tuple$pluralS)."
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether ${columnNoun.toLowerCase()} $columnsString $columnVerb a key failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

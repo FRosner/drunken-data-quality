@@ -217,4 +217,16 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
       "java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      val ref = mock[DataFrame]
+      when(ref.toString).thenReturn("ref")
+      JoinableConstraintResult(
+        constraint = JoinableConstraint(Seq("c1" -> "c2"), ref),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

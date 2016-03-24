@@ -33,6 +33,7 @@ case class AlwaysNullConstraintResult(constraint: AlwaysNullConstraint,
         s"Column $columnName is always null."
       case (ConstraintFailure, Some(nonNullRows), Some(pluralS)) =>
         s"Column $columnName contains $nonNullRows non-null row$pluralS (should always be null)."
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

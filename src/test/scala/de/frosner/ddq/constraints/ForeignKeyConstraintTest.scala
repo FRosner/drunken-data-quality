@@ -235,4 +235,16 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
       "java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      val ref = mock[DataFrame]
+      when(ref.toString).thenReturn("ref")
+      ForeignKeyConstraintResult(
+        constraint = ForeignKeyConstraint(Seq("a" -> "b", "c" -> "d"), ref),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

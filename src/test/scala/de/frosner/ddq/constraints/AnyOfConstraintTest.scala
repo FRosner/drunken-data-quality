@@ -105,4 +105,14 @@ class AnyOfConstraintTest extends FlatSpec with Matchers with SparkContexts {
       "java.lang.IllegalArgumentException: reason"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      AnyOfConstraintResult(
+        constraint = AnyOfConstraint("c", Set("a", "b")),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

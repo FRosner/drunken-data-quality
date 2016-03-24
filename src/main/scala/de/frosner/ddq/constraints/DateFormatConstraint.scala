@@ -39,6 +39,7 @@ case class DateFormatConstraintResult(constraint: DateFormatConstraint,
         s"Column $columnName contains $failedRows row$pluralS that $verb not formatted by $format."
       case (ConstraintError(throwable), None, None, None) =>
         s"Checking whether column $columnName is formatted by $format failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
 
   }

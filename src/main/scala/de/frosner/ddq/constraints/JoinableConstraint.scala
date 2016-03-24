@@ -61,9 +61,10 @@ case class JoinableConstraintResult(constraint: JoinableConstraint,
         s"Key $columnsString can be used for joining. " +
         s"Join columns cardinality in base table: $distinctBefore. " +
         s"Join columns cardinality after joining: $matchingKeys (${"%.2f".format(matchPercentage)}" + "%)."
-      case (ConstraintFailure, _, _) => s"Key $columnsString cannot be used for joining (no result)."
+      case (ConstraintFailure, Some(_), Some(_)) => s"Key $columnsString cannot be used for joining (no result)."
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether $columnsString can be used for joining failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

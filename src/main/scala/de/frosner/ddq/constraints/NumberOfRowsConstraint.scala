@@ -37,6 +37,7 @@ case class NumberOfRowsConstraintResult(constraint: NumberOfRowsConstraint,
     status match {
       case ConstraintSuccess => s"The number of rows satisfies $expected."
       case ConstraintFailure => s"The actual number of rows $actual does not satisfy $expected."
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

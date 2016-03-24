@@ -44,4 +44,14 @@ class NumberOfRowsConstraintTest extends FlatSpec with Matchers with SparkContex
     result.message shouldBe "The actual number of rows 4 does not satisfy (count = 5)."
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      NumberOfRowsConstraintResult(
+        constraint = NumberOfRowsConstraint(new Column("count") === 5L),
+        status = ConstraintError(new IllegalArgumentException("error")),
+        actual = 4L
+      )
+    }
+  }
+
 }

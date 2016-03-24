@@ -124,5 +124,14 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
       "java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      TypeConversionConstraintResult(
+        constraint = TypeConversionConstraint("c", IntegerType),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
 
 }

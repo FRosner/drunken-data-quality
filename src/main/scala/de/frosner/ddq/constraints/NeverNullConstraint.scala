@@ -32,6 +32,7 @@ case class NeverNullConstraintResult(constraint: NeverNullConstraint,
         s"Column $columnName contains $nullRows row$pluralS that $verb null (should never be null)."
       case (ConstraintError(throwable), None, None, None) =>
         s"Checking column $columnName for being never null failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 }

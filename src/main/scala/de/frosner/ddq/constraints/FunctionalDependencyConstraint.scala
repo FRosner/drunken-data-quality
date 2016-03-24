@@ -46,6 +46,7 @@ case class FunctionalDependencyConstraintResult(constraint: FunctionalDependency
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether column$columnPluralS $dependentString $columnVerb functionally " +
           s"dependent on $determinantString failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

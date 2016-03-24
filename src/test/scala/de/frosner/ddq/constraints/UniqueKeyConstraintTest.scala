@@ -166,4 +166,14 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
       "java.lang.IllegalArgumentException: error"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      UniqueKeyConstraintResult(
+        constraint = UniqueKeyConstraint(Seq("column1", "column2")),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

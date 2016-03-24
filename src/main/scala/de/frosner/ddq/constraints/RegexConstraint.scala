@@ -38,6 +38,7 @@ case class RegexConstraintResult(constraint: RegexConstraint,
         s"Column $columnName contains $failedRows row$pluralS that $verb not match $regex"
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether column $columnName matches $regex failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

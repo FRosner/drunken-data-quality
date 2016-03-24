@@ -71,6 +71,7 @@ case class ForeignKeyConstraintResult(constraint: ForeignKeyConstraint,
           s"pointing to $referenceTable. $nonMatching $rowsNoun $rowsDo not match."
       case (ConstraintError(throwable), None) =>
         s"Checking whether ${columnNoun.toLowerCase} $columnsString $columnDefine a foreign key failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

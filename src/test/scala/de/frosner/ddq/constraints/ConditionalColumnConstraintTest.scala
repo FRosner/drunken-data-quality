@@ -121,4 +121,14 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
       "java.lang.IllegalArgumentException: column c not found"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      ConditionalColumnConstraintResult(
+        constraint = ConditionalColumnConstraint(new Column("c") === 5, new Column("d") === 2),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }

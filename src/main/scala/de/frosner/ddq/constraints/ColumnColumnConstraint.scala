@@ -34,6 +34,7 @@ case class ColumnColumnConstraintResult(constraint: ColumnColumnConstraint,
         s"$violatingRows row$pluralS did not satisfy constraint $constraintString."
       case (ConstraintError(throwable), None, None) =>
         s"Checking constraint $constraintString failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

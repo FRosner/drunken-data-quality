@@ -42,6 +42,7 @@ case class TypeConversionConstraintResult(constraint: TypeConversionConstraint,
         s"$failedRows row$pluralS could not be converted."
       case (ConstraintError(throwable), None, None) =>
         s"Checking whether column $columnName can be converted to $convertedType failed: $throwable"
+      case default => throw IllegalConstraintResultException(this)
     }
   }
 

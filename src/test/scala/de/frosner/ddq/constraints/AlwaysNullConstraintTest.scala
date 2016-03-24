@@ -89,4 +89,14 @@ class AlwaysNullConstraintTest extends FlatSpec with Matchers with SparkContexts
       "java.lang.IllegalArgumentException: column c not found"
   }
 
+  it should "throw an exception if it is created with an illegal combination of fields" in {
+    intercept[IllegalConstraintResultException] {
+      AlwaysNullConstraintResult(
+        constraint = AlwaysNullConstraint("c"),
+        status = ConstraintFailure,
+        data = None
+      )
+    }
+  }
+
 }
