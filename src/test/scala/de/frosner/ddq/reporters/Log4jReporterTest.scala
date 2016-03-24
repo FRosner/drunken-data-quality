@@ -6,12 +6,13 @@ import java.util.Date
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core._
 import de.frosner.ddq.reporters.Log4jReporter.JSONMaybe
+import de.frosner.ddq.testutils.DummyConstraint
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.apache.spark.sql.{Column, DataFrame}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.parsing.json.{JSONArray, JSONObject}
 
@@ -43,6 +44,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
         )),
         Log4jReporter.constraintTypeKey -> constraint.getClass.getSimpleName.replace("$", ""),
         Log4jReporter.constraintStatusKey -> constraintResult.status.stringValue,
+        Log4jReporter.constraintExceptionKey -> JSONMaybe(
+          constraintResult.status match {
+            case ConstraintError(throwable) => Some(throwable.toString)
+            case other => None
+          }
+        ),
         Log4jReporter.constraintMessageKey -> constraintResult.message
       ) ++ additionalExpectedColumns
     )
@@ -54,12 +61,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = AlwaysNullConstraintResult(
       constraint = AlwaysNullConstraint(columnName),
       status = ConstraintFailure,
-      nonNullRows = nonNullRows
+      data = Some(AlwaysNullConstraintResultData(nonNullRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> columnName,
-      Log4jReporter.failedInstancesKey -> nonNullRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(nonNullRows))
     ))
   }
 
@@ -70,12 +77,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = AnyOfConstraintResult(
       constraint = AnyOfConstraint(columnName, allowedValues),
       status = ConstraintSuccess,
-      failedRows = failedRows
+      data = Some(AnyOfConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> columnName,
-      Log4jReporter.failedInstancesKey -> failedRows,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows)),
       "allowed" -> JSONArray(List("a", "5"))
     ))
   }
@@ -86,12 +93,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = ColumnColumnConstraintResult(
       constraint = ColumnColumnConstraint(constraint),
       status = ConstraintSuccess,
-      violatingRows = failedRows
+      data = Some(ColumnColumnConstraintResultData(failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> constraint.toString,
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -102,13 +109,13 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = ConditionalColumnConstraintResult(
       constraint = ConditionalColumnConstraint(statement, implication),
       status = ConstraintSuccess,
-      violatingRows = failedRows
+      data = Some(ConditionalColumnConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       "statement" -> statement.toString,
       "implication" -> implication.toString,
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -120,20 +127,18 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = DateFormatConstraintResult(
       constraint = DateFormatConstraint(column, format),
       status = ConstraintFailure,
-      failedRows = failedRows
+      data = Some(DateFormatConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> column,
-      Log4jReporter.failedInstancesKey -> failedRows,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows)),
       "dateFormat" -> formatString
     ))
   }
 
-  it should "work for ForeignKeyConstraintResult" in {
+  it should "work for ForeignKeyConstraintResult (failed rows)" in {
     val columns = Seq("c" -> "d")
-    val formatString = "yyyy"
-    val format = new SimpleDateFormat(formatString)
     val failedRows = 1L
     val df = mock[DataFrame]
     val dfName = "df"
@@ -142,7 +147,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = ForeignKeyConstraintResult(
       constraint = ForeignKeyConstraint(columns, df),
       status = ConstraintFailure,
-      numNonMatchingRefs = Some(failedRows)
+      data = Some(ForeignKeyConstraintResultData(Some(failedRows)))
     )
 
     checkJsonOf(constraintResult, Map(
@@ -154,6 +159,48 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     ))
   }
 
+  it should "work for ForeignKeyConstraintResult (no failed rows)" in {
+    val columns = Seq("c" -> "d")
+    val df = mock[DataFrame]
+    val dfName = "df"
+    when(df.toString).thenReturn(dfName)
+
+    val constraintResult = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(columns, df),
+      status = ConstraintFailure,
+      data = Some(ForeignKeyConstraintResultData(None))
+    )
+
+    checkJsonOf(constraintResult, Map(
+      Log4jReporter.columnsKey -> JSONArray(List(
+        JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
+      )),
+      "referenceTable" -> dfName,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Option.empty[Long])
+    ))
+  }
+
+  it should "work for ForeignKeyConstraintResult (error)" in {
+    val columns = Seq("c" -> "d")
+    val df = mock[DataFrame]
+    val dfName = "df"
+    when(df.toString).thenReturn(dfName)
+
+    val constraintResult = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(columns, df),
+      status = ConstraintError(new IllegalArgumentException()),
+      data = None
+    )
+
+    checkJsonOf(constraintResult, Map(
+      Log4jReporter.columnsKey -> JSONArray(List(
+        JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
+      )),
+      "referenceTable" -> dfName,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Option.empty[Long])
+    ))
+  }
+
   it should "work for FunctionalDependencyConstraintResult" in {
     val determinantSet = Seq("a", "b")
     val dependentSet = Seq("c", "d")
@@ -161,13 +208,13 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = FunctionalDependencyConstraintResult(
       constraint = FunctionalDependencyConstraint(determinantSet, dependentSet),
       status = ConstraintFailure,
-      failedRows = failedRows
+      data = Some(FunctionalDependencyConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       "determinantSet" -> JSONArray(List("a", "b")),
       "dependentSet" -> JSONArray(List("c", "d")),
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -181,8 +228,10 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     when(df.toString).thenReturn(dfName)
     val constraintResult = JoinableConstraintResult(
       constraint = JoinableConstraint(columns, df),
-      distinctBefore = 5L,
-      matchingKeys = 3L,
+      data = Some(JoinableConstraintResultData(
+        distinctBefore = 5L,
+        matchingKeys = 3L
+      )),
       status = ConstraintFailure
     )
 
@@ -191,8 +240,8 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
         JSONObject(Map("baseColumn" -> "c", "referenceColumn" -> "d"))
       )),
       "referenceTable" -> dfName,
-      "distinctBefore" -> 5L,
-      "matchingKeys" -> 3L
+      "distinctBefore" -> JSONMaybe(Some(5L)),
+      "matchingKeys" -> JSONMaybe(Some(3L))
     ))
   }
 
@@ -202,12 +251,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = NeverNullConstraintResult(
       constraint = NeverNullConstraint(column),
       status = ConstraintFailure,
-      nullRows = failedRows
+      data = Some(NeverNullConstraintResultData(failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> column,
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -233,12 +282,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = RegexConstraintResult(
       constraint = RegexConstraint(column, regex),
       status = ConstraintSuccess,
-      failedRows = failedRows
+      data = Some(RegexConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> column,
-      Log4jReporter.failedInstancesKey -> failedRows,
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows)),
       "regex" -> regex
     ))
   }
@@ -249,12 +298,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = StringColumnConstraintResult(
       constraint = StringColumnConstraint(column),
       status = ConstraintSuccess,
-      violatingRows = failedRows
+      data = Some(StringColumnConstraintResultData(failedRows = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> column,
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -264,14 +313,16 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = TypeConversionConstraintResult(
       constraint = TypeConversionConstraint(column, StringType),
       status = ConstraintSuccess,
-      failedRows = failedRows,
-      originalType = IntegerType
+      data = Some(TypeConversionConstraintResultData(
+        failedRows = failedRows,
+        originalType = IntegerType
+      ))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnKey -> column,
-      Log4jReporter.failedInstancesKey -> failedRows,
-      "originalType" -> "IntegerType",
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows)),
+      "originalType" -> JSONMaybe(Some("IntegerType")),
       "convertedType" -> "StringType"
     ))
   }
@@ -282,12 +333,12 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = UniqueKeyConstraintResult(
       constraint = UniqueKeyConstraint(columns),
       status = ConstraintSuccess,
-      numNonUniqueTuples = failedRows
+      data = Some(UniqueKeyConstraintResultData(numNonUniqueTuples = failedRows))
     )
 
     checkJsonOf(constraintResult, Map(
       Log4jReporter.columnsKey -> JSONArray(List("c", "d")),
-      Log4jReporter.failedInstancesKey -> failedRows
+      Log4jReporter.failedInstancesKey -> JSONMaybe(Some(failedRows))
     ))
   }
 
@@ -298,8 +349,16 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val dfName = "myDf"
     val numRows = 10
 
-    val result1 = ForeignKeyConstraintResult(ForeignKeyConstraint(Seq(("a", "b")), df), None, ConstraintFailure)
-    val result2 = ForeignKeyConstraintResult(ForeignKeyConstraint(Seq(("a", "b"), ("c", "d")), df), Some(5), ConstraintFailure)
+    val result1 = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(Seq(("a", "b")), df),
+      data = Some(ForeignKeyConstraintResultData(None)),
+      status = ConstraintFailure
+    )
+    val result2 = ForeignKeyConstraintResult(
+      constraint = ForeignKeyConstraint(Seq(("a", "b"), ("c", "d")), df),
+      data = Some(ForeignKeyConstraintResultData(Some(5L))),
+      status = ConstraintFailure
+    )
 
     val constraints = Map[Constraint, ConstraintResult[Constraint]](
       result1.constraint -> result1,
@@ -333,7 +392,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val date = new Date()
     log4jReporter.report(CheckResult(constraints, check, numRows))
 
-    verify(logger).log(logLevel, s"""{"check" : {"id" : "$id", "time" : "$date", "name" : "$dfName", "rowsTotal" : $numRows}, "constraint" : "DummyConstraint", "status" : "Success", "message" : "$message1"}""")
+    verify(logger).log(logLevel, s"""{"exception" : null, "check" : {"id" : "$id", "time" : "$date", "name" : "$dfName", "rowsTotal" : $numRows}, "status" : "Success", "constraint" : "DummyConstraint", "message" : "$message1"}""")
   }
 
 }

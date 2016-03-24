@@ -3,8 +3,7 @@ package de.frosner.ddq.reporters
 import java.util.Date
 
 import de.frosner.ddq.constraints._
-import de.frosner.ddq.core.{Check, CheckResult}
-
+import de.frosner.ddq.core.CheckResult
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.parsing.json.{JSONArray, JSONObject}
@@ -41,6 +40,7 @@ object Log4jReporter {
 
   private[reporters] val constraintTypeKey = "constraint"
   private[reporters] val constraintStatusKey = "status"
+  private[reporters] val constraintExceptionKey = "exception"
   private[reporters] val constraintMessageKey = "message"
 
   private[reporters] val failedInstancesKey = "failed"
@@ -61,73 +61,79 @@ object Log4jReporter {
     val check = checkResult.check
     val constraintType = constraintResult.constraint.getClass.getSimpleName.replace("$", "")
     val constraintStatus = constraintResult.status.stringValue
+    val maybeConstraintException = JSONMaybe(
+      constraintResult.status match {
+        case ConstraintError(throwable) => Some(throwable.toString)
+        case other => None
+      }
+    )
     val constraintMessage = constraintResult.message
     val constraintSpecificFields = constraintResult match {
-      case AlwaysNullConstraintResult(AlwaysNullConstraint(column), nonNullRows, status) => Map(
-        columnKey -> column,
-        failedInstancesKey -> nonNullRows
+      case alwaysNullConstraintResult: AlwaysNullConstraintResult => Map(
+        columnKey -> alwaysNullConstraintResult.constraint.columnName,
+        failedInstancesKey -> JSONMaybe(alwaysNullConstraintResult.data.map(_.nonNullRows))
       )
-      case AnyOfConstraintResult(AnyOfConstraint(column, allowed), failedRows, status) => Map(
-        columnKey -> column,
-        "allowed" -> JSONArray(allowed.map(_.toString).toList),
-        failedInstancesKey -> failedRows
+      case anyOfConstraintResult: AnyOfConstraintResult => Map(
+        columnKey -> anyOfConstraintResult.constraint.columnName,
+        "allowed" -> JSONArray(anyOfConstraintResult.constraint.allowedValues.map(_.toString).toList),
+        failedInstancesKey -> JSONMaybe(anyOfConstraintResult.data.map(_.failedRows))
       )
-      case ColumnColumnConstraintResult(ColumnColumnConstraint(column), violatingRows, status) => Map(
-        columnKey -> column.toString,
-        failedInstancesKey -> violatingRows
+      case columnColumnConstraintResult: ColumnColumnConstraintResult => Map(
+        columnKey -> columnColumnConstraintResult.constraint.constraintColumn.toString,
+        failedInstancesKey -> JSONMaybe(columnColumnConstraintResult.data.map(_.failedRows))
       )
-      case ConditionalColumnConstraintResult(ConditionalColumnConstraint(statement, implication), violatingRows, status) => Map(
-        "statement" -> statement.toString,
-        "implication" -> implication.toString,
-        failedInstancesKey -> violatingRows
+      case conditionalColumnConstraintResult: ConditionalColumnConstraintResult => Map(
+        "statement" -> conditionalColumnConstraintResult.constraint.statement.toString,
+        "implication" -> conditionalColumnConstraintResult.constraint.implication.toString,
+        failedInstancesKey -> JSONMaybe(conditionalColumnConstraintResult.data.map(_.failedRows))
       )
-      case DateFormatConstraintResult(DateFormatConstraint(column, format), failedRows, status) => Map(
-        columnKey -> column,
-        "dateFormat" -> format.toPattern,
-        failedInstancesKey -> failedRows
+      case dateFormatConstraintResult: DateFormatConstraintResult => Map(
+        columnKey -> dateFormatConstraintResult.constraint.columnName,
+        "dateFormat" -> dateFormatConstraintResult.constraint.format.toPattern,
+        failedInstancesKey -> JSONMaybe(dateFormatConstraintResult.data.map(_.failedRows))
       )
       case ForeignKeyConstraintResult(ForeignKeyConstraint(columns, ref), nonMatchingRows, status) => Map(
         columnsKey -> columnsToJsonArray(columns),
         referenceTableKey -> ref.toString,
-        failedInstancesKey -> JSONMaybe(nonMatchingRows)
+        failedInstancesKey -> JSONMaybe(nonMatchingRows.flatMap(_.numNonMatchingRefs))
       )
-      case FunctionalDependencyConstraintResult(FunctionalDependencyConstraint(determinantSet, dependentSet), failedRows, status) => Map(
-        "determinantSet" -> JSONArray(determinantSet.toList),
-        "dependentSet" -> JSONArray(dependentSet.toList),
-        failedInstancesKey -> failedRows
+      case functionalDependencyConstraintResult: FunctionalDependencyConstraintResult => Map(
+        "determinantSet" -> JSONArray(functionalDependencyConstraintResult.constraint.determinantSet.toList),
+        "dependentSet" -> JSONArray(functionalDependencyConstraintResult.constraint.dependentSet.toList),
+        failedInstancesKey -> JSONMaybe(functionalDependencyConstraintResult.data.map(_.failedRows))
       )
-      case JoinableConstraintResult(JoinableConstraint(columns, ref), distinctBefore, matchingKeys, status) => Map(
-        columnsKey -> columnsToJsonArray(columns),
-        referenceTableKey -> ref.toString,
-        "distinctBefore" -> distinctBefore,
-        "matchingKeys" -> matchingKeys
+      case joinableConstraintResult: JoinableConstraintResult => Map(
+        columnsKey -> columnsToJsonArray(joinableConstraintResult.constraint.columnNames),
+        referenceTableKey -> joinableConstraintResult.constraint.referenceTable.toString,
+        "distinctBefore" -> JSONMaybe(joinableConstraintResult.data.map(_.distinctBefore)),
+        "matchingKeys" -> JSONMaybe(joinableConstraintResult.data.map(_.matchingKeys))
       )
-      case NeverNullConstraintResult(NeverNullConstraint(column), nullRows, status) => Map(
-        columnKey -> column,
-        failedInstancesKey -> nullRows
+      case neverNullConstraintResult: NeverNullConstraintResult => Map(
+        columnKey -> neverNullConstraintResult.constraint.columnName,
+        failedInstancesKey -> JSONMaybe(neverNullConstraintResult.data.map(_.nullRows))
       )
-      case NumberOfRowsConstraintResult(NumberOfRowsConstraint(expected), actual, status) => Map(
-        "expected" -> expected.toString,
-        "actual" -> actual
+      case numberOfRowsConstraintResult: NumberOfRowsConstraintResult => Map(
+        "expected" -> numberOfRowsConstraintResult.constraint.expected.toString,
+        "actual" -> numberOfRowsConstraintResult.actual
       )
-      case RegexConstraintResult(RegexConstraint(column, regex), failedRows, status) => Map(
-        columnKey -> column,
-        "regex" -> regex,
-        failedInstancesKey -> failedRows
+      case regexConstraintResult: RegexConstraintResult => Map(
+        columnKey -> regexConstraintResult.constraint.columnName,
+        "regex" -> regexConstraintResult.constraint.regex,
+        failedInstancesKey -> JSONMaybe(regexConstraintResult.data.map(_.failedRows))
       )
-      case StringColumnConstraintResult(StringColumnConstraint(constraint), violatingRules, status) => Map(
-        columnKey -> constraint,
-        failedInstancesKey -> violatingRules
+      case stringColumnConstraintResult: StringColumnConstraintResult => Map(
+        columnKey -> stringColumnConstraintResult.constraint.constraintString,
+        failedInstancesKey -> JSONMaybe(stringColumnConstraintResult.data.map(_.failedRows))
       )
-      case TypeConversionConstraintResult(TypeConversionConstraint(column, convertedType), originalType, failedRows, status) => Map(
-        columnKey -> column,
-        "originalType" -> originalType.toString,
-        "convertedType" -> convertedType.toString,
-        failedInstancesKey -> failedRows
+      case typeConversionConstraintResult: TypeConversionConstraintResult => Map(
+        columnKey -> typeConversionConstraintResult.constraint.columnName,
+        "originalType" -> JSONMaybe(typeConversionConstraintResult.data.map(_.originalType.toString)),
+        "convertedType" -> typeConversionConstraintResult.constraint.convertedType.toString,
+        failedInstancesKey -> JSONMaybe(typeConversionConstraintResult.data.map(_.failedRows))
       )
-      case UniqueKeyConstraintResult(UniqueKeyConstraint(columns), numNonUniqueTuples, status) => Map(
-        columnsKey -> JSONArray(columns.toList),
-        failedInstancesKey -> numNonUniqueTuples
+      case uniqueKeyConstraint: UniqueKeyConstraintResult => Map(
+        columnsKey -> JSONArray(uniqueKeyConstraint.constraint.columnNames.toList),
+        failedInstancesKey -> JSONMaybe(uniqueKeyConstraint.data.map(_.numNonUniqueTuples))
       )
       case other => Map.empty[String, Any]
     }
@@ -140,6 +146,7 @@ object Log4jReporter {
       )),
       constraintTypeKey -> constraintType,
       constraintStatusKey -> constraintStatus,
+      constraintExceptionKey -> maybeConstraintException,
       constraintMessageKey -> constraintMessage
     ).++(constraintSpecificFields))
   }

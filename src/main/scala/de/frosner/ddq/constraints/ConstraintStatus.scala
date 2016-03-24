@@ -11,3 +11,7 @@ object ConstraintSuccess extends ConstraintStatus {
 object ConstraintFailure extends ConstraintStatus {
   val stringValue = "Failure"
 }
+
+case class ConstraintError(throwable: Throwable) extends ConstraintStatus {
+  val stringValue = "Error"
+}

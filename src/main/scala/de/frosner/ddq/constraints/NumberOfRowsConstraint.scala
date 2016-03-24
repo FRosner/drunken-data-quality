@@ -1,7 +1,7 @@
 package de.frosner.ddq.constraints
 
+import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.{Column, DataFrame}
-import org.apache.spark.sql.functions.{count, lit}
 
 case class NumberOfRowsConstraint private[ddq] (expected: Column) extends Constraint {
 
@@ -24,6 +24,21 @@ object NumberOfRowsConstraint {
 
   def apply(expected: Column => Column): NumberOfRowsConstraint = {
     new NumberOfRowsConstraint(expected(new Column(countKey)))
+  }
+
+}
+
+case class NumberOfRowsConstraintResult(constraint: NumberOfRowsConstraint,
+                                        actual: Long,
+                                        status: ConstraintStatus) extends ConstraintResult[NumberOfRowsConstraint] {
+
+  val message: String = {
+    val expected = constraint.expected
+    status match {
+      case ConstraintSuccess => s"The number of rows satisfies $expected."
+      case ConstraintFailure => s"The actual number of rows $actual does not satisfy $expected."
+      case default => throw IllegalConstraintResultException(this)
+    }
   }
 
 }
