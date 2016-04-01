@@ -25,7 +25,6 @@ class ZeppelinReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val header = s"Checking $displayName"
     val prologue = s"It has a total number of ${dfColumns.length} columns and $dfCount rows."
 
-
     val message1 = "1"
     val status1 = ConstraintSuccess
     val constraint1 = DummyConstraint(message1, status1)
