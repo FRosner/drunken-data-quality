@@ -52,7 +52,7 @@ class ZeppelinReporterTest extends FlatSpec with Matchers with MockitoSugar {
 
     zeppelinReporter.report(CheckResult(constraints, check, dfCount))
     val expectedOutput = s"""%html
-</p hidden>
+</p>
 <h4>$header</h4>
 <h5>$prologue</h5>
 <table>
@@ -84,7 +84,7 @@ class ZeppelinReporterTest extends FlatSpec with Matchers with MockitoSugar {
 
     zeppelinReporter.report(CheckResult(constraints, check, dfCount))
     val expectedOutput = s"""%html
-</p hidden>
+</p>
 <h4>$header</h4>
 <h5>$prologue</h5>
 Nothing to check!
