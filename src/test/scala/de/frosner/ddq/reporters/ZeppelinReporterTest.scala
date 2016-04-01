@@ -12,8 +12,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ZeppelinReporterTest extends FlatSpec with Matchers with MockitoSugar {
 
-  // TODO check that the first report will print a %html as well
-
   "A Console reporter" should "produce correct output for a check with constraints" in {
     val baos = new ByteArrayOutputStream()
     val zeppelinReporter = ZeppelinReporter(new PrintStream(baos))
@@ -89,6 +87,37 @@ class ZeppelinReporterTest extends FlatSpec with Matchers with MockitoSugar {
 <h5>$prologue</h5>
 Nothing to check!
 <p hidden>
+"""
+
+    baos.toString shouldBe expectedOutput
+  }
+
+  it should "only print %html once for the first check" in {
+    val baos = new ByteArrayOutputStream()
+    val zeppelinReporter = ZeppelinReporter(new PrintStream(baos))
+
+    val df = mock[DataFrame]
+    val displayName = "myDf"
+    val dfColumns = Array("1", "2")
+    val dfCount = 5
+    when(df.columns).thenReturn(dfColumns)
+
+    val header = s"Checking $displayName"
+    val prologue = s"It has a total number of ${dfColumns.length} columns and $dfCount rows."
+
+    val constraints = Map.empty[Constraint, ConstraintResult[Constraint]]
+    val check = Check(df, Some(displayName), Option.empty, constraints.keys.toSeq)
+
+    zeppelinReporter.report(CheckResult(constraints, check, dfCount))
+    zeppelinReporter.report(CheckResult(constraints, check, dfCount))
+    val expectedBody = s"""</p>
+<h4>$header</h4>
+<h5>$prologue</h5>
+Nothing to check!
+<p hidden>"""
+    val expectedOutput = s"""%html
+$expectedBody
+$expectedBody
 """
 
     baos.toString shouldBe expectedOutput
