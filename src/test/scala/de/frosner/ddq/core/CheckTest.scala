@@ -139,7 +139,8 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     when(df.columns).thenReturn(Array.empty[String])
 
     val defaultBaos = new ByteArrayOutputStream()
-    System.setOut(new PrintStream(defaultBaos))
+    val oldOut = Console.out
+    Console.setOut(new PrintStream(defaultBaos))
 
     val consoleBaos = new ByteArrayOutputStream()
     val consoleReporter = new ConsoleReporter(new PrintStream(consoleBaos))
@@ -153,8 +154,8 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
     result.constraintResults shouldBe Map.empty
     defaultBaos.toString shouldBe consoleBaos.toString
 
-    // reset System.out
-    System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)))
+    // reset Console.out
+    Console.setOut(oldOut)
   }
 
 }

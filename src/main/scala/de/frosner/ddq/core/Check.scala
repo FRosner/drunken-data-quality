@@ -179,7 +179,7 @@ case class Check(dataFrame: DataFrame,
    * @return check result
    **/
   def run(reporters: Reporter*): CheckResult = {
-    val actualReporters = if (reporters.isEmpty) List(ConsoleReporter(System.out)) else reporters
+    val actualReporters = if (reporters.isEmpty) List(ConsoleReporter()) else reporters
     Runner.run(List(this), actualReporters)(this)
   }
 
