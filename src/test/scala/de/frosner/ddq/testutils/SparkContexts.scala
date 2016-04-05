@@ -11,5 +11,6 @@ trait SparkContexts {
   protected val sql = new SQLContext(sc)
   sql.setConf("spark.sql.shuffle.partitions", "5")
   sys.addShutdownHook(hive.reset())
+  println(s"Testing against Spark ${sc.version}")
 
 }
