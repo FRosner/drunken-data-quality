@@ -22,13 +22,13 @@ case class ConsoleReporter(stream: PrintStream = Console.out) extends PrintStrea
     stream.println(Console.BLUE + prologue + Console.RESET)
     if (checkResult.constraintResults.nonEmpty) {
       checkResult.constraintResults.foreach {
-        case (_, constraintResult) => {
-          constraintResult.status match {
-            case ConstraintSuccess => stream.println(Console.GREEN + "- " + constraintResult.message + Console.RESET)
-            case ConstraintFailure => stream.println(Console.RED + "- " + constraintResult.message + Console.RESET)
-            case ConstraintError(throwable) => stream.println(Console.YELLOW + "- " + constraintResult.message + Console.RESET)
+        case (_, constraintResult) =>
+          val color = constraintResult.status match {
+            case ConstraintSuccess => Console.GREEN
+            case ConstraintFailure => Console.RED
+            case ConstraintError(throwable) => Console.YELLOW
           }
-        }
+          stream.println(color + "- " + constraintResult.message + Console.RESET)
       }
     } else {
       stream.println(Console.BLUE + "Nothing to check!" + Console.RESET)
