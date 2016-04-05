@@ -211,6 +211,24 @@ object Check {
   }
 
   /**
+    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
+    *
+    * @param hive Hive context to read the table from
+    * @param database Database to switch to before attempting to read the table
+    * @param table Name of the table to check
+    * @param cacheMethod The [[org.apache.spark.storage.StorageLevel]] to persist with before executing the checks.
+    *                    If it is not set, no persisting will be attempted
+    * @return Check object that can be applied on the given table
+    */
+  def hiveTable(hive: HiveContext,
+                database: String,
+                table: String,
+                cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
+    hive.sql(s"USE $database")
+    sqlTable(hive, table, cacheMethod)
+  }
+
+  /**
    * Check whether the given columns are a unique key for this table.
    *
    * @param columnName name of the first column that is supposed to be part of the unique key
@@ -352,24 +370,5 @@ object Check {
    */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]): Constraint =
     FunctionalDependencyConstraint(determinantSet, dependentSet)
-
-
-  /**
-   * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
-   *
-   * @param hive Hive context to read the table from
-   * @param database Database to switch to before attempting to read the table
-   * @param table Name of the table to check
-   * @param cacheMethod The [[org.apache.spark.storage.StorageLevel]] to persist with before executing the checks.
-   *                    If it is not set, no persisting will be attempted
-   * @return Check object that can be applied on the given table
-   */
-  def hiveTable(hive: HiveContext,
-                database: String,
-                table: String,
-                cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
-    hive.sql(s"USE $database")
-    sqlTable(hive, table, cacheMethod)
-  }
 
 }
