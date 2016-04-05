@@ -24,20 +24,12 @@ case class ConditionalColumnConstraintResult(constraint: ConditionalColumnConstr
                                              data: Option[ConditionalColumnConstraintResultData],
                                              status: ConstraintStatus) extends ConstraintResult[ConditionalColumnConstraint] {
 
-  val message: String = {
-    val constraintString = s"${constraint.statement} -> ${constraint.implication}"
-    val maybeViolatingRows = data.map(_.failedRows)
-    val maybePluralS = maybeViolatingRows.map(violatingRows => if (violatingRows == 1) "" else "s")
-    (status, maybeViolatingRows, maybePluralS) match {
-      case (ConstraintSuccess, Some(0), _) =>
-        s"Constraint $constraintString is satisfied."
-      case (ConstraintFailure, Some(violatingRows), Some(pluralS)) =>
-        s"$violatingRows row$pluralS did not satisfy constraint $constraintString."
-      case (ConstraintError(throwable), None, None) =>
-        s"Checking constraint $constraintString failed: $throwable"
-      case default => throw IllegalConstraintResultException(this)
-    }
-  }
+  val message: String = ColumnConstraintUtil.createColumnConstraintMessage(
+    status = status,
+    constraintResult = this,
+    constraintString = s"${constraint.statement} -> ${constraint.implication}",
+    maybeViolatingRows = data.map(_.failedRows)
+  )
 
 }
 
