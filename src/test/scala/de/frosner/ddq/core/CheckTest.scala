@@ -12,10 +12,6 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar with SparkContexts {
 
-  override def afterAll(): Unit = {
-    hive.reset()
-  }
-
   "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
     val expectedNumberOfRows1 = 3
     val expectedNumberOfRows2 = 2

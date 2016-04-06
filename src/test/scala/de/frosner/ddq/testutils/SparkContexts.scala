@@ -1,5 +1,7 @@
 package de.frosner.ddq.testutils
 
+import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.test.TestHive
 
@@ -13,12 +15,11 @@ trait SparkContexts {
 
 object SparkContexts {
 
-  private val hive = TestHive
-  hive.setConf("spark.sql.shuffle.partitions", "5")
-  private val sc = hive.sparkContext
+  private val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("DDQ"))
   private val sql = new SQLContext(sc)
+  private val hive = new HiveContext(sc)
+  hive.setConf("spark.sql.shuffle.partitions", "5")
   sql.setConf("spark.sql.shuffle.partitions", "5")
-  sys.addShutdownHook(hive.reset())
   println(s"Testing against Spark ${sc.version}")
 
 }
