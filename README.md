@@ -1,7 +1,5 @@
 # Drunken Data Quality (DDQ) [![Build Status](https://travis-ci.org/FRosner/drunken-data-quality.svg?branch=master)](https://travis-ci.org/FRosner/drunken-data-quality) [![Codacy Badge](https://api.codacy.com/project/badge/grade/b738700bad0a4b6da14e06c0dd508a21)](https://www.codacy.com/app/frank_7/drunken-data-quality) [![codecov.io](https://codecov.io/github/FRosner/drunken-data-quality/coverage.svg?branch=master)](https://codecov.io/github/FRosner/drunken-data-quality?branch=master)
 
-[![Join the chat at https://gitter.im/FRosner/drunken-data-quality](https://badges.gitter.im/FRosner/drunken-data-quality.svg)](https://gitter.im/FRosner/drunken-data-quality?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 ## Description
 
 DDQ is a small library for checking constraints on Spark data structures. It can be used to assure a certain data quality, especially when continuous imports happen.
