@@ -2,7 +2,7 @@ from uuid import uuid4
 from utils import iterableAsScalaList
 
 class Check(object):
-    def __init__(self, dataFrame, displayName=None):
+    def __init__(self, dataFrame, displayName=None, jvmCheck=None):
         self._dataFrame = dataFrame
         self._jvm = dataFrame._sc._jvm
         self._displayName = displayName
@@ -11,11 +11,14 @@ class Check(object):
         cacheMethod = self._jvm.scala.Option.empty()
         constraints = self._jvm.scala.collection.immutable.List.empty()
         id = str(uuid4)
-        self.jvmCheck = self._jvm.de.frosner.ddq.core.Check(dataFrame._jdf,
-                                                            displayName,
-                                                            cacheMethod,
-                                                            constraints,
-                                                            id)
+        if jvmCheck:
+            self.jvmCheck = jvmCheck
+        else:
+            self.jvmCheck = self._jvm.de.frosner.ddq.core.Check(dataFrame._jdf,
+                                                                displayName,
+                                                                cacheMethod,
+                                                                constraints,
+                                                                id)
     @property
     def dataFrame(self):
         return self._dataFrame
