@@ -35,8 +35,19 @@ class Check(object):
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def isNeverNull(self, columnName):
-        self.jvmCheck = self.jvmCheck.isNeverNull(columnName)
-        return self
+        jvmCheck = self.jvmCheck.isNeverNull(columnName)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
+    def isAlwaysNull(self, columnName):
+        jvmCheck = self.jvmCheck.isAlwaysNull(columnName)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
+    def isConvertibleTo(self, columnName, targetType):
+        jvmType = self._jvm.org.apache.spark.sql.types.DataType.fromJson(
+            targetType.json()
+        )
+        jvmCheck = self.jvmCheck.isConvertibleTo(columnName, jvmType)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def run(self, reporters):
         jvm_reporters = iterableAsScalaList(
