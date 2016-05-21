@@ -1,37 +1,40 @@
+import sys
+
+
 class PrintStreamReporter(object):
-    def _get_print_stream_constructor(self, descriptor):
+    def _getPrintStreamConstructor(self, descriptor):
         mode = descriptor.mode
         if mode == "r":
             raise ValueError("Descriptor is opened for reading")
 
-        default_mapper = {
+        defaultMapper = {
             "<stdout>": lambda jvm: jvm.System.out,
             "<stderr>": lambda jvm: jvm.System.err
         }
 
-        ps_constructor = default_mapper.get(descriptor.name)
-        if not ps_constructor:
-            ps_constructor = lambda jvm: jvm.java.io.PrintStream(
+        psConstructor = defaultMapper.get(descriptor.name)
+        if not psConstructor:
+            psConstructor = lambda jvm: jvm.java.io.PrintStream(
                 jvm.java.io.FileOutputStream(
                     descriptor.name,
                     "a" in mode)
             )
-        return ps_constructor
+        return psConstructor
 
 
-    def get_jvm_reporter(self, jvm, *args, **kwargs):
+    def getJvmReporter(self, jvm, *args, **kwargs):
         raise NotImplementedError
 
-    def __init__(self, descriptor):
-        self._ps_constructor = self._get_print_stream_constructor(descriptor)
+    def __init__(self, descriptor=sys.stdout):
+        self._psConstructor = self._getPrintStreamConstructor(descriptor)
 
 class MarkdownReporter(PrintStreamReporter):
-    def get_jvm_reporter(self, jvm):
-        print_stream = self._ps_constructor(jvm)
-        return jvm.de.frosner.ddq.reporters.MarkdownReporter(print_stream)
+    def getJvmReporter(self, jvm):
+        printStream = self._psConstructor(jvm)
+        return jvm.de.frosner.ddq.reporters.MarkdownReporter(printStream)
 
 
 class ConsoleReporter(PrintStreamReporter):
-    def get_jvm_reporter(self, jvm):
-        print_stream = self._ps_constructor(jvm)
-        return jvm.de.frosner.ddq.reporters.ConsoleReporter(print_stream)
+    def getJvmReporter(self, jvm):
+        printStream = self._psConstructor(jvm)
+        return jvm.de.frosner.ddq.reporters.ConsoleReporter(printStream)
