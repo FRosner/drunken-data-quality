@@ -1,5 +1,6 @@
 from uuid import uuid4
 from utils import iterableAsScalaList
+from reporters import ConsoleReporter
 
 class Check(object):
     def __init__(self, dataFrame, displayName=None, jvmCheck=None):
@@ -49,9 +50,12 @@ class Check(object):
         jvmCheck = self.jvmCheck.isConvertibleTo(columnName, jvmType)
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
-    def run(self, reporters):
-        jvm_reporters = iterableAsScalaList(
+    def run(self, reporters=None):
+        if not reporters:
+            reporters = [ConsoleReporter()]
+
+        jvmReporters = iterableAsScalaList(
             self._jvm,
-            [reporter.get_jvm_reporter(self._jvm) for reporter in reporters]
+            [reporter.getJvmReporter(self._jvm) for reporter in reporters]
         )
-        return self.jvmCheck.run(jvm_reporters)
+        return self.jvmCheck.run(jvmReporters)
