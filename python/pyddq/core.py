@@ -27,6 +27,13 @@ class Check(object):
     def displayName(self):
         return self._displayName or str(self.dataFrame)
 
+    def hasUniqueKey(self, columnName, *columnNames):
+        jvmCheck = self.jvmCheck.hasUniqueKey(
+            columnName,
+            iterableAsScalaList(self._jvm, columnNames)
+        )
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
     def isNeverNull(self, columnName):
         self.jvmCheck = self.jvmCheck.isNeverNull(columnName)
         return self
