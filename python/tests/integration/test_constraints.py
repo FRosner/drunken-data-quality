@@ -1,0 +1,91 @@
+import unittest
+
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+from pyspark.sql import types as t
+
+from utils import DummyReporter
+from pyddq.core import Check
+from pyddq.reporters import MarkdownReporter
+
+
+class ConstraintTest(unittest.TestCase):
+    def setUp(self):
+        self.sc = SparkContext()
+        self.sqlContext = SQLContext(self.sc)
+
+    def tearDown(self):
+        self.sc.stop()
+
+    def testHasUniqueKey(self):
+        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *FAILURE*: Column _1 is not a key (1 non-unique tuple).
+- *SUCCESS*: Columns _1, _2 are a key.
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+    def testIsNeverNull(self):
+        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df).isNeverNull("_1").isNeverNull("_2")
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: Column _1 is never null.
+- *FAILURE*: Column _2 contains 1 row that is null (should never be null).
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+    def testIsAlwaysNull(self):
+        schema = t.StructType([
+            t.StructField("_1", t.IntegerType()),
+            t.StructField("_2", t.StringType()),
+        ])
+        df = self.sqlContext.createDataFrame(
+            [(1, None), (1, None), (3, None)],
+            schema
+        )
+        check = Check(df).isAlwaysNull("_1").isAlwaysNull("_2")
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: int, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *FAILURE*: Column _1 contains 3 non-null rows (should always be null).
+- *SUCCESS*: Column _2 is always null.
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+    def testIsConvertibleTo(self):
+        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df)\
+                .isConvertibleTo("_1", t.IntegerType())\
+                .isConvertibleTo("_1", t.ArrayType(t.IntegerType()))
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: Column _1 can be converted from LongType to IntegerType.
+- *ERROR*: Checking whether column _1 can be converted to ArrayType(IntegerType,true) failed: org.apache.spark.sql.AnalysisException: cannot resolve 'cast(_1 as array<int>)' due to data type mismatch: cannot cast LongType to ArrayType(IntegerType,true);
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+
+if __name__ == '__main__':
+    unittest.main()
