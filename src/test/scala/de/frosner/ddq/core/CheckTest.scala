@@ -4,7 +4,7 @@ import java.io.{ByteArrayOutputStream, FileDescriptor, FileOutputStream, PrintSt
 
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
-import de.frosner.ddq.testutils.{SparkContexts, TestData}
+import de.frosner.ddq.testutils.{DummyConstraintResult, DummyConstraint, SparkContexts, TestData}
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -17,33 +17,31 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   }
 
   "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
-    val expectedNumberOfRows1 = 3
-    val expectedNumberOfRows2 = 2
     val constraintString = "column > 0"
     val columnName = "column"
+    val constraint1 = DummyConstraint("1", ConstraintSuccess)
+    val constraint2 = DummyConstraint("2", ConstraintFailure)
+    val constraint3 = DummyConstraint("3", ConstraintError(new IllegalArgumentException("fail")))
     val check = Check(TestData.makeIntegerDf(sql, List(1,2,3)))
-      .isAlwaysNull(columnName)
-      .isNeverNull(columnName)
-      .satisfies(constraintString)
-    val constraint1 = check.constraints(0)
-    val constraint2 = check.constraints(1)
-    val constraint3 = check.constraints(2)
+      .addConstraint(constraint1)
+      .addConstraint(constraint2)
+      .addConstraint(constraint3)
 
     check.run().constraintResults shouldBe Map(
-      constraint1 -> AlwaysNullConstraintResult(
-        constraint = AlwaysNullConstraint(columnName),
-        data = Some(AlwaysNullConstraintResultData(3L)),
-        status = ConstraintFailure
+      constraint1 -> DummyConstraintResult(
+        constraint = constraint1,
+        message = constraint1.message,
+        status = constraint1.status
       ),
-      constraint2 -> NeverNullConstraintResult(
-        constraint = NeverNullConstraint(columnName),
-        data = Some(NeverNullConstraintResultData(0L)),
-        status = ConstraintSuccess
+      constraint2 -> DummyConstraintResult(
+        constraint = constraint2,
+        message = constraint2.message,
+        status = constraint2.status
       ),
-      constraint3 -> StringColumnConstraintResult(
-        constraint = StringColumnConstraint(constraintString),
-        data = Some(StringColumnConstraintResultData(0L)),
-        status = ConstraintSuccess
+      constraint3 -> DummyConstraintResult(
+        constraint = constraint3,
+        message = constraint3.message,
+        status = constraint3.status
       )
     )
   }
