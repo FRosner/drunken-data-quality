@@ -86,6 +86,37 @@ It has a total number of 2 columns and 3 rows.
 """.strip()
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
+    def testIsFormattedAsDate(self):
+        df = self.sqlContext.createDataFrame([
+            ("2000-11-23 11:50:10", ),
+            ("2000-5-23 11:50:10", ),
+            ("2000-02-23 11:11:11", )
+        ])
+        check = Check(df).isFormattedAsDate("_1", "yyyy-MM-dd HH:mm:ss")
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: string]**
+
+It has a total number of 1 columns and 3 rows.
+
+- *SUCCESS*: Column _1 is formatted by yyyy-MM-dd HH:mm:ss.
+""".strip()
+
+    def testIsAnyOf(self):
+        df = self.sqlContext.createDataFrame([(1, "a"), (2, "b"), (3, "c")])
+        check = Check(df).isAnyOf("_1", [1, 2]).isAnyOf("_2", ["a", "b", "c"])
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *FAILURE*: Column _1 contains 1 row that is not in Set(1, 2).
+- *SUCCESS*: Column _2 contains only values in Set(a, b, c).
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
 
 if __name__ == '__main__':
     unittest.main()

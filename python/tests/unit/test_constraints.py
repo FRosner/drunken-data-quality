@@ -45,6 +45,21 @@ class ConstraintTest(unittest.TestCase):
             jvmType
         )
 
+    def testIsFormattedAsDate(self):
+        dateFormat = "yyyy-MM-dd HH:mm:ss"
+        jvmDateFormat = Mock()
+        self.check._jvm.java.text.SimpleDateFormat = Mock(
+            return_value=jvmDateFormat
+        )
+        self.check.isFormattedAsDate(self.COLUMN_NAME, dateFormat)
+        self.jvmCheck.isFormattedAsDate.assert_called_with(self.COLUMN_NAME,
+                                                           jvmDateFormat)
+
+    def testIsAnyOf(self):
+        allowed = ("a", "b", "c")
+        self.check.isAnyOf(self.COLUMN_NAME, allowed)
+        self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, allowed)
+
 
 if __name__ == '__main__':
     unittest.main()

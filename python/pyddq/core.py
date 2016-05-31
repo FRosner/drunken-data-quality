@@ -1,5 +1,5 @@
 from uuid import uuid4
-from utils import iterableAsScalaList
+from utils import iterableAsScalaList, iterableAsScalaSet, simpleDateFormat
 from reporters import ConsoleReporter
 
 class Check(object):
@@ -48,6 +48,18 @@ class Check(object):
             targetType.json()
         )
         jvmCheck = self.jvmCheck.isConvertibleTo(columnName, jvmType)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
+    def isFormattedAsDate(self, columnName, dateFormat):
+        jvmFormat = simpleDateFormat(self._jvm, dateFormat)
+        jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvmFormat)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
+    def isAnyOf(self, columnName, allowed):
+        jvmCheck = self.jvmCheck.isAnyOf(
+            columnName,
+            iterableAsScalaSet(self._jvm, allowed)
+        )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def run(self, reporters=None):
