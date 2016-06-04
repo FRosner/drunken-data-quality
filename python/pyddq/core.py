@@ -62,6 +62,10 @@ class Check(object):
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
+    def isMatchingRegex(self, columnName, regexp):
+        jvmCheck = self.jvmCheck.isMatchingRegex(columnName, regexp)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
     def run(self, reporters=None):
         if not reporters:
             reporters = [ConsoleReporter()]

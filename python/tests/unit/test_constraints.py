@@ -65,6 +65,11 @@ class ConstraintTest(unittest.TestCase):
         self.check.isAnyOf(self.COLUMN_NAME, allowed)
         self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, jvmAllowed)
 
+    def testIsMatchingRegex(self):
+        regex = "^regex$"
+        self.check.isMatchingRegex(self.COLUMN_NAME, regex)
+        self.jvmCheck.isMatchingRegex.assertcalled_with(self.COLUMN_NAME, regex)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -118,5 +118,27 @@ It has a total number of 2 columns and 3 rows.
 """.strip()
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
+    def testIsMatchingRegex(self):
+        df = self.sqlContext.createDataFrame([
+            ("Hello A", "world"),
+            ("Hello B", None),
+            ("Hello C", "World")
+        ])
+        check = Check(df)\
+                .isMatchingRegex("_1", "^Hello")\
+                .isMatchingRegex("_2", "world$")
+
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: string, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: Column _1 matches ^Hello
+- *FAILURE*: Column _2 contains 1 row that does not match world$
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
 if __name__ == '__main__':
     unittest.main()
