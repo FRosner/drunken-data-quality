@@ -57,8 +57,13 @@ class ConstraintTest(unittest.TestCase):
 
     def testIsAnyOf(self):
         allowed = ("a", "b", "c")
+        jvmAllowed = Mock()
+        self.check._jvm.scala.collection.JavaConversions.\
+            iterableAsScalaIterable().toSet = Mock(
+                return_value=jvmAllowed
+        )
         self.check.isAnyOf(self.COLUMN_NAME, allowed)
-        self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, allowed)
+        self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, jvmAllowed)
 
 
 if __name__ == '__main__':
