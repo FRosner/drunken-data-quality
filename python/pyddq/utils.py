@@ -10,3 +10,6 @@ def iterableAsScalaSet(jvm, iterable):
 
 def simpleDateFormat(jvm, s):
     return jvm.java.text.SimpleDateFormat(s)
+
+def tuple2(jvm, t):
+    return jvm.scala.Tuple2(*t)

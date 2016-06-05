@@ -86,6 +86,29 @@ class ConstraintTest(unittest.TestCase):
             jvmDeterminantSet, jvmDependentSet
         )
 
+    def testHasForeignKey(self):
+        keyMap1 = ("_1", "_1")
+        keyMap2 = ("_1", "_2")
+
+        jdf = Mock()
+        ref = Mock()
+        ref._jdf = jdf
+
+        jvmKeyMap1 = Mock()
+        jvmKeyMap2 = Mock()
+
+        self.check._jvm.scala.Tuple2 = Mock(
+            side_effect=[jvmKeyMap1, jvmKeyMap2]
+        )
+        self.check._jvm.scala.collection.JavaConversions.\
+            iterableAsScalaIterable().toList = Mock(
+                return_value=[jvmKeyMap2]
+        )
+        self.check.hasForeignKey(ref, keyMap1, keyMap2)
+        self.jvmCheck.hasForeignKey.assert_called_with(
+            jdf, jvmKeyMap1, [jvmKeyMap2]
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

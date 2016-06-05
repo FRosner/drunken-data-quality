@@ -1,5 +1,5 @@
 from uuid import uuid4
-from utils import iterableAsScalaList, iterableAsScalaSet, simpleDateFormat
+from utils import iterableAsScalaList, iterableAsScalaSet, simpleDateFormat, tuple2
 from reporters import ConsoleReporter
 
 class Check(object):
@@ -70,6 +70,15 @@ class Check(object):
         jvmCheck = self.jvmCheck.hasFunctionalDependency(
             iterableAsScalaList(self._jvm, determinantSet),
             iterableAsScalaList(self._jvm, dependentSet)
+        )
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
+    def hasForeignKey(self, referenceTable, keyMap, *keyMaps):
+        jvmCheck = self.jvmCheck.hasForeignKey(
+            referenceTable._jdf,
+            tuple2(self._jvm, keyMap),
+            iterableAsScalaList(self._jvm,
+                                map(lambda t: tuple2(self._jvm, t), keyMaps))
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
