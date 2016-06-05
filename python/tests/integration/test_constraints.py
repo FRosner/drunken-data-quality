@@ -140,5 +140,24 @@ It has a total number of 2 columns and 3 rows.
 """.strip()
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
+    def testHasFunctionalDependency(self):
+        df = self.sqlContext.createDataFrame([
+            (1, 2, 1, 1),
+            (9, 9, 9, 2),
+            (9, 9, 9, 3)
+        ])
+        check = Check(df).hasFunctionalDependency(["_1", "_2"], ["_3"])
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: bigint, _3: bigint, _4: bigint]**
+
+It has a total number of 4 columns and 3 rows.
+
+- *SUCCESS*: Column _3 is functionally dependent on _1, _2.
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -70,6 +70,22 @@ class ConstraintTest(unittest.TestCase):
         self.check.isMatchingRegex(self.COLUMN_NAME, regex)
         self.jvmCheck.isMatchingRegex.assertcalled_with(self.COLUMN_NAME, regex)
 
+    def testHasFunctionalDepdendency(self):
+        determinantSet = ["column1", "column2"]
+        dependentSet = ["column3", "column4"]
+
+        jvmDeterminantSet = Mock()
+        jvmDependentSet = Mock()
+        self.check._jvm.scala.collection.JavaConversions.\
+            iterableAsScalaIterable().toList = Mock(
+                side_effect=[jvmDeterminantSet, jvmDependentSet]
+        )
+
+        self.check.hasFunctionalDependency(determinantSet, dependentSet)
+        self.jvmCheck.hasFunctionalDependency.assert_called_with(
+            jvmDeterminantSet, jvmDependentSet
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

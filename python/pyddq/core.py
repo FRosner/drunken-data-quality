@@ -66,6 +66,13 @@ class Check(object):
         jvmCheck = self.jvmCheck.isMatchingRegex(columnName, regexp)
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
+    def hasFunctionalDependency(self, determinantSet, dependentSet):
+        jvmCheck = self.jvmCheck.hasFunctionalDependency(
+            iterableAsScalaList(self._jvm, determinantSet),
+            iterableAsScalaList(self._jvm, dependentSet)
+        )
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
     def run(self, reporters=None):
         if not reporters:
             reporters = [ConsoleReporter()]
