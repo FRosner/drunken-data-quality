@@ -82,6 +82,15 @@ class Check(object):
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
+    def isJoinableWith(self, referenceTable, keyMap, *keyMaps):
+        jvmCheck = self.jvmCheck.isJoinableWith(
+            referenceTable._jdf,
+            tuple2(self._jvm, keyMap),
+            iterableAsScalaList(self._jvm,
+                                map(lambda t: tuple2(self._jvm, t), keyMaps))
+        )
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
     def run(self, reporters=None):
         if not reporters:
             reporters = [ConsoleReporter()]

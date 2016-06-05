@@ -159,12 +159,12 @@ It has a total number of 4 columns and 3 rows.
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
     def testHasForeignKey(self):
-        base = self.sqlContext.createDataFrame(
-            [(1, 2, 3), (1, 2, 5), (1, 3, 3)],
-        )
-        ref = self.sqlContext.createDataFrame(
-            [(1, 2, 100), (1, 3, 100)],
-        )
+        base = self.sqlContext.createDataFrame([
+            (1, 2, 3), (1, 2, 5), (1, 3, 3)
+        ])
+        ref = self.sqlContext.createDataFrame([
+            (1, 2, 100), (1, 3, 100)
+        ])
         columnTuple1 = ("_1", "_1")
         columnTuple2 = ("_2", "_2")
         check = Check(base).hasForeignKey(ref, columnTuple1, columnTuple2)
@@ -176,6 +176,27 @@ It has a total number of 4 columns and 3 rows.
 It has a total number of 3 columns and 3 rows.
 
 - *SUCCESS*: Columns _1->_1, _2->_2 define a foreign key pointing to the reference table [_1: bigint, _2: bigint, _3: bigint].
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
+    def testIsJoinableWith(self):
+        base = self.sqlContext.createDataFrame([
+            (1, 2, 3), (1, 2, 5), (1, 3, 3)
+        ])
+        ref = self.sqlContext.createDataFrame([
+            (1, 2, 100), (1, 3, 100)
+        ])
+        columnTuple1 = ("_1", "_1")
+        columnTuple2 = ("_2", "_2")
+        check = Check(base).isJoinableWith(ref, columnTuple1, columnTuple2)
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: bigint, _3: bigint]**
+
+It has a total number of 3 columns and 3 rows.
+
+- *SUCCESS*: Key _1->_1, _2->_2 can be used for joining. Join columns cardinality in base table: 2. Join columns cardinality after joining: 2 (100.00%).
 """.strip()
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
