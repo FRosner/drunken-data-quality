@@ -6,7 +6,6 @@ from pyspark.sql import types as t
 
 from utils import DummyReporter
 from pyddq.core import Check
-from pyddq.reporters import MarkdownReporter
 
 
 class ConstraintTest(unittest.TestCase):
