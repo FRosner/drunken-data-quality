@@ -200,6 +200,23 @@ It has a total number of 3 columns and 3 rows.
 """.strip()
         self.assertEqual(reporter.getOutput(), expectedOutput)
 
+    def testSatisfies(self):
+        df = self.sqlContext.createDataFrame([
+            (1, "a"), (2, "a"), (3, "a")
+        ])
+        check = Check(df).satisfies("_1 > 0").satisfies("_2 = 'a'")
+        reporter = DummyReporter()
+        check.run([reporter])
+        expectedOutput = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: Constraint _1 > 0 is satisfied.
+- *SUCCESS*: Constraint _2 = 'a' is satisfied.
+""".strip()
+        self.assertEqual(reporter.getOutput(), expectedOutput)
+
 
 if __name__ == '__main__':
     unittest.main()

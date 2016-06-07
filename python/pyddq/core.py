@@ -91,6 +91,10 @@ class Check(object):
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
+    def satisfies(self, constraint):
+        jvmCheck = self.jvmCheck.satisfies(constraint)
+        return Check(self.dataFrame, self.displayName, jvmCheck)
+
     def run(self, reporters=None):
         if not reporters:
             reporters = [ConsoleReporter()]

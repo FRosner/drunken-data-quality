@@ -126,6 +126,10 @@ class ConstraintTest(unittest.TestCase):
             ref._jdf, jvmKeyMap1, [jvmKeyMap2]
         )
 
+    def testSatisfies(self):
+        constraint = "_1 > 10"
+        self.check.satisfies(constraint)
+        self.jvmCheck.satisfies.assert_called_with(constraint)
 
 if __name__ == '__main__':
     unittest.main()
