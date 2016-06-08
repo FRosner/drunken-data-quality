@@ -1,7 +1,6 @@
 import unittest
 from mock import Mock
 from pyddq.core import Check
-from pyddq.utils import iterableAsScalaList
 
 
 class ConstraintTest(unittest.TestCase):
@@ -13,10 +12,14 @@ class ConstraintTest(unittest.TestCase):
 
     def testHasUniqueKey(self):
         columnNames = ["a", "b"]
+        jvmColumnNames = Mock()
+        self.check._jvm.scala.collection.JavaConversions.\
+            iterableAsScalaIterable().toList = Mock(
+                return_value=jvmColumnNames
+        )
         self.check.hasUniqueKey(self.COLUMN_NAME, columnNames)
         self.jvmCheck.hasUniqueKey.assert_called_with(
-            self.COLUMN_NAME,
-            iterableAsScalaList(self.check._jvm, columnNames)
+            self.COLUMN_NAME, jvmColumnNames
         )
 
     def testIsNeverNull(self):

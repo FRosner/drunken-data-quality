@@ -1,6 +1,7 @@
 from uuid import uuid4
-from utils import iterableAsScalaList, iterableAsScalaSet, simpleDateFormat, tuple2
 from reporters import ConsoleReporter
+import jvm_conversions as jc
+
 
 class Check(object):
     def __init__(self, dataFrame, displayName=None, jvmCheck=None):
@@ -31,7 +32,7 @@ class Check(object):
     def hasUniqueKey(self, columnName, *columnNames):
         jvmCheck = self.jvmCheck.hasUniqueKey(
             columnName,
-            iterableAsScalaList(self._jvm, columnNames)
+            jc.iterableToScalaList(self._jvm, columnNames)
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
@@ -51,14 +52,14 @@ class Check(object):
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def isFormattedAsDate(self, columnName, dateFormat):
-        jvmFormat = simpleDateFormat(self._jvm, dateFormat)
+        jvmFormat = jc.simpleDateFormat(self._jvm, dateFormat)
         jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvmFormat)
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def isAnyOf(self, columnName, allowed):
         jvmCheck = self.jvmCheck.isAnyOf(
             columnName,
-            iterableAsScalaSet(self._jvm, allowed)
+            jc.iterableToScalaSet(self._jvm, allowed)
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
@@ -68,26 +69,30 @@ class Check(object):
 
     def hasFunctionalDependency(self, determinantSet, dependentSet):
         jvmCheck = self.jvmCheck.hasFunctionalDependency(
-            iterableAsScalaList(self._jvm, determinantSet),
-            iterableAsScalaList(self._jvm, dependentSet)
+            jc.iterableToScalaList(self._jvm, determinantSet),
+            jc.iterableToScalaList(self._jvm, dependentSet)
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def hasForeignKey(self, referenceTable, keyMap, *keyMaps):
         jvmCheck = self.jvmCheck.hasForeignKey(
             referenceTable._jdf,
-            tuple2(self._jvm, keyMap),
-            iterableAsScalaList(self._jvm,
-                                map(lambda t: tuple2(self._jvm, t), keyMaps))
+            jc.tuple2(self._jvm, keyMap),
+            jc.iterableToScalaList(
+                self._jvm,
+                map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
+            )
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
     def isJoinableWith(self, referenceTable, keyMap, *keyMaps):
         jvmCheck = self.jvmCheck.isJoinableWith(
             referenceTable._jdf,
-            tuple2(self._jvm, keyMap),
-            iterableAsScalaList(self._jvm,
-                                map(lambda t: tuple2(self._jvm, t), keyMaps))
+            jc.tuple2(self._jvm, keyMap),
+            jc.iterableToScalaList(
+                self._jvm,
+                map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
+            )
         )
         return Check(self.dataFrame, self.displayName, jvmCheck)
 
@@ -99,7 +104,7 @@ class Check(object):
         if not reporters:
             reporters = [ConsoleReporter()]
 
-        jvmReporters = iterableAsScalaList(
+        jvmReporters = jc.iterableToScalaList(
             self._jvm,
             [reporter.getJvmReporter(self._jvm) for reporter in reporters]
         )

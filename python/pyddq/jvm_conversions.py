@@ -1,9 +1,9 @@
-def iterableAsScalaList(jvm, iterable):
+def iterableToScalaList(jvm, iterable):
     return jvm.scala.collection.JavaConversions.\
         iterableAsScalaIterable(iterable).\
         toList()
 
-def iterableAsScalaSet(jvm, iterable):
+def iterableToScalaSet(jvm, iterable):
     return jvm.scala.collection.JavaConversions.\
         iterableAsScalaIterable(iterable).\
         toSet()
