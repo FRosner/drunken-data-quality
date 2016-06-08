@@ -31,9 +31,12 @@ class IntegrationTestCommand(Command):
             exit("error: path to Drunken Data Quality jar should be specified")
 
     def run(self):
+        log4j_path = os.path.abspath("../src/test/resources/log4j.properties")
         for filename in glob.glob(os.path.join(self.addopts, "test_*.py")):
             subprocess.call([
                 "spark-submit",
+                "--driver-java-options",
+                '"-Dlog4j.configuration=file://{path}"'.format(path=log4j_path),
                 "--driver-class-path",
                 self.jar,
                 filename
