@@ -4,34 +4,37 @@ from pyddq.core import Check
 
 
 class ConstructorTest(unittest.TestCase):
-    def testDefaultArgs(self):
-        dataFrame = Mock()
-        check = Check(dataFrame)
-        ddqCheck = check._jvm.de.frosner.ddq.core.Check
-        ddqCheck.assert_called_with(
-            dataFrame._jdf,
-            getattr(ddqCheck, "apply$default$2")(),
-            getattr(ddqCheck, "apply$default$3")(),
-            getattr(ddqCheck, "apply$default$4")(),
-            getattr(ddqCheck, "apply$default$5")(),
+    def test_default_args(self):
+        df = Mock()
+        check = Check(df)
+        ddq_check = check._jvm.de.frosner.ddq.core.Check
+        ddq_check.assert_called_with(
+            df._jdf,
+            getattr(ddq_check, "apply$default$2")(),
+            getattr(ddq_check, "apply$default$3")(),
+            getattr(ddq_check, "apply$default$4")(),
+            getattr(ddq_check, "apply$default$5")(),
         )
 
-    def testPassedArgs(self):
-        dataFrame = Mock()
-        displayName = Mock()
-        cacheMethod = Mock()
+    def test_passed_args(self):
+        df = Mock()
+        display_name = Mock()
+        cache_method = Mock()
         id = Mock()
 
-        dataFrame._sc._jvm.scala.Some.apply = Mock(
+        df._sc._jvm.scala.Some.apply = Mock(
             side_effect=["Some(displayName)", "Some(cacheMethod)"]
         )
-        check = Check(dataFrame, displayName, cacheMethod, id)
-        ddqCheck = check._jvm.de.frosner.ddq.core.Check
+        check = Check(df, display_name, cache_method, id)
+        ddq_check = check._jvm.de.frosner.ddq.core.Check
 
-        ddqCheck.assert_called_with(
-            dataFrame._jdf,
+        ddq_check.assert_called_with(
+            df._jdf,
             "Some(displayName)",
             "Some(cacheMethod)",
-            getattr(ddqCheck, "apply$default$4")(),
+            getattr(ddq_check, "apply$default$4")(),
             id
         )
+
+if __name__ == '__main__':
+    unittest.main()

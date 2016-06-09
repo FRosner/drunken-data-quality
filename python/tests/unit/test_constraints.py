@@ -10,126 +10,126 @@ class ConstraintTest(unittest.TestCase):
         self.check = Check(Mock())
         self.jvmCheck = self.check.jvmCheck
 
-    def testHasUniqueKey(self):
-        columnNames = ["a", "b"]
-        jvmColumnNames = Mock()
+    def test_hasUniqueKey(self):
+        column_names = ["a", "b"]
+        jvm_column_names = Mock()
         self.check._jvm.scala.collection.JavaConversions.\
             iterableAsScalaIterable().toList = Mock(
-                return_value=jvmColumnNames
+                return_value=jvm_column_names
         )
-        self.check.hasUniqueKey(self.COLUMN_NAME, columnNames)
+        self.check.hasUniqueKey(self.COLUMN_NAME, column_names)
         self.jvmCheck.hasUniqueKey.assert_called_with(
-            self.COLUMN_NAME, jvmColumnNames
+            self.COLUMN_NAME, jvm_column_names
         )
 
-    def testIsNeverNull(self):
+    def test_isNeverNull(self):
         self.check.isNeverNull(self.COLUMN_NAME)
         self.jvmCheck.isNeverNull.assert_called_with(self.COLUMN_NAME)
 
-    def testIsAlwaysNull(self):
+    def test_isAlwaysNull(self):
         self.check.isAlwaysNull(self.COLUMN_NAME)
         self.jvmCheck.isAlwaysNull.assert_called_with(self.COLUMN_NAME)
 
-    def testIsConvertibleTo(self):
-        targetType = Mock()
-        targetType.json = Mock(return_value="json value")
-        jvmType = Mock()
+    def test_isConvertibleTo(self):
+        target_type = Mock()
+        target_type.json = Mock(return_value="json value")
+        jvm_type = Mock()
         self.check._jvm.org.apache.spark.sql.types.DataType.fromJson = Mock(
-            return_value=jvmType
+            return_value=jvm_type
         )
 
-        self.check.isConvertibleTo(self.COLUMN_NAME, targetType)
+        self.check.isConvertibleTo(self.COLUMN_NAME, target_type)
 
-        targetType.json.assert_called()
+        target_type.json.assert_called()
         self.check._jvm.org.apache.spark.sql.types.DataType.fromJson.\
             assert_called_with("json value")
         self.jvmCheck.isConvertibleTo.assert_called_with(
             self.COLUMN_NAME,
-            jvmType
+            jvm_type
         )
 
-    def testIsFormattedAsDate(self):
-        dateFormat = "yyyy-MM-dd HH:mm:ss"
-        jvmDateFormat = Mock()
+    def test_isFormattedAsDate(self):
+        date_format = "yyyy-MM-dd HH:mm:ss"
+        jvm_date_format = Mock()
         self.check._jvm.java.text.SimpleDateFormat = Mock(
-            return_value=jvmDateFormat
+            return_value=jvm_date_format
         )
-        self.check.isFormattedAsDate(self.COLUMN_NAME, dateFormat)
+        self.check.isFormattedAsDate(self.COLUMN_NAME, date_format)
         self.jvmCheck.isFormattedAsDate.assert_called_with(self.COLUMN_NAME,
-                                                           jvmDateFormat)
+                                                           jvm_date_format)
 
-    def testIsAnyOf(self):
+    def test_isAnyOf(self):
         allowed = ("a", "b", "c")
-        jvmAllowed = Mock()
+        jvm_allowed = Mock()
         self.check._jvm.scala.collection.JavaConversions.\
             iterableAsScalaIterable().toSet = Mock(
-                return_value=jvmAllowed
+                return_value=jvm_allowed
         )
         self.check.isAnyOf(self.COLUMN_NAME, allowed)
-        self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, jvmAllowed)
+        self.jvmCheck.isAnyOf.assert_called_with(self.COLUMN_NAME, jvm_allowed)
 
-    def testIsMatchingRegex(self):
+    def test_isMatchingRegex(self):
         regex = "^regex$"
         self.check.isMatchingRegex(self.COLUMN_NAME, regex)
         self.jvmCheck.isMatchingRegex.assertcalled_with(self.COLUMN_NAME, regex)
 
-    def testHasFunctionalDepdendency(self):
-        determinantSet = ["column1", "column2"]
-        dependentSet = ["column3", "column4"]
+    def test_hasFunctionalDepdendency(self):
+        determinant_set = ["column1", "column2"]
+        dependent_set = ["column3", "column4"]
 
-        jvmDeterminantSet = Mock()
-        jvmDependentSet = Mock()
+        jvm_determinant_set = Mock()
+        jvm_dependent_set = Mock()
         self.check._jvm.scala.collection.JavaConversions.\
             iterableAsScalaIterable().toList = Mock(
-                side_effect=[jvmDeterminantSet, jvmDependentSet]
+                side_effect=[jvm_determinant_set, jvm_dependent_set]
         )
 
-        self.check.hasFunctionalDependency(determinantSet, dependentSet)
+        self.check.hasFunctionalDependency(determinant_set, dependent_set)
         self.jvmCheck.hasFunctionalDependency.assert_called_with(
-            jvmDeterminantSet, jvmDependentSet
+            jvm_determinant_set, jvm_dependent_set
         )
 
-    def testHasForeignKey(self):
-        keyMap1 = ("_1", "_1")
-        keyMap2 = ("_1", "_2")
+    def test_HasForeignKey(self):
+        key_map1 = ("_1", "_1")
+        key_map2 = ("_1", "_2")
 
         ref = Mock()
-        jvmKeyMap1 = Mock()
-        jvmKeyMap2 = Mock()
+        jvm_key_map1 = Mock()
+        jvm_key_map2 = Mock()
 
         self.check._jvm.scala.Tuple2 = Mock(
-            side_effect=[jvmKeyMap1, jvmKeyMap2]
+            side_effect=[jvm_key_map1, jvm_key_map2]
         )
         self.check._jvm.scala.collection.JavaConversions.\
             iterableAsScalaIterable().toList = Mock(
-                return_value=[jvmKeyMap2]
+                return_value=[jvm_key_map2]
         )
-        self.check.hasForeignKey(ref, keyMap1, keyMap2)
+        self.check.hasForeignKey(ref, key_map1, key_map2)
         self.jvmCheck.hasForeignKey.assert_called_with(
-            ref._jdf, jvmKeyMap1, [jvmKeyMap2]
+            ref._jdf, jvm_key_map1, [jvm_key_map2]
         )
 
-    def testIsJoinableWith(self):
-        keyMap1 = ("_1", "_1")
-        keyMap2 = ("_1", "_2")
+    def test_isJoinableWith(self):
+        key_map1 = ("_1", "_1")
+        key_map2 = ("_1", "_2")
 
         ref = Mock()
-        jvmKeyMap1 = Mock()
-        jvmKeyMap2 = Mock()
+        jvm_key_map1 = Mock()
+        jvm_key_map2 = Mock()
 
         self.check._jvm.scala.Tuple2 = Mock(
-            side_effect=[jvmKeyMap1, jvmKeyMap2]
+            side_effect=[jvm_key_map1, jvm_key_map2]
         )
         self.check._jvm.scala.collection.JavaConversions.\
             iterableAsScalaIterable().toList = Mock(
-                return_value=[jvmKeyMap2]
+                return_value=[jvm_key_map2]
         )
-        self.check.isJoinableWith(ref, keyMap1, keyMap2)
+        self.check.isJoinableWith(ref, key_map1, key_map2)
         self.jvmCheck.isJoinableWith.assert_called_with(
-            ref._jdf, jvmKeyMap1, [jvmKeyMap2]
+            ref._jdf, jvm_key_map1, [jvm_key_map2]
         )
 
-    def testSatisfies(self):
+    def test_satisfies(self):
         constraint = "_1 > 10"
         self.check.satisfies(constraint)
         self.jvmCheck.satisfies.assert_called_with(constraint)

@@ -6,8 +6,6 @@ class Check(object):
     def __init__(self, dataFrame, displayName=None, cacheMethod=None,
                  id=None, jvmCheck=None):
         self._jvm = dataFrame._sc._jvm
-        ddqCheck = self._jvm.de.frosner.ddq.core.Check
-
         self._dataFrame = dataFrame
         self._displayName = displayName
         self._cacheMethod = cacheMethod
@@ -15,16 +13,17 @@ class Check(object):
         if jvmCheck:
             self.jvmCheck = jvmCheck
         else:
-            self.jvmCheck = ddqCheck(
+            ddq_check = self._jvm.de.frosner.ddq.core.Check
+            self.jvmCheck = ddq_check(
                 self._dataFrame._jdf,
-                self._jvmDisplayName,
-                self._jvmCacheMethod,
-                getattr(ddqCheck, "apply$default$4")(),
-                self._id or getattr(ddqCheck, "apply$default$5")()
+                self._jvm_display_name,
+                self._jvm_cache_method,
+                getattr(ddq_check, "apply$default$4")(),
+                self._id or getattr(ddq_check, "apply$default$5")()
             )
 
     @property
-    def _jvmDisplayName(self):
+    def _jvm_display_name(self):
         if self._displayName:
             return self._jvm.scala.Some.apply(self._displayName)
         else:
@@ -34,7 +33,7 @@ class Check(object):
             )()
 
     @property
-    def _jvmCacheMethod(self):
+    def _jvm_cache_method(self):
         if self._cacheMethod:
             return self._jvm.scala.Some.apply(
                 self._jvm.org.apache.spark.storage.StorageLevel(
@@ -70,7 +69,7 @@ class Check(object):
     def hasUniqueKey(self, columnName, *columnNames):
         jvmCheck = self.jvmCheck.hasUniqueKey(
             columnName,
-            jc.iterableToScalaList(self._jvm, columnNames)
+            jc.iterable_to_scala_list(self._jvm, columnNames)
         )
         return Check(
             self.dataFrame,
@@ -114,8 +113,8 @@ class Check(object):
         )
 
     def isFormattedAsDate(self, columnName, dateFormat):
-        jvmFormat = jc.simpleDateFormat(self._jvm, dateFormat)
-        jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvmFormat)
+        jvm_format = jc.simple_date_format(self._jvm, dateFormat)
+        jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvm_format)
         return Check(
             self.dataFrame,
             self.name,
@@ -127,7 +126,7 @@ class Check(object):
     def isAnyOf(self, columnName, allowed):
         jvmCheck = self.jvmCheck.isAnyOf(
             columnName,
-            jc.iterableToScalaSet(self._jvm, allowed)
+            jc.iterable_to_scala_set(self._jvm, allowed)
         )
         return Check(
             self.dataFrame,
@@ -149,8 +148,8 @@ class Check(object):
 
     def hasFunctionalDependency(self, determinantSet, dependentSet):
         jvmCheck = self.jvmCheck.hasFunctionalDependency(
-            jc.iterableToScalaList(self._jvm, determinantSet),
-            jc.iterableToScalaList(self._jvm, dependentSet)
+            jc.iterable_to_scala_list(self._jvm, determinantSet),
+            jc.iterable_to_scala_list(self._jvm, dependentSet)
         )
         return Check(
             self.dataFrame,
@@ -164,7 +163,7 @@ class Check(object):
         jvmCheck = self.jvmCheck.hasForeignKey(
             referenceTable._jdf,
             jc.tuple2(self._jvm, keyMap),
-            jc.iterableToScalaList(
+            jc.iterable_to_scala_list(
                 self._jvm,
                 map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
             )
@@ -181,7 +180,7 @@ class Check(object):
         jvmCheck = self.jvmCheck.isJoinableWith(
             referenceTable._jdf,
             jc.tuple2(self._jvm, keyMap),
-            jc.iterableToScalaList(
+            jc.iterable_to_scala_list(
                 self._jvm,
                 map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
             )
@@ -208,8 +207,8 @@ class Check(object):
         if not reporters:
             reporters = [ConsoleReporter()]
 
-        jvmReporters = jc.iterableToScalaList(
+        jvm_reporters = jc.iterable_to_scala_list(
             self._jvm,
-            [reporter.getJvmReporter(self._jvm) for reporter in reporters]
+            [reporter.get_jvm_reporter(self._jvm) for reporter in reporters]
         )
-        return self.jvmCheck.run(jvmReporters)
+        return self.jvmCheck.run(jvm_reporters)

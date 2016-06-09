@@ -9,10 +9,10 @@ from pyddq.core import Check
 class ConstructorTest(unittest.TestCase):
     def setUp(self):
         self.sc = SparkContext()
-        self.sqlContext = SQLContext(self.sc)
-        self.df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        self.sql = SQLContext(self.sc)
+        self.df = self.sql.createDataFrame([(1, "a"), (1, None), (3, "c")])
 
-    def testDefaultArgs(self):
+    def test_default_args(self):
         check = Check(self.df)
         self.assertEqual(check.name, "DataFrame[_1: bigint, _2: string]")
         self.assertEqual(check.cacheMethod, None)
@@ -26,16 +26,16 @@ class ConstructorTest(unittest.TestCase):
             "class de.frosner.ddq.core.Check"
         )
 
-    def testPassedArgs(self):
-        displayName = "display name"
+    def test_passed_args(self):
+        display_name = "display name"
         id = "id"
-        cacheMethod = StorageLevel.DISK_ONLY
-        check = Check(self.df, displayName, cacheMethod, id)
+        cache_method = StorageLevel.DISK_ONLY
+        check = Check(self.df, display_name, cache_method, id)
 
         # check wrapper
-        self.assertEqual(check.name, displayName)
+        self.assertEqual(check.name, display_name)
         self.assertEqual(check.id, id)
-        self.assertEqual(check.cacheMethod, cacheMethod)
+        self.assertEqual(check.cacheMethod, cache_method)
 
         # check jvm check
         self.assertEqual(
@@ -44,30 +44,27 @@ class ConstructorTest(unittest.TestCase):
         )
         self.assertEqual(check.jvmCheck.name(), check.name)
         self.assertEqual(check.jvmCheck.id(), check.id)
-        jvmCacheMethod = check.jvmCheck.cacheMethod().get()
+        jvm_cache_method = check.jvmCheck.cacheMethod().get()
         self.assertEqual(
-            jvmCacheMethod.useDisk(),
+            jvm_cache_method.useDisk(),
             check.cacheMethod.useDisk
         )
         self.assertEqual(
-            jvmCacheMethod.useMemory(),
+            jvm_cache_method.useMemory(),
             check.cacheMethod.useMemory
         )
         self.assertEqual(
-            jvmCacheMethod.useOffHeap(),
+            jvm_cache_method.useOffHeap(),
             check.cacheMethod.useOffHeap
         )
         self.assertEqual(
-            jvmCacheMethod.deserialized(),
+            jvm_cache_method.deserialized(),
             check.cacheMethod.deserialized
         )
         self.assertEqual(
-            jvmCacheMethod.replication(),
+            jvm_cache_method.replication(),
             check.cacheMethod.replication
         )
-
-
-
 
     def tearDown(self):
         self.sc.stop()
