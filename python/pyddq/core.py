@@ -1,26 +1,56 @@
-from uuid import uuid4
 from reporters import ConsoleReporter
 import jvm_conversions as jc
 
 
 class Check(object):
-    def __init__(self, dataFrame, displayName=None, jvmCheck=None):
-        self._dataFrame = dataFrame
+    def __init__(self, dataFrame, displayName=None, cacheMethod=None,
+                 id=None, jvmCheck=None):
         self._jvm = dataFrame._sc._jvm
-        self._displayName = displayName
+        ddqCheck = self._jvm.de.frosner.ddq.core.Check
 
-        displayName = self._jvm.scala.Option.empty()
-        cacheMethod = self._jvm.scala.Option.empty()
-        constraints = self._jvm.scala.collection.immutable.List.empty()
-        id = str(uuid4)
+        self._dataFrame = dataFrame
+        self._displayName = displayName
+        self._cacheMethod = cacheMethod
+        self._id = id
         if jvmCheck:
             self.jvmCheck = jvmCheck
         else:
-            self.jvmCheck = self._jvm.de.frosner.ddq.core.Check(dataFrame._jdf,
-                                                                displayName,
-                                                                cacheMethod,
-                                                                constraints,
-                                                                id)
+            self.jvmCheck = ddqCheck(
+                self._dataFrame._jdf,
+                self._jvmDisplayName,
+                self._jvmCacheMethod,
+                getattr(ddqCheck, "apply$default$4")(),
+                self._id or getattr(ddqCheck, "apply$default$5")()
+            )
+
+    @property
+    def _jvmDisplayName(self):
+        if self._displayName:
+            return self._jvm.scala.Some.apply(self._displayName)
+        else:
+            return getattr(
+                self._jvm.de.frosner.ddq.core.Check,
+                "apply$default$2"
+            )()
+
+    @property
+    def _jvmCacheMethod(self):
+        if self._cacheMethod:
+            return self._jvm.scala.Some.apply(
+                self._jvm.org.apache.spark.storage.StorageLevel(
+                    self._cacheMethod.useDisk,
+                    self._cacheMethod.useMemory,
+                    self._cacheMethod.useOffHeap,
+                    self._cacheMethod.deserialized,
+                    self._cacheMethod.replication
+                )
+            )
+        else:
+            return getattr(
+                self._jvm.de.frosner.ddq.core.Check,
+                "apply$default$3"
+            )()
+
     @property
     def dataFrame(self):
         return self._dataFrame
@@ -42,45 +72,93 @@ class Check(object):
             columnName,
             jc.iterableToScalaList(self._jvm, columnNames)
         )
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isNeverNull(self, columnName):
         jvmCheck = self.jvmCheck.isNeverNull(columnName)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isAlwaysNull(self, columnName):
         jvmCheck = self.jvmCheck.isAlwaysNull(columnName)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isConvertibleTo(self, columnName, targetType):
         jvmType = self._jvm.org.apache.spark.sql.types.DataType.fromJson(
             targetType.json()
         )
         jvmCheck = self.jvmCheck.isConvertibleTo(columnName, jvmType)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isFormattedAsDate(self, columnName, dateFormat):
         jvmFormat = jc.simpleDateFormat(self._jvm, dateFormat)
         jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvmFormat)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isAnyOf(self, columnName, allowed):
         jvmCheck = self.jvmCheck.isAnyOf(
             columnName,
             jc.iterableToScalaSet(self._jvm, allowed)
         )
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isMatchingRegex(self, columnName, regexp):
         jvmCheck = self.jvmCheck.isMatchingRegex(columnName, regexp)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def hasFunctionalDependency(self, determinantSet, dependentSet):
         jvmCheck = self.jvmCheck.hasFunctionalDependency(
             jc.iterableToScalaList(self._jvm, determinantSet),
             jc.iterableToScalaList(self._jvm, dependentSet)
         )
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def hasForeignKey(self, referenceTable, keyMap, *keyMaps):
         jvmCheck = self.jvmCheck.hasForeignKey(
@@ -91,7 +169,13 @@ class Check(object):
                 map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
             )
         )
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def isJoinableWith(self, referenceTable, keyMap, *keyMaps):
         jvmCheck = self.jvmCheck.isJoinableWith(
@@ -102,11 +186,23 @@ class Check(object):
                 map(lambda t: jc.tuple2(self._jvm, t), keyMaps)
             )
         )
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def satisfies(self, constraint):
         jvmCheck = self.jvmCheck.satisfies(constraint)
-        return Check(self.dataFrame, self.displayName, jvmCheck)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
 
     def run(self, reporters=None):
         if not reporters:
