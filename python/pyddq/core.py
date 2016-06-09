@@ -26,8 +26,16 @@ class Check(object):
         return self._dataFrame
 
     @property
-    def displayName(self):
+    def name(self):
         return self._displayName or str(self.dataFrame)
+
+    @property
+    def cacheMethod(self):
+        return self._cacheMethod
+
+    @property
+    def id(self):
+        return self._id or str(self.jvmCheck.id())
 
     def hasUniqueKey(self, columnName, *columnNames):
         jvmCheck = self.jvmCheck.hasUniqueKey(
