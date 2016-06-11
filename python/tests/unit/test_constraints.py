@@ -89,7 +89,7 @@ class ConstraintTest(unittest.TestCase):
             jvm_determinant_set, jvm_dependent_set
         )
 
-    def test_HasForeignKey(self):
+    def test_hasForeignKey(self):
         key_map1 = ("_1", "_1")
         key_map2 = ("_1", "_2")
 
