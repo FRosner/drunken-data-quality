@@ -1,41 +1,28 @@
 import sys
+from pyddq.streams import PrintStream, OutputStream, FileOutputStream
 
 
 class PrintStreamReporter(object):
-    def _get_print_stream_constructor(self, descriptor):
-        mode = descriptor.mode
-        if mode == "r":
-            raise ValueError("Descriptor is opened for reading")
-
-        default_mapper = {
-            "<stdout>": lambda jvm: jvm.System.out,
-            "<stderr>": lambda jvm: jvm.System.err
-        }
-
-        ps_constructor = default_mapper.get(descriptor.name)
-        if not ps_constructor:
-            ps_constructor = lambda jvm: jvm.java.io.PrintStream(
-                jvm.java.io.FileOutputStream(
-                    descriptor.name,
-                    "a" in mode)
-            )
-        return ps_constructor
-
-
     def get_jvm_reporter(self, jvm, *args, **kwargs):
         raise NotImplementedError
 
-    def __init__(self, descriptor=sys.stdout):
-        self._ps_constructor = self._get_print_stream_constructor(descriptor)
+    def __init__(self, output_stream=FileOutputStream(sys.stdout)):
+        if not isinstance(output_stream, OutputStream):
+            raise TypeError("output_stream should be a subclass of pyddq.streams.OutputStream")
+        self.output_stream = output_stream
 
 
 class MarkdownReporter(PrintStreamReporter):
     def get_jvm_reporter(self, jvm):
-        print_stream = self._ps_constructor(jvm)
-        return jvm.de.frosner.ddq.reporters.MarkdownReporter(print_stream)
+        print_stream = PrintStream(jvm, self.output_stream)
+        return jvm.de.frosner.ddq.reporters.MarkdownReporter(
+            print_stream.jvm_obj
+        )
 
 
 class ConsoleReporter(PrintStreamReporter):
     def get_jvm_reporter(self, jvm):
-        print_stream = self._ps_constructor(jvm)
-        return jvm.de.frosner.ddq.reporters.ConsoleReporter(print_stream)
+        print_stream = PrintStream(jvm, self.output_stream)
+        return jvm.de.frosner.ddq.reporters.ConsoleReporter(
+            print_stream.jvm_obj
+        )
