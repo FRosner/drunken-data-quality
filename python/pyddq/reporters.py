@@ -13,6 +13,11 @@ class Reporter(object):
 
 
 class MarkdownReporter(Reporter):
+    """
+    A class which produces a markdown report of core.Check.run
+    Args:
+        output_stream (streams.OutputStream)
+    """
     def get_jvm_reporter(self, jvm):
         print_stream = PrintStream(jvm, self.output_stream)
         return jvm.de.frosner.ddq.reporters.MarkdownReporter(
@@ -21,6 +26,11 @@ class MarkdownReporter(Reporter):
 
 
 class ConsoleReporter(Reporter):
+    """
+    A class which produces a console report of core.Check.run
+    Args:
+        output_stream (streams.OutputStream)
+    """
     def get_jvm_reporter(self, jvm):
         print_stream = PrintStream(jvm, self.output_stream)
         return jvm.de.frosner.ddq.reporters.ConsoleReporter(
