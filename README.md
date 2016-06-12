@@ -141,6 +141,48 @@ assert(constraintResults(numRowsConstraint).isInstanceOf[ConstraintSuccess])
 assert(constraintResults(uniqueKeyConstraint).isInstanceOf[ConstraintSuccess])
 ```
 
+## Python binding
+
+### Installation
+
+`$ pip install pyddq`
+
+### Usage
+
+`$ pyspark --driver-class-path <path-to-drunken-data-quality.jar>`
+
+Import pyddq Check and create a data frame and run some checks against it.
+```Python
+from pyddq.core import Check
+
+df = sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+check = Check(df)
+check.hasUniqueKey("_1", "_2").isNeverNull("_1").run()
+```
+
+Just as scala version of DDQ, pyddq supports multiple reporters. In order to use
+them, pyddq.streams should be used.
+
+```Python
+from pyddq.reporters import MarkdownReporter, ConsoleReporter
+from pyddq.streams import FileOutputStream, ByteArrayOutputStream
+import sys
+
+# send the report in a console-friendly format the standard output
+# and in markdown format to the bytearray
+stdout_stream = FileOutputStream(sys.stdout)
+bytearray_stream = ByteArrayOutputStream()
+
+Check(df)\
+    .hasUniqueKey("_1", "_2")\
+    .isNeverNull("_1")\
+    .run([MarkdownReporter(bytearray_stream), ConsoleReporter(stdout_stream)])
+
+# print markdown report
+print bytearray_stream.get_output()
+```
+
+
 ## Documentation
 
 For a comprehensive list of available constraints, please refer to the [Wiki](https://github.com/FRosner/drunken-data-quality/wiki).
