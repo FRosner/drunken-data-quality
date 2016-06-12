@@ -211,4 +211,4 @@ class Check(object):
             self._jvm,
             [reporter.get_jvm_reporter(self._jvm) for reporter in reporters]
         )
-        return self.jvmCheck.run(jvm_reporters)
+        self.jvmCheck.run(jvm_reporters)
