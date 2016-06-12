@@ -1,12 +1,12 @@
 import unittest
 from mock import Mock, PropertyMock, patch
 
-from pyddq.reporters import PrintStreamReporter, ConsoleReporter, MarkdownReporter
+from pyddq.reporters import Reporter, ConsoleReporter, MarkdownReporter
 from pyddq.streams import OutputStream
 
-class PrintStreamReporterTest(unittest.TestCase):
+class ReporterTest(unittest.TestCase):
     def test_constructor(self):
-        self.assertRaises(TypeError, PrintStreamReporter, 10)
+        self.assertRaises(TypeError, Reporter, 10)
 
 
 class ConsoleReporterTest(unittest.TestCase):

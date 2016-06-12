@@ -2,7 +2,7 @@ import sys
 from pyddq.streams import PrintStream, OutputStream, FileOutputStream
 
 
-class PrintStreamReporter(object):
+class Reporter(object):
     def get_jvm_reporter(self, jvm, *args, **kwargs):
         raise NotImplementedError
 
@@ -12,7 +12,7 @@ class PrintStreamReporter(object):
         self.output_stream = output_stream
 
 
-class MarkdownReporter(PrintStreamReporter):
+class MarkdownReporter(Reporter):
     def get_jvm_reporter(self, jvm):
         print_stream = PrintStream(jvm, self.output_stream)
         return jvm.de.frosner.ddq.reporters.MarkdownReporter(
@@ -20,7 +20,7 @@ class MarkdownReporter(PrintStreamReporter):
         )
 
 
-class ConsoleReporter(PrintStreamReporter):
+class ConsoleReporter(Reporter):
     def get_jvm_reporter(self, jvm):
         print_stream = PrintStream(jvm, self.output_stream)
         return jvm.de.frosner.ddq.reporters.ConsoleReporter(
