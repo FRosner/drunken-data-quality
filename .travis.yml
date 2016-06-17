@@ -4,6 +4,11 @@ scala:
    - 2.11.6
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
+  - sbt ++$TRAVIS_SCALA_VERSION clean assembly
+  - cd python
+  - python setup.py install
+  - python setup.py test
+  - python setup.py integration_test drunken-data-quality.jar
 cache:
   directories:
   - $HOME/.m2
