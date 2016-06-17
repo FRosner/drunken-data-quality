@@ -160,7 +160,7 @@ check = Check(df)
 check.hasUniqueKey("_1", "_2").isNeverNull("_1").run()
 ```
 
-Just as scala version of DDQ, pyddq supports multiple reporters. In order to use
+Just as a scala version of DDQ, pyddq supports multiple reporters. In order to use
 them, pyddq.streams should be used.
 
 ```Python
