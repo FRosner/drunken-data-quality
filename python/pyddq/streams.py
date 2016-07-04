@@ -46,8 +46,6 @@ class FileOutputStream(OutputStream):
         Returns underlying instance of java.io.FileOutputStream.
         Requires jvm attribute to be set
         """
-        self.jvm  # check that jvm is available and does not raise AttributeError
-
         if not self._jvm_obj:
             stds = {
                 "<stdout>": self.jvm.System.out,
@@ -74,7 +72,6 @@ class ByteArrayOutputStream(OutputStream):
         Returns underlying instance of java.io.ByteArrayOutputStream.
         Requires jvm attribute to be set
         """
-        self.jvm  # check that jvm is available and does not raise AttributeError
         if not self._jvm_obj:
             self._jvm_obj = self.jvm.java.io.ByteArrayOutputStream()
         return self._jvm_obj

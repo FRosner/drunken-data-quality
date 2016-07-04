@@ -29,7 +29,7 @@ class FileOutputStreamTest(unittest.TestCase):
         # check that AttributeError is raised
         # when jvm_obj is accessed before jvm is set
         with self.assertRaises(AttributeError):
-            fos.jvm_obj
+            jvm_obj = fos.jvm_obj
 
         # check that stdout mapping works fine
         fos.jvm = jvm
@@ -59,14 +59,13 @@ class FileOutputStreamTest(unittest.TestCase):
         self.assertEqual(jvm_obj1, jvm_obj2)
 
 
-
 class ByteArrayOutputStreamTest(unittest.TestCase):
     def test_jvm_obj(self):
         jvm = Mock()
 
         baos = ByteArrayOutputStream()
         with self.assertRaises(AttributeError):
-            baos.jvm_obj
+            jvm_obj = baos.jvm_obj
 
         # check that on the second call ByteArrayOutputStream returns the same jvm_obj
         jvm.java.io.ByteArrayOutputStream = Mock(
