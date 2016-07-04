@@ -8,7 +8,7 @@ script:
   - cd python
   - python setup.py install
   - python setup.py test
-  - python setup.py integration_test drunken-data-quality.jar
+  - python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
   - $HOME/.m2
