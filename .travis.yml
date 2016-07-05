@@ -1,11 +1,10 @@
 language: scala
-virtualenv:
-  system_site_packages: true
 addons:
   apt:
     packages:
       - git
       - python-pip
+      - virtualenv
 scala:
    - 2.10.5
    - 2.11.6
@@ -13,6 +12,8 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
   - sbt ++$TRAVIS_SCALA_VERSION clean assembly
   - cd python
+  - virtualenv ve
+  - source ve/bin/activate
   - python setup.py install
   - python setup.py test
   - python setup.py integration_test --jar=drunken-data-quality.jar
