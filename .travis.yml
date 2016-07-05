@@ -1,9 +1,6 @@
 language: scala
 virtualenv:
   system_site_packages: true
-env:
-  matrix:
-    - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true"
 addons:
   apt:
     packages:
@@ -28,4 +25,3 @@ cache:
   - $HOME/.ivy2
 after_success:
   - pip install --user codecov && codecov
-  - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
