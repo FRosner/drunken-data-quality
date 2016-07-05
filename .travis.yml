@@ -7,7 +7,6 @@ addons:
       - git
       - python-pip
 install:
-  - source python/tests/travis_install.sh
   - pip install -r python/requirements.txt
 scala:
    - 2.10.5
