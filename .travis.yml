@@ -14,6 +14,7 @@ script:
   - cd python
   - virtualenv ve
   - source ve/bin/activate
+  - pip install -r requirements.txt
   - python setup.py install
   - python setup.py test
   - python setup.py integration_test --jar=drunken-data-quality.jar
