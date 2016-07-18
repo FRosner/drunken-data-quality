@@ -11,10 +11,11 @@ scala:
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
   - sbt ++$TRAVIS_SCALA_VERSION clean assembly
+  - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
   - virtualenv ve
   - source ve/bin/activate
-  - pip install -r requirements.txt
+  - pip install --upgrade -r requirements.txt
   - python setup.py install
   - python setup.py test
   - python setup.py integration_test --jar=drunken-data-quality.jar
