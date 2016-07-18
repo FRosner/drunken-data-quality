@@ -5,4 +5,4 @@ coverage
 coveralls
 pytest-cov
 pytest
-mock
+mock==2.0.0
