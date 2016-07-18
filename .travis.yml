@@ -10,7 +10,6 @@ scala:
    - 2.11.6
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
-  - sbt ++$TRAVIS_SCALA_VERSION clean assembly
   - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
   - virtualenv ve
