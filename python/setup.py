@@ -32,16 +32,23 @@ class IntegrationTestCommand(Command):
 
     def run(self):
         log4j_path = os.path.abspath("../src/test/resources/log4j.properties")
-        for filename in glob.glob(os.path.join(self.addopts, "test_*.py")):
-            subprocess.call([
-                "spark-submit",
-                "--driver-java-options",
-                '"-Dlog4j.configuration=file://{path}"'.format(path=log4j_path),
-                "--driver-class-path",
-                self.jar,
-                filename
-            ])
-
+        try:
+            result = 0
+            for filename in glob.glob(os.path.join(self.addopts, "test_*.py")):
+                result = result or subprocess.call([
+                    "spark-submit",
+                    "--driver-java-options",
+                    '"-Dlog4j.configuration=file://{path}"'.format(path=log4j_path),
+                    "--driver-class-path",
+                    self.jar,
+                    filename
+                ])
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                exit("spark-submit is not found!")
+            else:
+                exit(str(e))
+        return result
 
 def setup_package():
     needs_sphinx = {'build_sphinx', 'upload_docs'}.intersection(sys.argv)
