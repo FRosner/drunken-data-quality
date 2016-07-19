@@ -19,9 +19,9 @@ script:
   - pip install --upgrade -r test-requirements.txt
   - python setup.py install
   - python setup.py test
-  - wget http://archive.apache.org/dist/spark/spark-1.6.0/spark-1.6.0-bin-without-hadoop.tgz
-  - tar -xvzf spark-1.6.0-bin-without-hadoop.tgz
-  - export PATH=$PATH:spark-1.6.0-bin-without-hadoop/bin
+  - wget http://archive.apache.org/dist/spark/spark-1.6.0/spark-1.6.0-bin-hadoop2.6.tgz
+  - tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz
+  - export PATH=$PATH:spark-1.6.0-bin-hadoop2.6/bin
   - python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
