@@ -9,7 +9,8 @@ scala:
    - 2.10.5
    - 2.11.6
 script:
-#  - sbt ++$TRAVIS_SCALA_VERSION coverage test
+  - sbt ++$TRAVIS_SCALA_VERSION coverage test
+  - pip install --user codecov && codecov
   - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
   - ls
@@ -23,9 +24,8 @@ script:
   - tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz
   - export PATH=$PATH:spark-1.6.0-bin-hadoop2.6/bin
   - python setup.py integration_test --jar=drunken-data-quality.jar
+  - deactivate
 cache:
   directories:
   - $HOME/.m2
   - $HOME/.ivy2
-after_success:
-  - pip install --user codecov && codecov
