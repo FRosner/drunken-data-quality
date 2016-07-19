@@ -71,7 +71,7 @@ class ConstraintTest(unittest.TestCase):
     def test_isMatchingRegex(self):
         regex = "^regex$"
         self.check.isMatchingRegex(self.COLUMN_NAME, regex)
-        self.jvmCheck.isMatchingRegex.assertcalled_with(self.COLUMN_NAME, regex)
+        self.jvmCheck.isMatchingRegex.assert_called_with(self.COLUMN_NAME, regex)
 
     def test_hasFunctionalDepdendency(self):
         determinant_set = ["column1", "column2"]

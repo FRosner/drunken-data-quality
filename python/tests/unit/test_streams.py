@@ -82,4 +82,4 @@ class ByteArrayOutputStreamTest(unittest.TestCase):
         baos.jvm = jvm
 
         baos.get_output()
-        baos.jvm_obj.toString().strip().assert_called()
+        baos.jvm_obj.toString().strip.assert_called()
