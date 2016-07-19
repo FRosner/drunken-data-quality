@@ -21,7 +21,7 @@ script:
   - python setup.py test
   - wget http://archive.apache.org/dist/spark/spark-1.6.0/spark-1.6.0-bin-without-hadoop.tgz
   - tar -xvzf spark-1.6.0-bin-without-hadoop.tgz
-  - ln -s $(pwd)/spark-1.6.0-bin-without-hadoop/spark-submit  /usr/bin/spark-submit
+  - export PATH=$PATH:spark-1.6.0-bin-without-hadoop/bin
   - python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
