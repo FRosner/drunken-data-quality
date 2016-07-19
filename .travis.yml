@@ -9,9 +9,10 @@ scala:
    - 2.10.5
    - 2.11.6
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION coverage test
+#  - sbt ++$TRAVIS_SCALA_VERSION coverage test
   - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
+  - ls
   - virtualenv ve
   - source ve/bin/activate
   - pip install --upgrade -r requirements.txt
