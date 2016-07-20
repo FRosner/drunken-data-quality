@@ -20,12 +20,13 @@ script:
   - pip install --upgrade -r test-requirements.txt
   - python setup.py install
   - python setup.py test
-  - wget http://archive.apache.org/dist/spark/spark-1.6.0/spark-1.6.0-bin-hadoop2.6.tgz
-  - tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz
-  - export PATH=$PATH:spark-1.6.0-bin-hadoop2.6/bin
+  - wget -P $HOME/spark-1.6.0-bin-hadoop2.6.tgz $HOME/http://archive.apache.org/dist/spark/spark-1.6.0/spark-1.6.0-bin-hadoop2.6.tgz
+  - tar -xvzf $HOME/spark-1.6.0-bin-hadoop2.6.tgz
+  - export PATH=$PATH:$HOME/spark-1.6.0-bin-hadoop2.6/bin
   - python setup.py integration_test --jar=drunken-data-quality.jar
   - deactivate
 cache:
   directories:
   - $HOME/.m2
   - $HOME/.ivy2
+  - $HOME/spark-1.6.0-bin-hadoop2.6
