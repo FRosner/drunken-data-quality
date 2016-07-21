@@ -35,3 +35,7 @@ fork := true
 javaOptions += "-Xmx2G"
 
 javaOptions += "-XX:MaxPermSize=512m"
+
+lazy val pythonItAssembly = taskKey[Unit]("python-it-assembly")
+
+pythonItAssembly <<= assembly map { (asm) => s"cp ${asm.getAbsolutePath()} python/drunken-data-quality.jar" ! }
