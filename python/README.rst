@@ -2,13 +2,16 @@
 pyddq
 =====
 
-Python binding to Drunken Data Quality
+Python API of Drunken Data Quality.
+
+https://github.com/FRosner/drunken-data-quality
 
 
 Description
 ===========
 
-A LONGER DESCRIPTION OF YOUR PROJECT GOES HERE...
+DDQ is a small library for checking constraints on Spark data structures.
+It can be used to assure a certain data quality, especially when continuous imports happen.
 
 
 Note
