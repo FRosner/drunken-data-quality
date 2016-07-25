@@ -16,6 +16,14 @@ DDQ is available as a [spark package](http://spark-packages.org/package/FRosner/
 spark-shell --packages FRosner:drunken-data-quality:3.1.0-s_2.10
 ```
 
+### Python API
+
+DDQ also comes with a Python API. It is available via the Python Package Index, so you have to install it once using `pip`:
+
+```
+pip install pyddq==3.1.0
+```
+
 ### Project Dependency [![Latest Release](https://img.shields.io/github/tag/FRosner/drunken-data-quality.svg?label=JitPack)](https://jitpack.io/#FRosner/drunken-data-quality)
 
 In order to use DDQ in your project, you can add it as a library dependency. This can be done through the [SBT spark package plugin](https://github.com/databricks/sbt-spark-package), or you can add it using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality).
@@ -141,18 +149,17 @@ assert(constraintResults(numRowsConstraint).isInstanceOf[ConstraintSuccess])
 assert(constraintResults(uniqueKeyConstraint).isInstanceOf[ConstraintSuccess])
 ```
 
-## Python binding
+### Python API
 
-### Installation
+In order to use the Python API, you have to start PySpark with the DDQ jar added. Unfortunately, using the `--packages` way is [not working in Spark < 2.0](https://issues.apache.org/jira/browse/SPARK-5185).
 
-`$ pip install pyddq`
+```
+pyspark --driver-class-path drunken-data-quality_2.10-x.y.z.jar
+```
 
-### Usage
+Then you can create a dummy dataframe and run a few checks.
 
-`$ pyspark --driver-class-path <path-to-drunken-data-quality.jar>`
-
-Import pyddq Check and create a data frame and run some checks against it.
-```Python
+```python
 from pyddq.core import Check
 
 df = sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
@@ -160,10 +167,10 @@ check = Check(df)
 check.hasUniqueKey("_1", "_2").isNeverNull("_1").run()
 ```
 
-Just as a scala version of DDQ, pyddq supports multiple reporters. In order to use
-them, pyddq.streams should be used.
+Just as the Scala version of DDQ, PyDDQ supports multiple reporters.
+In order to facilitate them, you can use `pyddq.streams`, which wraps the Java streams.
 
-```Python
+```python
 from pyddq.reporters import MarkdownReporter, ConsoleReporter
 from pyddq.streams import FileOutputStream, ByteArrayOutputStream
 import sys
@@ -181,7 +188,6 @@ Check(df)\
 # print markdown report
 print bytearray_stream.get_output()
 ```
-
 
 ## Documentation
 
