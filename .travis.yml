@@ -30,7 +30,3 @@ cache:
   - $HOME/.m2
   - $HOME/.ivy2
   - $HOME/spark-1.6.0-bin-hadoop2.6
-deploy:
-  provider: pypi
-  user: ${pypi_user}
-  password: ${pypi_password}
