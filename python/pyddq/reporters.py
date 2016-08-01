@@ -6,7 +6,10 @@ class Reporter(object):
     def get_jvm_reporter(self, jvm, *args, **kwargs):
         raise NotImplementedError
 
-    def __init__(self, output_stream=FileOutputStream(sys.stdout)):
+    def __init__(self, output_stream=None):
+        if not output_stream:
+            output_stream = FileOutputStream(sys.stdout)
+
         if not isinstance(output_stream, OutputStream):
             raise TypeError("output_stream should be a subclass of pyddq.streams.OutputStream")
         self.output_stream = output_stream
