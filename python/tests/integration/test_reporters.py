@@ -1,11 +1,11 @@
 import unittest
-from mock import Mock
+from mock import Mock, patch
 
 from pyspark import SparkContext, StorageLevel
 from pyspark.sql import SQLContext
 
 from pyddq.core import Check
-from pyddq.reporters import ConsoleReporter, MarkdownReporter
+from pyddq.reporters import ConsoleReporter, MarkdownReporter, ZeppelinReporter
 from pyddq.streams import ByteArrayOutputStream
 
 
@@ -55,6 +55,39 @@ It has a total number of 2 columns and 3 rows.
 - *SUCCESS*: Columns _1, _2 are a key.
 """.strip()
         self.assertEqual(baos.get_output(), expected_output)
+
+
+class ZeppelinReporterTest(unittest.TestCase):
+    def setUp(self):
+        self.sc = SparkContext()
+        self.sql = SQLContext(self.sc)
+        self.df = self.sql.createDataFrame([(1, "a"), (1, None), (3, "c")])
+
+    def tearDown(self):
+        self.sc.stop()
+
+    def test_output(self):
+        with patch("pyddq.reporters.get_field") as get_field:
+            baos = ByteArrayOutputStream()
+            baos.jvm = self.df._sc._jvm
+
+            get_field.return_value = baos.jvm_obj
+            check = Check(self.df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
+            z = Mock()
+            reporter = ZeppelinReporter(z)
+            check.run([reporter])
+            expected_output = """
+%html
+</p>
+<h4>Checking [_1: bigint, _2: string]</h4>
+<h5>It has a total number of 2 columns and 3 rows.</h5>
+<table>
+<tr><td style="padding:3px">&#10060;</td><td style="padding:3px">Column _1 is not a key (1 non-unique tuple).</td></tr>
+<tr><td style="padding:3px">&#9989;</td><td style="padding:3px">Columns _1, _2 are a key.</td></tr>
+</table>
+<p hidden>
+""".strip()
+            self.assertEqual(baos.get_output(), expected_output)
 
 
 if __name__ == '__main__':
