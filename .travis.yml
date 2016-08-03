@@ -13,9 +13,9 @@ script:
   - pip install --user codecov && codecov
   - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
-  - ls
   - virtualenv ve
   - source ve/bin/activate
+  - pip install --upgrade setuptools==24.0.2
   - pip install --upgrade -r requirements.txt
   - pip install --upgrade -r test-requirements.txt
   - python setup.py install
