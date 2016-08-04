@@ -17,14 +17,25 @@ class OutputStreamTest(unittest.TestCase):
 
 class FileOutputStreamTest(unittest.TestCase):
     def test_constructor(self):
-        descriptor = Mock()
-        descriptor.mode = "r"
-        self.assertRaises(ValueError, FileOutputStream, descriptor)
+        self.assertRaisesRegexp(ValueError, "Descriptor is not a file",
+                                FileOutputStream, "not a file")
+
+        descriptor = Mock(spec=file, closed=True)
+        self.assertRaisesRegexp(ValueError, "Descriptor is closed",
+                                FileOutputStream, descriptor)
+
+        descriptor = Mock(spec=file, closed=False, mode="r")
+        self.assertRaisesRegexp(ValueError, "Descriptor is opened for reading",
+                                FileOutputStream, descriptor)
+
+        descriptor = Mock(spec=file, closed=False, mode="w")
+        stream = FileOutputStream(descriptor)
+        self.assertEqual(stream.descriptor, descriptor)
 
     def test_jvm_obj(self):
         jvm = Mock()
-        stdout = Mock()
-        stdout.name = "<stdout>"
+        stdout = Mock(spec=file, mode="w", closed=False)
+        stdout.name="<stdout>"
         fos = FileOutputStream(stdout)
         # check that AttributeError is raised
         # when jvm_obj is accessed before jvm is set
@@ -37,8 +48,7 @@ class FileOutputStreamTest(unittest.TestCase):
         self.assertEqual(jvm_obj, jvm.System.out)
 
         # check that file descriptor is converted to FileOutputStream
-        descriptor = Mock()
-        descriptor.mode = "w"
+        descriptor = Mock(spec=file, mode="w", closed=False)
 
         jvmFileOutputStream = Mock()
         jvm.java.io.FileOutputStream = jvmFileOutputStream
