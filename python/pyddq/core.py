@@ -1,4 +1,5 @@
 from reporters import ConsoleReporter
+from streams import ByteArrayOutputStream
 import jvm_conversions as jc
 
 
@@ -330,16 +331,21 @@ class Check(object):
         Runs check with all the previously specified constraints and report to
         every reporter passed as an argument
         Args:
-            reporters (List[reporters.Reporter]): List ofiterable of reporters
+            reporters (List[reporters.Reporter]): iterable of reporters
                 to produce output on the check result. If not specified,
                 reporters.ConsoleReporter is used
         Returns: None
         """
+        baos = None
         if not reporters:
-            reporters = [ConsoleReporter()]
+            baos = ByteArrayOutputStream()
+            reporters = [ConsoleReporter(baos)]
 
         jvm_reporters = jc.iterable_to_scala_list(
             self._jvm,
             [reporter.get_jvm_reporter(self._jvm) for reporter in reporters]
         )
         self.jvmCheck.run(jvm_reporters)
+
+        if baos:
+            print baos.get_output()
