@@ -35,10 +35,14 @@ class FileOutputStream(OutputStream):
             Supports sys.stdout and sys.stderr
     """
     def __init__(self, descriptor):
-        self.descriptor = descriptor
-        mode = descriptor.mode
-        if mode == "r":
+        if not isinstance(descriptor, file):
+            raise ValueError("Descriptor is not a file")
+        elif descriptor.closed:
+            raise ValueError("Descriptor is closed")
+        elif descriptor.mode == "r":
             raise ValueError("Descriptor is opened for reading")
+
+        self.descriptor = descriptor
 
     @property
     def jvm_obj(self):
