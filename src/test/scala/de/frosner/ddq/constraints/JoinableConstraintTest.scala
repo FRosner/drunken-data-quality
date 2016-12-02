@@ -11,8 +11,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
 
   "A JoinableConstraint" should "succeed if a join on the given column yields at least one row" in {
     val columns = "column" -> "column"
-    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 2, 2, 3))
-    val ref = TestData.makeIntegerDf(sql, List(1, 2, 5))
+    val base = TestData.makeIntegerDf(spark, List(1, 1, 1, 2, 2, 3))
+    val ref = TestData.makeIntegerDf(spark, List(1, 2, 5))
     val check = Check(base).isJoinableWith(ref, columns)
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
@@ -29,8 +29,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
   it should "succeed if a join on the given columns yields at least one row" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column2" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 2, 100), List(1, 5, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 2, 100), List(1, 5, 100))
     val check = Check(base).isJoinableWith(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
@@ -47,8 +47,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
   it should "succeed if a join on the given columns yields at least one row if the columns have a different name" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 3, 100), List(1, 500, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 3, 100), List(1, 500, 100))
     val check = Check(base).isJoinableWith(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
@@ -65,8 +65,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
   it should "compute the matched keys in a non-commutative way" in {
     val columns = "column" -> "column"
 
-    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 1, 1, 1, 1, 1, 1, 2))
-    val ref = TestData.makeIntegerDf(sql, List(1))
+    val base = TestData.makeIntegerDf(spark, List(1, 1, 1, 1, 1, 1, 1, 1, 1, 2))
+    val ref = TestData.makeIntegerDf(spark, List(1))
 
     val check1 = Check(base).isJoinableWith(ref, columns)
     val constraint1 = check1.constraints.head
@@ -96,8 +96,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
   it should "fail if a join on the given columns yields no result" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 1, 100), List(1, 10, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 5), List(1, 2, 5), List(1, 100, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 1, 100), List(1, 10, 100))
     val check = Check(base).isJoinableWith(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
@@ -113,8 +113,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
 
   it should "fail if a join on the given columns is not possible due to mismatching types" in {
     val columns = "column" -> "column"
-    val base = TestData.makeNullableStringDf(sql, List("a", "b"))
-    val ref = TestData.makeIntegerDf(sql, List(1, 2, 3))
+    val base = TestData.makeNullableStringDf(spark, List("a", "b"))
+    val ref = TestData.makeIntegerDf(spark, List(1, 2, 3))
     val check = Check(base).isJoinableWith(ref, columns)
     val constraint = check.constraints.head
     val result = JoinableConstraintResult(
@@ -130,8 +130,8 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
 
   private def checkError(checkRef: Boolean) = {
     val columns = if (checkRef) "column" -> "notExisting" else "notExisting" -> "column"
-    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 2, 2, 3))
-    val ref = TestData.makeIntegerDf(sql, List(1, 2, 5))
+    val base = TestData.makeIntegerDf(spark, List(1, 1, 1, 2, 2, 3))
+    val ref = TestData.makeIntegerDf(spark, List(1, 2, 5))
     val check = Check(base).isJoinableWith(ref, columns)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
@@ -142,7 +142,7 @@ class JoinableConstraintTest extends FlatSpec with Matchers with MockitoSugar wi
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }

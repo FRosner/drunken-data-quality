@@ -10,7 +10,7 @@ class AnyOfConstraintTest extends FlatSpec with Matchers with SparkContexts {
   "An AnyOfConstraint" should "succeed if all values are inside" in {
     val column = "column"
     val allowed = Set[Any]("a", "b", "c", "d")
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c", "c"))).isAnyOf(column, allowed)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", "c", "c"))).isAnyOf(column, allowed)
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint("column", allowed),
@@ -23,7 +23,7 @@ class AnyOfConstraintTest extends FlatSpec with Matchers with SparkContexts {
   it should "succeed if all values are inside or null" in {
     val column = "column"
     val allowed = Set[Any]("a", "b", "c", "d")
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c", null))).isAnyOf(column, allowed)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", "c", null))).isAnyOf(column, allowed)
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint("column", allowed),
@@ -36,7 +36,7 @@ class AnyOfConstraintTest extends FlatSpec with Matchers with SparkContexts {
   it should "fail if there are values not inside" in {
     val column = "column"
     val allowed = Set[Any]("a", "b", "d")
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c", "c"))).isAnyOf(column, allowed)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", "c", "c"))).isAnyOf(column, allowed)
     val constraint = check.constraints.head
     val result = AnyOfConstraintResult(
       constraint = AnyOfConstraint(column, allowed),
@@ -47,20 +47,18 @@ class AnyOfConstraintTest extends FlatSpec with Matchers with SparkContexts {
   }
 
   it should "error if there are values not inside" in {
-    val column = "column"
     val allowed = Set[Any]("a", "b", "d")
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c", "c"))).isAnyOf("notExisting", allowed)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", "c", "c"))).isAnyOf("notExisting", allowed)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
       case AnyOfConstraintResult(
-      AnyOfConstraint("notExisting", actualAllowed),
+      AnyOfConstraint("notExisting", _),
       None,
       constraintError: ConstraintError
-      ) => {
+      ) =>
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
-      }
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
     }
   }
 

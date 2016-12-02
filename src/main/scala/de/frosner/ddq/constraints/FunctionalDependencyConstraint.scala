@@ -16,7 +16,7 @@ case class FunctionalDependencyConstraint(determinantSet: Seq[String],
     val maybeRelevantSelection = Try(df.select(determinantColumns ++ dependentColumns: _*))
 
     val maybeDeterminantValueCounts = maybeRelevantSelection.map(_.distinct.groupBy(determinantColumns: _*).count)
-    val maybeViolatingDeterminantValuesCount = maybeDeterminantValueCounts.map(_.filter(new Column("count") !== 1).count)
+    val maybeViolatingDeterminantValuesCount = maybeDeterminantValueCounts.map(_.filter(new Column("count") =!= 1).count)
     FunctionalDependencyConstraintResult(
       constraint = this,
       data = maybeViolatingDeterminantValuesCount.toOption.map(FunctionalDependencyConstraintResultData),

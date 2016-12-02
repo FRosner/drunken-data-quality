@@ -6,9 +6,8 @@ import java.util.UUID
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import de.frosner.ddq.{constraints, core}
-import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.{Column, DataFrame, SQLContext}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
 
 import scala.util.Try
@@ -192,16 +191,16 @@ object Check {
   /**
    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
    *
-   * @param sql SQL context to read the table from
+   * @param spark Spark Session to read the table from
    * @param table Name of the table to check
    * @param cacheMethod The [[org.apache.spark.storage.StorageLevel]] to persist with before executing the checks.
    *                    If it is not set, no persisting will be attempted
    * @return Check object that can be applied on the given table
    */
-  def sqlTable(sql: SQLContext,
+  def sqlTable(spark: SparkSession,
                table: String,
                cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
-    val tryTable = Try(sql.table(table))
+    val tryTable = Try(spark.table(table))
     require(tryTable.isSuccess, s"""Failed to reference table $table: ${tryTable.failed.getOrElse("No exception provided")}""")
     Check(
       dataFrame = tryTable.get,
@@ -213,19 +212,19 @@ object Check {
   /**
     * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
     *
-    * @param hive Hive context to read the table from
+    * @param spark Spark session to read the table from
     * @param database Database to switch to before attempting to read the table
     * @param table Name of the table to check
     * @param cacheMethod The [[org.apache.spark.storage.StorageLevel]] to persist with before executing the checks.
     *                    If it is not set, no persisting will be attempted
     * @return Check object that can be applied on the given table
     */
-  def hiveTable(hive: HiveContext,
+  def hiveTable(spark: SparkSession,
                 database: String,
                 table: String,
                 cacheMethod: Option[StorageLevel] = defaultCacheMethod): Check = {
-    hive.sql(s"USE $database")
-    sqlTable(hive, table, cacheMethod)
+    spark.sql(s"USE $database")
+    sqlTable(spark, table, cacheMethod)
   }
 
   /**
