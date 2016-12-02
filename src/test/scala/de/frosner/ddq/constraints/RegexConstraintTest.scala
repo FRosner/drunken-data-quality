@@ -10,7 +10,7 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
   "A RegexConstraint" should "succeed if all values satisfy the regex" in {
     val column = "column"
     val regex = "^Hello"
-    val check = Check(TestData.makeNullableStringDf(sql, List("Hello A", "Hello B", "Hello C"))).isMatchingRegex(column, regex)
+    val check = Check(TestData.makeNullableStringDf(spark, List("Hello A", "Hello B", "Hello C"))).isMatchingRegex(column, regex)
     val constraint = check.constraints.head
     val result = RegexConstraintResult(
       constraint = RegexConstraint(column, regex),
@@ -23,7 +23,7 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
   it should "succeed if all values satisfy the regex or are null" in {
     val column = "column"
     val regex = "^Hello"
-    val check = Check(TestData.makeNullableStringDf(sql, List("Hello A", "Hello B", null))).isMatchingRegex(column, regex)
+    val check = Check(TestData.makeNullableStringDf(spark, List("Hello A", "Hello B", null))).isMatchingRegex(column, regex)
     val constraint = check.constraints.head
     val result = RegexConstraintResult(
       constraint = RegexConstraint(column, regex),
@@ -36,7 +36,7 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
   it should "fail if there is a row not satisfying the regex" in {
     val column = "column"
     val regex = "^Hello A$"
-    val check = Check(TestData.makeNullableStringDf(sql, List("Hello A", "Hello A", "Hello B"))).isMatchingRegex(column, regex)
+    val check = Check(TestData.makeNullableStringDf(spark, List("Hello A", "Hello A", "Hello B"))).isMatchingRegex(column, regex)
     val constraint = check.constraints.head
     val result = RegexConstraintResult(
       constraint = RegexConstraint(column, regex),
@@ -49,7 +49,7 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
   it should "error if the column does not exist" in {
     val column = "notExisting"
     val regex = "^Hello"
-    val check = Check(TestData.makeNullableStringDf(sql, List("Hello A", "Hello B", "Hello C"))).isMatchingRegex(column, regex)
+    val check = Check(TestData.makeNullableStringDf(spark, List("Hello A", "Hello B", "Hello C"))).isMatchingRegex(column, regex)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -59,7 +59,7 @@ class RegexConstraintTest extends FlatSpec with Matchers with SparkContexts {
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }
