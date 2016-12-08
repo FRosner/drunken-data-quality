@@ -10,7 +10,7 @@ crossScalaVersions := Seq("2.10.6", "2.11.8")
 
 sparkVersion := "2.0.2"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided"
 
@@ -34,8 +34,6 @@ fork := true
 
 javaOptions += "-Xmx2G"
 
-javaOptions += "-XX:MaxPermSize=512m"
-
 lazy val pythonItAssembly = taskKey[Unit]("python-it-assembly")
 
-pythonItAssembly := assembly map { (asm) => s"cp ${asm.getAbsolutePath()} python/drunken-data-quality.jar" ! }
+pythonItAssembly <<= assembly map { (asm) => s"cp ${asm.getAbsolutePath()} python/drunken-data-quality.jar" ! }

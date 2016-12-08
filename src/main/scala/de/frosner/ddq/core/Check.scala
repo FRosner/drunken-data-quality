@@ -189,7 +189,7 @@ object Check {
   private val defaultCacheMethod = Option(StorageLevel.MEMORY_ONLY)
 
   /**
-   * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
+   * Construct a check object using the given [[org.apache.spark.sql.SparkSession]] and table name.
    *
    * @param spark Spark Session to read the table from
    * @param table Name of the table to check
@@ -210,7 +210,7 @@ object Check {
   }
 
   /**
-    * Construct a check object using the given [[org.apache.spark.sql.SQLContext]] and table name.
+    * Construct a check object using the given [[org.apache.spark.sql.SparkSession]] and table name.
     *
     * @param spark Spark session to read the table from
     * @param database Database to switch to before attempting to read the table

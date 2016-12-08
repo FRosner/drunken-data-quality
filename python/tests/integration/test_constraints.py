@@ -1,7 +1,6 @@
 import unittest
 
-from pyspark import SparkContext
-from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession
 from pyspark.sql import types as t
 
 from pyddq.core import Check
@@ -11,15 +10,14 @@ from pyddq.streams import ByteArrayOutputStream
 
 class ConstraintTest(unittest.TestCase):
     def setUp(self):
-        self.sc = SparkContext()
-        self.sqlContext = SQLContext(self.sc)
+        self.spark = SparkSession.builder.appName("Testing").master("local[4]").getOrCreate()
         self.reporter = MarkdownReporter(ByteArrayOutputStream())
 
     def tearDown(self):
-        self.sc.stop()
+        self.spark.stop()
 
     def test_hasUniqueKey(self):
-        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
         check = Check(df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
         check.run([self.reporter])
         expected_output = """
@@ -36,7 +34,7 @@ It has a total number of 2 columns and 3 rows.
         )
 
     def test_isNeverNull(self):
-        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
         check = Check(df).isNeverNull("_1").isNeverNull("_2")
         check.run([self.reporter])
         expected_output = """
@@ -57,7 +55,7 @@ It has a total number of 2 columns and 3 rows.
             t.StructField("_1", t.IntegerType()),
             t.StructField("_2", t.StringType()),
         ])
-        df = self.sqlContext.createDataFrame(
+        df = self.spark.createDataFrame(
             [(1, None), (1, None), (3, None)],
             schema
         )
@@ -77,7 +75,7 @@ It has a total number of 2 columns and 3 rows.
         )
 
     def test_isConvertibleTo(self):
-        df = self.sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
         check = Check(df)\
                 .isConvertibleTo("_1", t.IntegerType())\
                 .isConvertibleTo("_1", t.ArrayType(t.IntegerType()))
@@ -96,7 +94,7 @@ It has a total number of 2 columns and 3 rows.
         )
 
     def test_isFormattedAsDate(self):
-        df = self.sqlContext.createDataFrame([
+        df = self.spark.createDataFrame([
             ("2000-11-23 11:50:10", ),
             ("2000-5-23 11:50:10", ),
             ("2000-02-23 11:11:11", )
@@ -116,7 +114,7 @@ It has a total number of 1 columns and 3 rows.
         )
 
     def test_isAnyOf(self):
-        df = self.sqlContext.createDataFrame([(1, "a"), (2, "b"), (3, "c")])
+        df = self.spark.createDataFrame([(1, "a"), (2, "b"), (3, "c")])
         check = Check(df).isAnyOf("_1", [1, 2]).isAnyOf("_2", ["a", "b", "c"])
         check.run([self.reporter])
         expected_output = """
@@ -133,7 +131,7 @@ It has a total number of 2 columns and 3 rows.
         )
 
     def test_isMatchingRegex(self):
-        df = self.sqlContext.createDataFrame([
+        df = self.spark.createDataFrame([
             ("Hello A", "world"),
             ("Hello B", None),
             ("Hello C", "World")
@@ -157,7 +155,7 @@ It has a total number of 2 columns and 3 rows.
         )
 
     def test_hasFunctionalDependency(self):
-        df = self.sqlContext.createDataFrame([
+        df = self.spark.createDataFrame([
             (1, 2, 1, 1),
             (9, 9, 9, 2),
             (9, 9, 9, 3)
@@ -177,7 +175,7 @@ It has a total number of 4 columns and 3 rows.
         )
 
     def test_hasForeignKey(self):
-        base = self.sqlContext.createDataFrame([
+        base = self.spark.createDataFrame([
             (1, 2, 3), (1, 2, 5), (1, 3, 3)
         ])
         ref = self.sqlContext.createDataFrame([
@@ -200,10 +198,10 @@ It has a total number of 3 columns and 3 rows.
         )
 
     def test_isJoinableWith(self):
-        base = self.sqlContext.createDataFrame([
+        base = self.spark.createDataFrame([
             (1, 2, 3), (1, 2, 5), (1, 3, 3)
         ])
-        ref = self.sqlContext.createDataFrame([
+        ref = self.spark.createDataFrame([
             (1, 2, 100), (1, 3, 100)
         ])
         columnTuple1 = ("_1", "_1")
@@ -223,7 +221,7 @@ It has a total number of 3 columns and 3 rows.
         )
 
     def test_satisfies(self):
-        df = self.sqlContext.createDataFrame([
+        df = self.spark.createDataFrame([
             (1, "a"), (2, "a"), (3, "a")
         ])
         check = Check(df).satisfies("_1 > 0").satisfies("_2 = 'a'")
