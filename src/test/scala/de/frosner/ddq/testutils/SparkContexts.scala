@@ -1,5 +1,7 @@
 package de.frosner.ddq.testutils
 
+import java.io.File
+
 import org.apache.spark.sql.SparkSession
 
 trait SparkContexts {
@@ -12,12 +14,13 @@ trait SparkContexts {
       .getOrCreate()
 
 
+  sys.addShutdownHook(resetSpark())
+
+
 
   def resetSpark() = {
-
+    new File("spark-warehouse").delete()
   }
-
-  sys.addShutdownHook(resetSpark())
 
 }
 
