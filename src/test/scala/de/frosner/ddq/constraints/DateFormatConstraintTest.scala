@@ -12,7 +12,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   "A DateFormatConstraint" should "succeed if all elements can be converted to Date" in {
     val column = "column"
     val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    val check = Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "2000-5-23 11:50:10", "2000-02-23 11:11:11"))).
+    val check = Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", "2000-5-23 11:50:10", "2000-02-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
     val result = DateFormatConstraintResult(
@@ -26,7 +26,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   it should "succeed if all elements can be converted to Date or are null" in {
     val column = "column"
     val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    val check = Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", null, "2000-02-23 11:11:11"))).
+    val check = Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", null, "2000-02-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
     val result = DateFormatConstraintResult(
@@ -40,7 +40,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   it should "fail if at least one element cannot be converted to Date" in {
     val column = "column"
     val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    val check =  Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
+    val check =  Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
     val result = DateFormatConstraintResult(
@@ -54,7 +54,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   it should "error if the condition references a non-existing column" in {
     val column = "notExisting"
     val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    val check =  Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
+    val check =  Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
@@ -65,7 +65,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }

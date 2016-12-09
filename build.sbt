@@ -4,13 +4,13 @@ version       := "4.0.0-SNAPSHOT"
 
 name          := "drunken-data-quality"
 
-scalaVersion  := "2.10.5"
+scalaVersion  := "2.10.6"
 
-crossScalaVersions := Seq("2.10.5", "2.11.7")
+crossScalaVersions := Seq("2.10.6", "2.11.8")
 
-sparkVersion := "1.6.0"
+sparkVersion := "2.0.2"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided"
 
@@ -33,8 +33,6 @@ licenses += "Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0")
 fork := true
 
 javaOptions += "-Xmx2G"
-
-javaOptions += "-XX:MaxPermSize=512m"
 
 lazy val pythonItAssembly = taskKey[Unit]("python-it-assembly")
 

@@ -9,7 +9,7 @@ class NeverNullConstraintTest extends FlatSpec with Matchers with SparkContexts 
 
   "A NeverNullConstraint" should "succeed if the column contains no null values" in {
     val column = "column"
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", "c"))).isNeverNull(column)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", "c"))).isNeverNull(column)
     val constraint = check.constraints.head
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(column),
@@ -21,7 +21,7 @@ class NeverNullConstraintTest extends FlatSpec with Matchers with SparkContexts 
 
   it should "fail if the column contains null values" in {
     val column = "column"
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", "b", null))).isNeverNull(column)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", "b", null))).isNeverNull(column)
     val constraint = check.constraints.head
     val result = NeverNullConstraintResult(
       constraint = NeverNullConstraint(column),
@@ -33,7 +33,7 @@ class NeverNullConstraintTest extends FlatSpec with Matchers with SparkContexts 
 
   it should "error if the column is not existing" in {
     val column = "notExisting"
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", null, null))).isNeverNull(column)
+    val check = Check(TestData.makeNullableStringDf(spark, List("a", null, null))).isNeverNull(column)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -43,7 +43,7 @@ class NeverNullConstraintTest extends FlatSpec with Matchers with SparkContexts 
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }
