@@ -8,10 +8,10 @@ import org.apache.spark.sql.{Column, DataFrame}
 import scala.util.Try
 
 case class DateFormatConstraint(columnName: String,
-                                format: SimpleDateFormat) extends Constraint {
+                                formatString: String) extends Constraint {
 
   val fun = (df: DataFrame) => {
-    val cannotBeDate = udf((column: String) => column != null && Try(format.parse(column)).isFailure)
+    val cannotBeDate = udf((column: String) => column != null && Try(new SimpleDateFormat(formatString).parse(column)).isFailure)
     val maybeCannotBeDateCount = Try(df.filter(cannotBeDate(new Column(columnName))).count)
     DateFormatConstraintResult(
       this,
@@ -27,7 +27,7 @@ case class DateFormatConstraintResult(constraint: DateFormatConstraint,
                                       status: ConstraintStatus) extends ConstraintResult[DateFormatConstraint] {
 
   val message: String = {
-    val format = constraint.format.toPattern
+    val format = constraint.formatString
     val columnName = constraint.columnName
     val maybeFailedRows = data.map(_.failedRows)
     val maybePluralS = maybeFailedRows.map(failedRows => if (failedRows == 1) "" else "s")

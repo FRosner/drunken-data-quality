@@ -89,7 +89,7 @@ object Log4jReporter {
       )
       case dateFormatConstraintResult: DateFormatConstraintResult => Map(
         columnKey -> dateFormatConstraintResult.constraint.columnName,
-        "dateFormat" -> dateFormatConstraintResult.constraint.format.toPattern,
+        "dateFormat" -> dateFormatConstraintResult.constraint.formatString,
         failedInstancesKey -> JSONMaybe(dateFormatConstraintResult.data.map(_.failedRows))
       )
       case ForeignKeyConstraintResult(ForeignKeyConstraint(columns, ref), nonMatchingRows, status) => Map(
