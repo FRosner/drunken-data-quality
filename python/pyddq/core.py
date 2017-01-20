@@ -2,6 +2,8 @@ from reporters import ConsoleReporter
 from streams import ByteArrayOutputStream
 import jvm_conversions as jc
 
+from pyspark import sql
+
 
 class Check(object):
     """
@@ -311,12 +313,18 @@ class Check(object):
         comply with Spark SQL syntax. So you can just write it the same way that
         you would put it inside a `WHERE` clause.
         Args:
-            constraint (str): The constraint that needs to be satisfied for all
+            constraint (Union[str, pyspark.sql.Column]): The constraint that needs to be satisfied for all
                 columns
         Returns:
         core.Check object including this constraint
         """
-        jvmCheck = self.jvmCheck.satisfies(constraint)
+        if isinstance(constraint, str):
+            jvmCheck = self.jvmCheck.satisfies(constraint)
+        elif isinstance(constraint, sql.Column):
+            jvmCheck = self.jvmCheck.satisfies(constraint._jc)
+        else:
+            raise ValueError("constraint can be either str or pyspark.sql.Column, got %s" % type(constraint))
+
         return Check(
             self.dataFrame,
             self.name,
