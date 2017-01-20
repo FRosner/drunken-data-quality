@@ -170,8 +170,7 @@ class Check(object):
         Returns:
             core.Check object including this constraint
         """
-        jvm_format = jc.simple_date_format(self._jvm, dateFormat)
-        jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, jvm_format)
+        jvmCheck = self.jvmCheck.isFormattedAsDate(columnName, dateFormat)
         return Check(
             self.dataFrame,
             self.name,
