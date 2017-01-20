@@ -4,7 +4,7 @@ version       := "4.0.0-SNAPSHOT"
 
 name          := "drunken-data-quality"
 
-scalaVersion  := "2.10.6"
+scalaVersion  := "2.11.8"
 
 crossScalaVersions := Seq("2.10.6", "2.11.8")
 
