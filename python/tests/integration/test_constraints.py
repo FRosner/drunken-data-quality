@@ -226,7 +226,7 @@ It has a total number of 3 columns and 3 rows.
         df = self.sqlContext.createDataFrame([
             (1, "a"), (2, "a"), (3, "a")
         ])
-        check = Check(df).satisfies("_1 > 0").satisfies("_2 = 'a'")
+        check = Check(df).satisfies("_1 > 0").satisfies(df._2 == 'a')
         check.run([self.reporter])
         expected_output = """
 **Checking [_1: bigint, _2: string]**
@@ -234,7 +234,7 @@ It has a total number of 3 columns and 3 rows.
 It has a total number of 2 columns and 3 rows.
 
 - *SUCCESS*: Constraint _1 > 0 is satisfied.
-- *SUCCESS*: Constraint _2 = 'a' is satisfied.
+- *SUCCESS*: Constraint (_2 = a) is satisfied.
 """.strip()
         self.assertEqual(
             self.reporter.output_stream.get_output(),
