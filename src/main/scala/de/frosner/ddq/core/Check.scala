@@ -115,8 +115,8 @@ case class Check(dataFrame: DataFrame,
    * @param dateFormat Date format to use for conversion
    * @return [[core.Check]] object including this constraint
    */
-  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat): Check = addConstraint(
-    Check.isFormattedAsDate(columnName, dateFormat))
+  def isFormattedAsDate(columnName: String, simpleDateFormat: String): Check = addConstraint(
+    Check.isFormattedAsDate(columnName, simpleDateFormat))
 
   /**
    * Check whether the column with the given name is always any of the specified values.
@@ -310,11 +310,11 @@ object Check {
    * Check whether the column with the given name can be converted to a date using the specified date format.
    *
    * @param columnName Name of the column to check
-   * @param dateFormat Date format to use for conversion
+   * @param simpleDateFormat Date format string to use for conversion
    * @return [[constraints.Constraint]] object
    */
-  def isFormattedAsDate(columnName: String, dateFormat: SimpleDateFormat): Constraint =
-    DateFormatConstraint(columnName, dateFormat)
+  def isFormattedAsDate(columnName: String, simpleDateFormat: String): Constraint =
+    DateFormatConstraint(columnName, simpleDateFormat)
 
   /**
    * Check whether the column with the given name is always any of the specified values.

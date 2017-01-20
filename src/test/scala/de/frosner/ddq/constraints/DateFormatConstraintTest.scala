@@ -11,7 +11,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
 
   "A DateFormatConstraint" should "succeed if all elements can be converted to Date" in {
     val column = "column"
-    val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    val format = "yyyy-MM-dd HH:mm:ss"
     val check = Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "2000-5-23 11:50:10", "2000-02-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
@@ -25,7 +25,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
 
   it should "succeed if all elements can be converted to Date or are null" in {
     val column = "column"
-    val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    val format = "yyyy-MM-dd HH:mm:ss"
     val check = Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", null, "2000-02-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
@@ -39,7 +39,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
 
   it should "fail if at least one element cannot be converted to Date" in {
     val column = "column"
-    val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    val format = "yyyy-MM-dd HH:mm:ss"
     val check =  Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
@@ -53,9 +53,8 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
 
   it should "error if the condition references a non-existing column" in {
     val column = "notExisting"
-    val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val check =  Check(TestData.makeNullableStringDf(sql, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
-      isFormattedAsDate(column, format)
+      isFormattedAsDate(column, "yyyy-MM-dd HH:mm:ss")
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -71,7 +70,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   }
 
   "A DateFormatConstraintResult" should "have the correct success message" in {
-    val constraint = DateFormatConstraint("c", new SimpleDateFormat("yyyy"))
+    val constraint = DateFormatConstraint("c", "yyyy")
     val result = DateFormatConstraintResult(
       constraint = constraint,
       data = Some(DateFormatConstraintResultData(failedRows = 0L)),
@@ -81,7 +80,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   }
 
   it should "have the correct failure message (one row)" in {
-    val constraint = DateFormatConstraint("c", new SimpleDateFormat("yyyy"))
+    val constraint = DateFormatConstraint("c", "yyyy")
     val result = DateFormatConstraintResult(
       constraint = constraint,
       data = Some(DateFormatConstraintResultData(failedRows = 1L)),
@@ -91,7 +90,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   }
 
   it should "have the correct failure message (multiple rows)" in {
-    val constraint = DateFormatConstraint("c", new SimpleDateFormat("yyyy"))
+    val constraint = DateFormatConstraint("c", "yyyy")
     val result = DateFormatConstraintResult(
       constraint = constraint,
       data = Some(DateFormatConstraintResultData(failedRows = 2L)),
@@ -101,7 +100,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   }
 
   it should "have the correct error message" in {
-    val constraint = DateFormatConstraint("c", new SimpleDateFormat("yyyy"))
+    val constraint = DateFormatConstraint("c", "yyyy")
     val result = DateFormatConstraintResult(
       constraint = constraint,
       data = None,
@@ -114,7 +113,7 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   it should "throw an exception if it is created with an illegal combination of fields" in {
     intercept[IllegalConstraintResultException] {
       DateFormatConstraintResult(
-        constraint = DateFormatConstraint("c", new SimpleDateFormat("yyyy")),
+        constraint = DateFormatConstraint("c", "yyyy"),
         status = ConstraintFailure,
         data = None
       )

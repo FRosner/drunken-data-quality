@@ -122,10 +122,9 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
   it should "work for DateFormatConstraintResult" in {
     val column = "c"
     val formatString = "yyyy"
-    val format = new SimpleDateFormat(formatString)
     val failedRows = 1L
     val constraintResult = DateFormatConstraintResult(
-      constraint = DateFormatConstraint(column, format),
+      constraint = DateFormatConstraint(column, formatString),
       status = ConstraintFailure,
       data = Some(DateFormatConstraintResultData(failedRows = failedRows))
     )
