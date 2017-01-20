@@ -37,24 +37,20 @@ If neither of the above-mentioned ways work for you, feel free to download one o
 Create two example tables to play with (or use your existing ones).
 
 ```scala
-import org.apache.spark.sql._
-val sqlContext = new SQLContext(sc)
-import sqlContext.implicits._
-
 case class Customer(id: Int, name: String)
 case class Contract(id: Int, customerId: Int, duration: Int)
 
-val customers = sc.parallelize(List(
+val customers = spark.createDataFrame(List(
   Customer(0, "Frank"),
   Customer(1, "Alex"),
   Customer(2, "Slavo")
-)).toDF
+))
 
-val contracts = sc.parallelize(List(
+val contracts = spark.createDataFrame(List(
   Contract(0, 0, 5),
   Contract(1, 0, 10),
   Contract(0, 1, 6)
-)).toDF
+))
 ```
 
 Run some checks and see the results on the console.
@@ -162,7 +158,7 @@ Then you can create a dummy dataframe and run a few checks.
 ```python
 from pyddq.core import Check
 
-df = sqlContext.createDataFrame([(1, "a"), (1, None), (3, "c")])
+df = spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
 check = Check(df)
 check.hasUniqueKey("_1", "_2").isNeverNull("_1").run()
 ```
