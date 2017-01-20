@@ -7,11 +7,25 @@ import scala.util.Try
 case class AlwaysNullConstraint(columnName: String) extends Constraint {
 
   override val fun = (df: DataFrame) => {
-    val tryNotNullCount = Try(df.filter(new Column(columnName).isNotNull).count)
+    val tryNotNullCountAndNulls = Try {
+      val originalColumns = df.columns
+      val withNotNullColumn = df.withColumn(uuid, new Column(columnName).isNotNull)
+      val notNulls = withNotNullColumn.filter(new Column(uuid)).select(originalColumns.map(new Column(_)): _*)
+      val notNullCount = notNulls.count
+      (notNullCount, notNulls)
+    }
+    val tryNotNullCount = tryNotNullCountAndNulls.map {
+      case (notNullCount, notNulls) => notNullCount
+    }
     AlwaysNullConstraintResult(
       constraint = this,
       status = ConstraintUtil.tryToStatus[Long](tryNotNullCount, _ == 0),
-      data = tryNotNullCount.toOption.map(AlwaysNullConstraintResultData)
+      data = tryNotNullCountAndNulls.toOption.map {
+        case (notNullCount, notNulls) => AlwaysNullConstraintResultData(
+          nonNullRows = notNullCount,
+          notNulls = notNulls
+        )
+      }
     )
   }
 
@@ -39,4 +53,4 @@ case class AlwaysNullConstraintResult(constraint: AlwaysNullConstraint,
 
 }
 
-case class AlwaysNullConstraintResultData(nonNullRows: Long)
+case class AlwaysNullConstraintResultData(nonNullRows: Long, notNulls: DataFrame)

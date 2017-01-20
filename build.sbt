@@ -18,6 +18,8 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % sparkVersion.value % 
 
 libraryDependencies += "org.apache.spark" %% "spark-hive" % sparkVersion.value % "provided"
 
+libraryDependencies += "com.holdenkarau" %% "spark-testing-base" % s"${sparkVersion.value}_0.3.3" % "test"
+
 libraryDependencies += "org.mockito" % "mockito-all" % "1.8.4" % "test"
 
 spName := "FRosner/drunken-data-quality"
@@ -31,6 +33,8 @@ sparkComponents ++= Seq("sql", "hive")
 licenses += "Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0")
 
 fork := true
+
+parallelExecution in Test := false
 
 javaOptions += "-Xmx2G"
 

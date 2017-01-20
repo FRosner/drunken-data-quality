@@ -61,7 +61,7 @@ class Log4jReporterTest extends FlatSpec with Matchers with MockitoSugar {
     val constraintResult = AlwaysNullConstraintResult(
       constraint = AlwaysNullConstraint(columnName),
       status = ConstraintFailure,
-      data = Some(AlwaysNullConstraintResultData(nonNullRows))
+      data = Some(AlwaysNullConstraintResultData(nonNullRows, mock[DataFrame]))
     )
 
     checkJsonOf(constraintResult, Map(

@@ -1,39 +1,49 @@
 package de.frosner.ddq.constraints
 
+import com.holdenkarau.spark.testing.{SQLContextProvider, DataFrameSuiteBase, DatasetSuiteBase}
 import de.frosner.ddq.core.Check
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
-import org.apache.spark.sql.AnalysisException
-import org.scalatest.{FlatSpec, Matchers}
+import org.apache.spark.sql.{DataFrame, AnalysisException}
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-class AlwaysNullConstraintTest extends FlatSpec with Matchers with SparkContexts {
+class AlwaysNullConstraintTest extends DataFrameSuiteBase with Matchers with MockitoSugar {
 
-  "An AlwaysNullConstraint" should "succeed if the column is always null" in {
+  test("An AlwaysNullConstraint should succeed if the column is always null") {
     val column = "column"
-    val check = Check(TestData.makeNullableStringDf(sql, List(null, null, null))).isAlwaysNull(column)
+    val check = Check(TestData.makeNullableStringDf(sqlContext, List(null, null, null))).isAlwaysNull(column)
     val constraint = check.constraints.head
-    val result = AlwaysNullConstraintResult(
-      constraint = AlwaysNullConstraint(column),
-      data = Some(AlwaysNullConstraintResultData(nonNullRows = 0L)),
-      status = ConstraintSuccess
-    )
-    check.run().constraintResults shouldBe Map(constraint -> result)
+
+    val constraintResults = check.run().constraintResults
+    constraintResults should have size 1
+
+    val constraintResult = constraintResults(constraint).asInstanceOf[AlwaysNullConstraintResult]
+    constraintResult.constraint shouldBe AlwaysNullConstraint(column)
+    constraintResult.status shouldBe ConstraintSuccess
+    val Some(AlwaysNullConstraintResultData(nonNullRows, notNulls)) = constraintResult.data
+    nonNullRows shouldBe 0
+    notNulls.count shouldBe 0
   }
 
-  it should "fail if the column is not always null" in {
+  test("An AlwaysNullConstraint should fail if the column is not always null") {
     val column = "column"
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", null, null))).isAlwaysNull(column)
+    val check = Check(TestData.makeNullableStringDf(sqlContext, List("a", null, null))).isAlwaysNull(column)
     val constraint = check.constraints.head
-    val result = AlwaysNullConstraintResult(
-      constraint = AlwaysNullConstraint(column),
-      data = Some(AlwaysNullConstraintResultData(nonNullRows = 1L)),
-      status = ConstraintFailure
-    )
-    check.run().constraintResults shouldBe Map(constraint -> result)
+
+    val constraintResults = check.run().constraintResults
+    constraintResults should have size 1
+
+    val constraintResult = constraintResults(constraint).asInstanceOf[AlwaysNullConstraintResult]
+    constraintResult.constraint shouldBe AlwaysNullConstraint(column)
+    constraintResult.status shouldBe ConstraintFailure
+    val Some(AlwaysNullConstraintResultData(nonNullRows, notNulls)) = constraintResult.data
+    nonNullRows shouldBe 1
+    assertDataFrameEquals(TestData.makeNullableStringDf(sqlContext, List("a")), notNulls)
   }
 
-  it should "error if the column is not existing" in {
+  test("An AlwaysNullConstraint should error if the column is not existing") {
     val column = "notExisting"
-    val check = Check(TestData.makeNullableStringDf(sql, List("a", null, null))).isAlwaysNull(column)
+    val check = Check(TestData.makeNullableStringDf(sqlContext, List("a", null, null))).isAlwaysNull(column)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -48,37 +58,37 @@ class AlwaysNullConstraintTest extends FlatSpec with Matchers with SparkContexts
     }
   }
 
-  "An AlwaysNullConstraintResult" should "have the correct success message" in {
+  test("An AlwaysNullConstraintResult should have the correct success message") {
     val constraint = AlwaysNullConstraint("c")
     val result = AlwaysNullConstraintResult(
       constraint = constraint,
       status = ConstraintSuccess,
-      data = Some(AlwaysNullConstraintResultData(0L))
+      data = Some(AlwaysNullConstraintResultData(0L, mock[DataFrame]))
     )
     result.message shouldBe "Column c is always null."
   }
 
-  it should "have the correct failure message (one row)" in {
+  test("An AlwaysNullConstraintResult should have the correct failure message (one row)") {
     val constraint = AlwaysNullConstraint("c")
     val result = AlwaysNullConstraintResult(
       constraint = constraint,
       status = ConstraintFailure,
-      data = Some(AlwaysNullConstraintResultData(1L))
+      data = Some(AlwaysNullConstraintResultData(1L, mock[DataFrame]))
     )
     result.message shouldBe "Column c contains 1 non-null row (should always be null)."
   }
 
-  it should "have the correct failure message (multiple rows)" in {
+  test("An AlwaysNullConstraintResult should have the correct failure message (multiple rows)") {
     val constraint = AlwaysNullConstraint("c")
     val result = AlwaysNullConstraintResult(
       constraint = constraint,
       status = ConstraintFailure,
-      data = Some(AlwaysNullConstraintResultData(2L))
+      data = Some(AlwaysNullConstraintResultData(2L, mock[DataFrame]))
     )
     result.message shouldBe "Column c contains 2 non-null rows (should always be null)."
   }
 
-  it should "have the correct error message" in {
+  test("An AlwaysNullConstraintResult should have the correct error message") {
     val constraint = AlwaysNullConstraint("c")
     val result = AlwaysNullConstraintResult(
       constraint = constraint,
@@ -89,7 +99,7 @@ class AlwaysNullConstraintTest extends FlatSpec with Matchers with SparkContexts
       "java.lang.IllegalArgumentException: column c not found"
   }
 
-  it should "throw an exception if it is created with an illegal combination of fields" in {
+  test("An AlwaysNullConstraintResult should throw an exception if it is created with an illegal combination of fields") {
     intercept[IllegalConstraintResultException] {
       AlwaysNullConstraintResult(
         constraint = AlwaysNullConstraint("c"),
