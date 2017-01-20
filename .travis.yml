@@ -9,8 +9,8 @@ scala:
    - 2.10.5
    - 2.11.6
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION coverage test
-  - pip install --user codecov && codecov
+  - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
+  - bash <(curl -s https://codecov.io/bash)
   - sbt 'set test in assembly := {}' pythonItAssembly
   - cd python
   - virtualenv ve
