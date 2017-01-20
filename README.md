@@ -206,10 +206,10 @@ For a comprehensive list of available constraints, please refer to the [Wiki](ht
 
 ## Authors
 
-- [Frank Rosner](https://github.com/FRosner) (Creator)
-- [Aleksandr Sorokoumov](https://github.com/Gerrrr) (Contributor)
-- [Slavo N.](https://github.com/mfsny) (Contributor)
-- [Basil Komboz](https://github.com/bkomboz) (Contributor)
+- [Frank Rosner](https://github.com/FRosner) (Core, Reporters, Scala API)
+- [Aleksandr Sorokoumov](https://github.com/Gerrrr) (Python API)
+
+Thanks also to everyone who submitted pull requests, bug reports and feature requests.
 
 ## License
 
