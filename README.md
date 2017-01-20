@@ -189,6 +189,17 @@ Check(df)\
 print bytearray_stream.get_output()
 ```
 
+## Spark Version Compatibility
+
+Although we try to maintain as much compatibility between all available Spark versions we cannot guarantee that everything works smoothly for every possible combination of DDQ and Spark versions. The following matrix shows you what version of DDQ is built and tested against what version of Spark.
+
+DDQ Version | Spark Version
+--- | ---
+4.x | 2.0.x
+3.x | 1.6.x
+2.x | 1.3.x
+1.x | 1.3.x
+
 ## Documentation
 
 For a comprehensive list of available constraints, please refer to the [Wiki](https://github.com/FRosner/drunken-data-quality/wiki).
