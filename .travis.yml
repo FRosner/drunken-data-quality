@@ -6,8 +6,8 @@ addons:
       - python-pip
       - python-virtualenv
 scala:
-   - 2.10.5
-   - 2.11.6
+   - 2.10.6
+   - 2.11.8
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
   - bash <(curl -s https://codecov.io/bash)
