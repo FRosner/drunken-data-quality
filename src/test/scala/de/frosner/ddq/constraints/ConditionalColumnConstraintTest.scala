@@ -10,7 +10,7 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
   "A ConditionalColumnConstraint" should "succeed if all rows where the statement is true, satisfy the given condition" in {
     val statement = new Column("column1") === 1
     val implication = new Column("column2") === 0
-    val check = Check(TestData.makeIntegersDf(sql,
+    val check = Check(TestData.makeIntegersDf(spark,
       List(1, 0),
       List(2, 0),
       List(3, 0)
@@ -27,7 +27,7 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
   it should "succeed if there are no rows where the statement is true" in {
     val statement = new Column("column1") === 5
     val implication = new Column("column2") === 100
-    val check = Check(TestData.makeIntegersDf(sql,
+    val check = Check(TestData.makeIntegersDf(spark,
       List(1, 0),
       List(1, 1),
       List(3, 0)
@@ -44,7 +44,7 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
   it should "fail if there are rows that do not satisfy the given condition" in {
     val statement = new Column("column1") === 1
     val implication = new Column("column2") === 0
-    val check = Check(TestData.makeIntegersDf(sql,
+    val check = Check(TestData.makeIntegersDf(spark,
       List(1, 0),
       List(1, 1),
       List(3, 0)
@@ -61,7 +61,7 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
   it should "error if the condition references a non-existing column" in {
     val statement = new Column("notExisting") === 1
     val implication = new Column("column2") === 0
-    val check = Check(TestData.makeIntegersDf(sql,
+    val check = Check(TestData.makeIntegersDf(spark,
       List(1, 0),
       List(1, 1),
       List(3, 0)
@@ -75,7 +75,7 @@ class ConditionalColumnConstraintTest extends FlatSpec with Matchers with SparkC
         constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column1, column2"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column1, column2]"
       }
     }
   }

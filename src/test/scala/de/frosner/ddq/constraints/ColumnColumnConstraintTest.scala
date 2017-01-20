@@ -9,7 +9,7 @@ class ColumnColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   "A ColumnColumnConstraint" should "succeed if all rows satisfy the given condition" in {
     val constraintColumn = new Column("column") > 0
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintColumn)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintColumn)
     val constraint = check.constraints.head
     val result = ColumnColumnConstraintResult(
       constraint = ColumnColumnConstraint(constraintColumn),
@@ -21,7 +21,7 @@ class ColumnColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   it should "fail if there is a row that does not satisfy the given condition" in {
     val constraintColumn = new Column("column") > 1
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintColumn)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintColumn)
     val constraint = check.constraints.head
     val result = ColumnColumnConstraintResult(
       constraint = ColumnColumnConstraint(constraintColumn),
@@ -33,7 +33,7 @@ class ColumnColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   it should "error if the condition references a non-existing column" in {
     val constraintColumn = new Column("notExisting") > 1
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintColumn)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintColumn)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -43,7 +43,7 @@ class ColumnColumnConstraintTest extends FlatSpec with Matchers with SparkContex
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }

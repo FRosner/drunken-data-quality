@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts {
 
   "A UniqueKeyConstraint" should "succeed if a given column defines a key" in {
-    val df = TestData.makeIntegersDf(sql,
+    val df = TestData.makeIntegersDf(spark,
       List(1,2),
       List(2,3),
       List(3,3)
@@ -26,7 +26,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
   }
 
   it should "succeed if the given columns define a key" in {
-    val df = TestData.makeIntegersDf(sql,
+    val df = TestData.makeIntegersDf(spark,
       List(1,2,3),
       List(2,3,3),
       List(3,2,3)
@@ -45,7 +45,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
   }
 
   it should "fail if there are duplicate rows using the given column as a key" in {
-    val df = TestData.makeIntegersDf(sql,
+    val df = TestData.makeIntegersDf(spark,
       List(1,2),
       List(2,3),
       List(2,3)
@@ -63,7 +63,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
   }
 
   it should "fail if there are duplicate rows using the given columns as a key" in {
-    val df = TestData.makeIntegersDf(sql,
+    val df = TestData.makeIntegersDf(spark,
       List(1,2,3),
       List(2,3,3),
       List(1,2,3)
@@ -83,7 +83,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
   }
 
   it should "error if the given column does not exist" in {
-    val df = TestData.makeIntegersDf(sql,
+    val df = TestData.makeIntegersDf(spark,
       List(1,2),
       List(2,3),
       List(3,3)
@@ -99,7 +99,7 @@ class UniqueKeyConstraintTest extends FlatSpec with Matchers with SparkContexts 
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column1, column2"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column1, column2]"
       }
     }
   }

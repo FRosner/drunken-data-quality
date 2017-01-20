@@ -11,7 +11,7 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
   "A TypeConversionConstraint" should "succeed if all elements can be converted" in {
     val column = "column"
     val targetType = IntegerType
-    val check = Check(TestData.makeNullableStringDf(sql, List("1", "2", "3"))).isConvertibleTo(column, targetType)
+    val check = Check(TestData.makeNullableStringDf(spark, List("1", "2", "3"))).isConvertibleTo(column, targetType)
     val constraint = check.constraints.head
     val result = TypeConversionConstraintResult(
       constraint = TypeConversionConstraint(column, targetType),
@@ -27,7 +27,7 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
   it should "succeed if all elements can be converted or are null" in {
     val column = "column"
     val targetType = DoubleType
-    val check = Check(TestData.makeNullableStringDf(sql, List("1.0", "2.0", null))).isConvertibleTo(column, targetType)
+    val check = Check(TestData.makeNullableStringDf(spark, List("1.0", "2.0", null))).isConvertibleTo(column, targetType)
     val constraint = check.constraints.head
     val result = TypeConversionConstraintResult(
       constraint = TypeConversionConstraint(column, targetType),
@@ -43,7 +43,7 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
   it should "fail if at least one element cannot be converted" in {
     val column = "column"
     val targetType = LongType
-    val check = Check(TestData.makeNullableStringDf(sql, List("1", "2", "hallo", "test"))).isConvertibleTo(column, targetType)
+    val check = Check(TestData.makeNullableStringDf(spark, List("1", "2", "hallo", "test"))).isConvertibleTo(column, targetType)
     val constraint = check.constraints.head
     val result = TypeConversionConstraintResult(
       constraint = TypeConversionConstraint(column, targetType),
@@ -59,7 +59,7 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
   it should "error the column does not exist" in {
     val column = "notExisting"
     val targetType = IntegerType
-    val check = Check(TestData.makeNullableStringDf(sql, List("1", "2", "3"))).isConvertibleTo(column, targetType)
+    val check = Check(TestData.makeNullableStringDf(spark, List("1", "2", "3"))).isConvertibleTo(column, targetType)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -69,7 +69,7 @@ class TypeConversionConstraintTest extends FlatSpec with Matchers with SparkCont
         constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }

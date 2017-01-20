@@ -11,8 +11,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
 
   "A ForeignKeyConstraint" should "succeed if the given column is a foreign key pointing to the reference table" in {
     val columns = "column" -> "column"
-    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 2, 2, 3))
-    val ref = TestData.makeIntegerDf(sql, List(1, 2, 3))
+    val base = TestData.makeIntegerDf(spark, List(1, 1, 1, 2, 2, 3))
+    val ref = TestData.makeIntegerDf(spark, List(1, 2, 3))
     val check = Check(base).hasForeignKey(ref, columns)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -26,8 +26,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
   it should "succeed if the given columns are a foreign key pointing to the reference table" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column2" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 2, 100), List(1, 3, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 2, 100), List(1, 3, 100))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -41,8 +41,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
   it should "succeed if the given columns are a foreign key pointing to the reference table having a different name" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 3, 100), List(1, 5, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 3, 100), List(1, 5, 100))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -55,8 +55,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
 
   it should "fail if the given column contains values that are not found in the reference table" in {
     val columns = "column" -> "column"
-    val base = TestData.makeIntegerDf(sql, List(1, 1, 1, 2, 2, 3))
-    val ref = TestData.makeIntegerDf(sql, List(1, 2))
+    val base = TestData.makeIntegerDf(spark, List(1, 1, 1, 2, 2, 3))
+    val ref = TestData.makeIntegerDf(spark, List(1, 2))
     val check = Check(base).hasForeignKey(ref, columns)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -70,8 +70,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
   it should "fail if the given columns contains values that are not found in the reference table" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column2" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 5, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 2, 100), List(1, 3, 100))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 5, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 2, 100), List(1, 3, 100))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -85,8 +85,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
   it should "fail if the foreign key is not a primary key in the reference table" in {
     val columns1 = "column1" -> "column1"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 3, 100), List(1, 5, 100), List(1, 5, 500))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 3, 100), List(1, 5, 100), List(1, 5, 500))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = ForeignKeyConstraintResult(
@@ -100,8 +100,8 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
   it should "error if a column does not exist in the base table" in {
     val columns1 = "notExisting" -> "column1"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 3), List(1, 5))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 3), List(1, 5))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
@@ -110,18 +110,17 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
         ForeignKeyConstraint(Seq(("notExisting", "column1"), ("column3", "column2")), _),
         None,
         constraintError: ConstraintError
-      ) => {
+      ) =>
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column1, column2, column3"
-      }
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column1, column2, column3]"
     }
   }
 
   it should "error if a column does not exist in the ref table" in {
     val columns1 = "column1" -> "notExisting"
     val columns2 = "column3" -> "column2"
-    val base = TestData.makeIntegersDf(sql, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
-    val ref = TestData.makeIntegersDf(sql, List(1, 3), List(1, 5), List(1, 5))
+    val base = TestData.makeIntegersDf(spark, List(1, 2, 3), List(1, 2, 5), List(1, 3, 3))
+    val ref = TestData.makeIntegersDf(spark, List(1, 3), List(1, 5), List(1, 5))
     val check = Check(base).hasForeignKey(ref, columns1, columns2)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
@@ -130,10 +129,9 @@ class ForeignKeyConstraintTest extends FlatSpec with Matchers with MockitoSugar 
       ForeignKeyConstraint(Seq(("column1", "notExisting"), ("column3", "column2")), _),
       None,
       constraintError: ConstraintError
-      ) => {
+      ) =>
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column1, column2"
-      }
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column1, column2]"
     }
   }
 

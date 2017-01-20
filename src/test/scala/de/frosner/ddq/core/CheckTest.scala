@@ -5,23 +5,21 @@ import java.io.{ByteArrayOutputStream, FileDescriptor, FileOutputStream, PrintSt
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import de.frosner.ddq.testutils.{SparkContexts, TestData}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{AnalysisException, DataFrame}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
 class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with BeforeAndAfterAll with MockitoSugar with SparkContexts {
 
-  override def afterAll(): Unit = {
-    hive.reset()
-  }
+  override def afterAll(): Unit = resetSpark()
 
   "Multiple checks" should "produce a constraintResults map with all constraints and corresponding results" in {
     val expectedNumberOfRows1 = 3
     val expectedNumberOfRows2 = 2
     val constraintString = "column > 0"
     val columnName = "column"
-    val check = Check(TestData.makeIntegerDf(sql, List(1,2,3)))
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3)))
       .isAlwaysNull(columnName)
       .isNeverNull(columnName)
       .satisfies(constraintString)
@@ -49,9 +47,9 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
   }
 
   "A check from a SQLContext" should "load the given table" in {
-    val df = TestData.makeIntegerDf(sql, List(1,2,3))
+    val df = TestData.makeIntegerDf(spark, List(1, 2, 3))
     val tableName = "myintegerdf1"
-    df.registerTempTable(tableName)
+    df.createOrReplaceTempView(tableName)
     val columnName = "column"
     val constraint = Check.isNeverNull(columnName)
     val result = NeverNullConstraintResult(
@@ -59,23 +57,23 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
       data = Some(NeverNullConstraintResultData(0L)),
       status = ConstraintSuccess
     )
-    Check.sqlTable(sql, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
+    Check.sqlTable(spark, tableName).addConstraint(constraint).run().constraintResults shouldBe Map(constraint -> result)
   }
 
   it should "require the table to exist" in {
     intercept[IllegalArgumentException] {
-      Check.sqlTable(sql, "doesnotexist").run()
+      Check.sqlTable(spark, "doesnotexist").run()
     }
   }
 
   "A check from a HiveContext" should "load the given table from the given database" in {
     val tableName = "myintegerdf2"
     val databaseName = "testDb"
-    hive.sql(s"CREATE DATABASE $databaseName")
-    hive.sql(s"USE $databaseName")
-    val df = TestData.makeIntegerDf(hive, List(1,2,3))
-    df.registerTempTable(tableName)
-    hive.sql(s"USE default")
+    spark.sql(s"CREATE DATABASE $databaseName")
+    spark.sql(s"USE $databaseName")
+    val df = TestData.makeIntegerDf(spark, List(1, 2, 3))
+    df.createOrReplaceTempView(tableName)
+    spark.sql(s"USE default")
     val columnName = "column"
     val constraint = Check.isNeverNull(columnName)
     val result = NeverNullConstraintResult(
@@ -83,14 +81,13 @@ class CheckTest extends FlatSpec with Matchers with BeforeAndAfterEach with Befo
       data = Some(NeverNullConstraintResultData(0L)),
       status = ConstraintSuccess
     )
-    Check.hiveTable(hive, databaseName, tableName).addConstraint(constraint).run().
+    Check.hiveTable(spark, databaseName, tableName).addConstraint(constraint).run().
       constraintResults shouldBe Map(constraint -> result)
-    hive.sql(s"DROP DATABASE $databaseName")
   }
 
   it should "require the table to exist" in {
     intercept[IllegalArgumentException] {
-      Check.hiveTable(hive, "default", "doesnotexist").run()
+      Check.hiveTable(spark, "default", "doesnotexist").run()
     }
   }
 

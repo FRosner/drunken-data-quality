@@ -9,7 +9,7 @@ class StringColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   "A StringColumnConstraint" should "succeed if all rows satisfy the given condition" in {
     val constraintString = "column > 0"
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintString)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintString)
     val constraint = check.constraints.head
     val result = StringColumnConstraintResult(
       constraint = StringColumnConstraint(constraintString),
@@ -21,7 +21,7 @@ class StringColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   it should "fail if there are rows that do not satisfy the given condition" in {
     val constraintString = "column > 1"
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintString)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintString)
     val constraint = check.constraints.head
     val result = StringColumnConstraintResult(
       constraint = StringColumnConstraint(constraintString),
@@ -33,7 +33,7 @@ class StringColumnConstraintTest extends FlatSpec with Matchers with SparkContex
 
   it should "error if the column does not exist" in {
     val constraintString = "notExisting > 0"
-    val check = Check(TestData.makeIntegerDf(sql, List(1, 2, 3))).satisfies(constraintString)
+    val check = Check(TestData.makeIntegerDf(spark, List(1, 2, 3))).satisfies(constraintString)
     val constraint = check.constraints.head
     val result = check.run().constraintResults(constraint)
     result match {
@@ -43,7 +43,7 @@ class StringColumnConstraintTest extends FlatSpec with Matchers with SparkContex
       constraintError: ConstraintError
       ) => {
         val analysisException = constraintError.throwable.asInstanceOf[AnalysisException]
-        analysisException.message shouldBe "cannot resolve 'notExisting' given input columns column"
+        analysisException.message shouldBe "cannot resolve '`notExisting`' given input columns: [column]"
       }
     }
   }

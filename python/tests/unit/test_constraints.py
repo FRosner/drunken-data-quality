@@ -50,13 +50,9 @@ class ConstraintTest(unittest.TestCase):
 
     def test_isFormattedAsDate(self):
         date_format = "yyyy-MM-dd HH:mm:ss"
-        jvm_date_format = Mock()
-        self.check._jvm.java.text.SimpleDateFormat = Mock(
-            return_value=jvm_date_format
-        )
         self.check.isFormattedAsDate(self.COLUMN_NAME, date_format)
         self.jvmCheck.isFormattedAsDate.assert_called_with(self.COLUMN_NAME,
-                                                           jvm_date_format)
+                                                           date_format)
 
     def test_isAnyOf(self):
         allowed = ("a", "b", "c")
