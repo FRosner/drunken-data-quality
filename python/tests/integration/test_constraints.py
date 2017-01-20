@@ -86,7 +86,8 @@ It has a total number of 2 columns and 3 rows.
 It has a total number of 2 columns and 3 rows.
 
 - *SUCCESS*: Column _1 can be converted from LongType to IntegerType.
-- *ERROR*: Checking whether column _1 can be converted to ArrayType(IntegerType,true) failed: org.apache.spark.sql.AnalysisException: cannot resolve 'cast(_1 as array<int>)' due to data type mismatch: cannot cast LongType to ArrayType(IntegerType,true);
+- *ERROR*: Checking whether column _1 can be converted to ArrayType(IntegerType,true) failed: org.apache.spark.sql.AnalysisException: cannot resolve '`_1`' due to data type mismatch: cannot cast LongType to ArrayType(IntegerType,true);;
+'Project [_1#477L, cast(_1#477L as array<int>) AS _1_casted#516]\n+- LogicalRDD [_1#477L, _2#478]
 """.strip()
         self.assertEqual(
             self.reporter.output_stream.get_output(),
@@ -163,7 +164,7 @@ It has a total number of 2 columns and 3 rows.
         check = Check(df).hasFunctionalDependency(["_1", "_2"], ["_3"])
         check.run([self.reporter])
         expected_output = """
-**Checking [_1: bigint, _2: bigint, _3: bigint, _4: bigint]**
+**Checking [_1: bigint, _2: bigint ... 2 more fields]**
 
 It has a total number of 4 columns and 3 rows.
 
@@ -178,7 +179,7 @@ It has a total number of 4 columns and 3 rows.
         base = self.spark.createDataFrame([
             (1, 2, 3), (1, 2, 5), (1, 3, 3)
         ])
-        ref = self.sqlContext.createDataFrame([
+        ref = self.spark.createDataFrame([
             (1, 2, 100), (1, 3, 100)
         ])
         columnTuple1 = ("_1", "_1")
@@ -186,11 +187,11 @@ It has a total number of 4 columns and 3 rows.
         check = Check(base).hasForeignKey(ref, columnTuple1, columnTuple2)
         check.run([self.reporter])
         expected_output = """
-**Checking [_1: bigint, _2: bigint, _3: bigint]**
+**Checking [_1: bigint, _2: bigint ... 1 more field]**
 
 It has a total number of 3 columns and 3 rows.
 
-- *SUCCESS*: Columns _1->_1, _2->_2 define a foreign key pointing to the reference table [_1: bigint, _2: bigint, _3: bigint].
+- *SUCCESS*: Columns _1->_1, _2->_2 define a foreign key pointing to the reference table [_1: bigint, _2: bigint ... 1 more field].
 """.strip()
         self.assertEqual(
             self.reporter.output_stream.get_output(),
@@ -209,7 +210,7 @@ It has a total number of 3 columns and 3 rows.
         check = Check(base).isJoinableWith(ref, columnTuple1, columnTuple2)
         check.run([self.reporter])
         expected_output = """
-**Checking [_1: bigint, _2: bigint, _3: bigint]**
+**Checking [_1: bigint, _2: bigint ... 1 more field]**
 
 It has a total number of 3 columns and 3 rows.
 
