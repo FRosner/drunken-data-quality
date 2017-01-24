@@ -153,6 +153,8 @@ class ExactEqualityConstraintTest extends FlatSpec with Matchers with SparkConte
       )
     }
   }
+  
+}
 
 case class Customer1(id: Int, name: String)
 case class Customer2(name: String, id: Int)
