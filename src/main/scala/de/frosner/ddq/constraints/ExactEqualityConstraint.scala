@@ -52,8 +52,16 @@ case class ExactEqualityConstraintResult(constraint: ExactEqualityConstraint,
     (status, maybeNonMatchingRows, maybePluralS, maybeVerb) match {
       case (ConstraintSuccess, Some(_), Some(_), Some(_)) =>
         s"It is equal to $otherName."
-      case (ConstraintFailure, Some((leftToRightRows, rightToLeftRows)), Some((leftToRightPluralS, rightToLeftPluralS)), Some((leftToRightVerb, rightToLeftVerb))) =>
-        s"It is not equal ($leftToRightRows distinct count row$leftToRightPluralS $leftToRightVerb present in the checked dataframe but not in the other and $rightToLeftRows distinct count row$rightToLeftPluralS $rightToLeftVerb present in the other dataframe but not in the checked one) to $otherName."
+      case (
+        ConstraintFailure,
+        Some((leftToRightRows, rightToLeftRows)),
+        Some((leftToRightPluralS, rightToLeftPluralS)),
+        Some((leftToRightVerb, rightToLeftVerb))
+        ) =>
+          s"It is not equal ($leftToRightRows distinct count row$leftToRightPluralS $leftToRightVerb " +
+            s"present in the checked dataframe but not in the other " +
+            s"and $rightToLeftRows distinct count row$rightToLeftPluralS $rightToLeftVerb " +
+            s"present in the other dataframe but not in the checked one) to $otherName."
       case (ConstraintError(throwable), None, None, None) =>
         s"Checking equality with $otherName failed: $throwable"
       case default => throw IllegalConstraintResultException(this)
