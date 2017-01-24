@@ -240,6 +240,31 @@ It has a total number of 2 columns and 3 rows.
             expected_output
         )
 
+    def test_isEqualTo(self):
+        df1 = self.spark.createDataFrame([
+            (1, 2, 3), (1, 2, 5), (1, 3, 3)
+        ])
+        df2 = self.spark.createDataFrame([
+            (1, 2, 3), (1, 2, 5), (1, 3, 3)
+        ])
+        df3 = self.spark.createDataFrame([
+            (1, 2, 3), (1, 2, 5), (9, 9, 9), (10, 10, 10)
+        ])
+
+        expected_output = """
+**Checking [_1: bigint, _2: bigint ... 1 more field]**
+
+It has a total number of 3 columns and 3 rows.
+
+- *SUCCESS*: It is equal to [_1: bigint, _2: bigint ... 1 more field].
+- *FAILURE*: It is not equal (1 distinct count row is present in the checked dataframe but not in the other and 2 distinct count rows are present in the other dataframe but not in the checked one) to [_1: bigint, _2: bigint ... 1 more field].
+""".strip()
+        check = Check(df1).isEqualTo(df2).isEqualTo(df3)
+        check.run([self.reporter])
+        self.assertEqual(
+            self.reporter.output_stream.get_output(),
+            expected_output
+        )
 
 if __name__ == '__main__':
     unittest.main()

@@ -333,6 +333,26 @@ class Check(object):
             jvmCheck
         )
 
+    def isEqualTo(self, other):
+        """
+        Checks whether the other dataframe is exactly equal to this one. Equality
+        checks will be performed on a column basis depending on the column type using the Spark SQL
+        equality operator.
+        Comparison will be executed in a distributed way so it might take a while.
+        Args:
+            other (pyspark.sql.dataframe.DataFrame): other data set to compare with
+        Returns:
+        core.Check object including this constraint
+        """
+        jvmCheck = self.jvmCheck.isEqualTo(other._jdf)
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
+
     def run(self, reporters=None):
         """
         Runs check with all the previously specified constraints and report to
