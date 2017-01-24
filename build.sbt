@@ -10,7 +10,7 @@ crossScalaVersions := Seq("2.10.6", "2.11.8")
 
 sparkVersion := "2.0.2"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided"
 
