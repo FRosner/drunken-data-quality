@@ -111,7 +111,7 @@ case class Check(dataFrame: DataFrame,
    * Check whether the column with the given name can be converted to a date using the specified date format.
    *
    * @param columnName Name of the column to check
-   * @param dateFormat Date format to use for conversion
+   * @param simpleDateFormat Date format to use for conversion
    * @return [[core.Check]] object including this constraint
    */
   def isFormattedAsDate(columnName: String, simpleDateFormat: String): Check = addConstraint(
@@ -169,6 +169,20 @@ case class Check(dataFrame: DataFrame,
    */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]): Check = addConstraint(
     Check.hasFunctionalDependency(determinantSet, dependentSet)
+  )
+
+  /**
+    * Check whether the other dataframe is exactly equal to this one.
+    * Equality checks will be performed on a column basis depending on the column type using the Spark SQL
+    * equality operator.
+    *
+    * Comparison will be executed in a distributed way so it might take a while.
+    *
+    * @param other data set to compare with
+    * @return [[core.Check]] object
+    */
+  def isEqualTo(other: DataFrame): Check = addConstraint(
+    Check.isEqualTo(other)
   )
 
   /**
@@ -369,5 +383,18 @@ object Check {
    */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]): Constraint =
     FunctionalDependencyConstraint(determinantSet, dependentSet)
+
+  /**
+    * Check whether the other dataframe is exactly equal to this one.
+    * Equality checks will be performed on a column basis depending on the column type using the Spark SQL
+    * equality operator.
+    *
+    * Comparison will be executed in a distributed way so it might take a while.
+    *
+    * @param other data set to compare with
+    * @return [[constraints.Constraint]] object
+    */
+  def isEqualTo(other: DataFrame): Constraint =
+    ExactEqualityConstraint(other)
 
 }
