@@ -130,7 +130,7 @@ class ConstraintTest(unittest.TestCase):
         self.check.satisfies(constraint)
         self.jvmCheck.satisfies.assert_called_with(constraint)
 
-    def test_satisfies(self):
+    def test_isEqualTo(self):
         df2 = Mock()
         self.check.isEqualTo(df2)
         self.jvmCheck.isEqualTo.assert_called_with(df2._jdf)
