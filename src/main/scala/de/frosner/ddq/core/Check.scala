@@ -172,6 +172,20 @@ case class Check(dataFrame: DataFrame,
   )
 
   /**
+    * Check whether the other dataframe is exactly equal to this one.
+    * Equality checks will be performed on a column basis depending on the column type using the Spark SQL
+    * equality operator.
+    *
+    * Comparison will be executed in a distributed way so it might take a while.
+    *
+    * @param other data set to compare with
+    * @return [[core.Check]] object
+    */
+  def isEqualTo(other: DataFrame): Check = addConstraint(
+    Check.isEqualTo(other)
+  )
+
+  /**
    * Run check with all the previously specified constraints and report to every reporter passed as an argument
    *
    * @param reporters iterable of reporters to produce output on the check result
@@ -369,5 +383,18 @@ object Check {
    */
   def hasFunctionalDependency(determinantSet: Seq[String], dependentSet: Seq[String]): Constraint =
     FunctionalDependencyConstraint(determinantSet, dependentSet)
+
+  /**
+    * Check whether the other dataframe is exactly equal to this one.
+    * Equality checks will be performed on a column basis depending on the column type using the Spark SQL
+    * equality operator.
+    *
+    * Comparison will be executed in a distributed way so it might take a while.
+    *
+    * @param other data set to compare with
+    * @return [[constraints.Constraint]] object
+    */
+  def isEqualTo(other: DataFrame): Constraint =
+    ExactEqualityConstraint(other)
 
 }
