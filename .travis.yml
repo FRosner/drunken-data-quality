@@ -4,7 +4,6 @@ addons:
     packages:
       - git
       - python-pip
-      - python-virtualenv
 scala:
    - 2.10.6
    - 2.11.8
@@ -12,10 +11,8 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
   - bash <(curl -s https://codecov.io/bash)
   - sbt 'set test in assembly := {}' pythonItAssembly
+  - export PATH=$PATH:/usr/local/bin
   - cd python
-  - virtualenv ve
-  - source ve/bin/activate
-  - pip install six==1.1.0
   - pip install -U pip
   - pip install -U setuptools
   - pip install -r requirements.txt
@@ -26,7 +23,6 @@ script:
   - tar -xvzf $HOME/spark-2.0.2-bin-hadoop2.6.tgz -C $HOME/
   - export PATH=$PATH:$HOME/spark-2.0.2-bin-hadoop2.6/bin
   - python setup.py integration_test --jar=drunken-data-quality.jar
-  - deactivate
 cache:
   directories:
   - $HOME/.m2
