@@ -14,7 +14,7 @@ script:
   - sbt 'set test in assembly := {}' pythonItAssembly
   - export PATH=$PATH:/usr/local/bin
   - cd python
-  - sudo pip install -U pip
+  - pip install -U pip
   - sudo pip install -U setuptools
   - sudo pip install -r requirements.txt
   - sudo pip install -r test-requirements.txt
