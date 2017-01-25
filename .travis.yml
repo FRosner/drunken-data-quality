@@ -1,30 +1,29 @@
 language: scala
+sudo: required
 addons:
   apt:
     packages:
       - git
       - python-pip
-      - python-virtualenv
 scala:
    - 2.10.6
    - 2.11.8
+before_install:
+  - pip install -U pip
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
   - bash <(curl -s https://codecov.io/bash)
   - sbt 'set test in assembly := {}' pythonItAssembly
+  - export PATH=$PATH:/usr/local/bin
   - cd python
-  - virtualenv ve
-  - source ve/bin/activate
-  - pip install setuptools==33.1.1
-  - pip install --upgrade -r requirements.txt
-  - pip install --upgrade -r test-requirements.txt
-  - python setup.py install
-  - python setup.py test
+  - sudo pip install -r requirements.txt
+  - sudo pip install -r test-requirements.txt
+  - sudo python setup.py install
+  - sudo python setup.py test
   - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.0.2/spark-2.0.2-bin-hadoop2.6.tgz
   - tar -xvzf $HOME/spark-2.0.2-bin-hadoop2.6.tgz -C $HOME/
   - export PATH=$PATH:$HOME/spark-2.0.2-bin-hadoop2.6/bin
-  - python setup.py integration_test --jar=drunken-data-quality.jar
-  - deactivate
+  - sudo "PATH=$PATH" python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
   - $HOME/.m2
