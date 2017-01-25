@@ -4,9 +4,7 @@ import java.io.PrintStream
 
 import de.frosner.ddq.core.CheckResult
 
-abstract class PrintStreamReporter extends Reporter {
-
-  val stream: PrintStream
+abstract class HumanReadableReporter extends Reporter {
 
   override def report(checkResult: CheckResult): Unit = {
     val check = checkResult.check

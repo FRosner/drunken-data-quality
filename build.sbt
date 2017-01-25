@@ -20,6 +20,12 @@ libraryDependencies += "org.apache.spark" %% "spark-hive" % sparkVersion.value %
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.8.4" % "test"
 
+resolvers += "lightshed-maven" at "http://dl.bintray.com/content/lightshed/maven"
+
+libraryDependencies += "ch.lightshed" %% "courier" % "0.1.4"
+
+libraryDependencies += "org.jvnet.mock-javamail" % "mock-javamail" % "1.9" % "test"
+
 spName := "FRosner/drunken-data-quality"
 
 spAppendScalaVersion := true
