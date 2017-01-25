@@ -1,4 +1,5 @@
 language: scala
+sudo: required
 addons:
   apt:
     packages:
@@ -13,11 +14,11 @@ script:
   - sbt 'set test in assembly := {}' pythonItAssembly
   - export PATH=$PATH:/usr/local/bin
   - cd python
-  - pip install -U pip
-  - pip install -U setuptools
-  - pip install -r requirements.txt
-  - pip install -r test-requirements.txt
-  - python setup.py install
+  - sudo pip install -U pip
+  - sudo pip install -U setuptools
+  - sudo pip install -r requirements.txt
+  - sudo pip install -r test-requirements.txt
+  - sudo python setup.py install
   - python setup.py test
   - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.0.2/spark-2.0.2-bin-hadoop2.6.tgz
   - tar -xvzf $HOME/spark-2.0.2-bin-hadoop2.6.tgz -C $HOME/
