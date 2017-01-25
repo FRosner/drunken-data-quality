@@ -16,8 +16,8 @@ script:
   - virtualenv ve
   - source ve/bin/activate
   - pip install setuptools==33.1.1
-  - pip install --upgrade -r requirements.txt
-  - pip install --upgrade -r test-requirements.txt
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
   - python setup.py install
   - python setup.py test
   - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.0.2/spark-2.0.2-bin-hadoop2.6.tgz
