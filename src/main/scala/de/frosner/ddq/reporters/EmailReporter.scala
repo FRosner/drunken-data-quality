@@ -1,12 +1,15 @@
 package de.frosner.ddq.reporters
 
+import java.util.concurrent.TimeUnit
+
 import courier.{Envelope, Mailer, Text}
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core.CheckResult
 import courier._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
   * A class which produces an HTML report of [[CheckResult]] and sends it to the configured SMTP server.
@@ -14,7 +17,7 @@ import scala.concurrent.Future
   * @param smtpServer URL of the SMTP server to use for sending the email
   * @param from Email address of the sender
   * @param to Email addresses of the receivers
-  * @param to Email addresses of the carbon copy receivers
+  * @param cc Email addresses of the carbon copy receivers
   * @param smtpPort Port of the SMTP server to use for sending the email
   * @param reportOnlyOnFailure Whether to report only if there is a failing check (true) or always (false)
   * @param username Whether to and if so which username to use
@@ -50,14 +53,14 @@ case class EmailReporter(smtpServer: String,
     *
     * @param checkResult The [[CheckResult]] to be reported
    **/
-  override def report(checkResult: CheckResult, header: String, prologue: String): Unit = {
+  override def report(checkResult: CheckResult, header: String, prologue: String): Unit = synchronized {
+    val numSuccessfulConstraints = computeSuccessful(checkResult)
+    val numFailedConstraints = computeFailed(checkResult)
+    val numErroredConstraints = computeErrored(checkResult)
     if (accumulatedReport) {
       reports = reports ++ Seq((checkResult, header, prologue))
-    } else {
+    } else if (!(numFailedConstraints == 0 && numErroredConstraints == 0 && reportOnlyOnFailure)) {
       val checkName = checkResult.check.displayName.getOrElse(checkResult.check.dataFrame.toString())
-      val numFailedConstraints = computeFailed(checkResult)
-      val numSuccessfulConstraints = computeSuccessful(checkResult)
-      val numErroredConstraints = computeErrored(checkResult)
       val subject = generateSubject(checkName, numFailedConstraints, numSuccessfulConstraints, numErroredConstraints)
       sendReport(
         subject = subject,
@@ -67,7 +70,19 @@ case class EmailReporter(smtpServer: String,
   }
 
   private def generateSubject(checkName: String, numFailed: Int, numSuccessful: Int, numErrored: Int): String = {
-    s"Checking $checkName ${if (numFailed > 0) "failed" else "successful"}" +
+    val verb =
+      if (numFailed > 0)
+        if (numErrored > 0)
+          "failed and errored"
+        else
+          "failed"
+      else if (numErrored > 0)
+        "errored"
+      else if (numSuccessful > 0)
+        "was successful"
+      else
+        "didn't do anything"
+    s"Checking $checkName $verb" +
       s" ($numSuccessful successful, $numFailed failed, $numErrored errored)"
   }
 
@@ -115,14 +130,18 @@ case class EmailReporter(smtpServer: String,
       val numFailedConstraints = checkResults.map(computeFailed).sum
       val numSuccessfulConstraints = checkResults.map(computeSuccessful).sum
       val numErroredConstraints = checkResults.map(computeErrored).sum
-      val checkName = accumulatedCheckName.getOrElse(s"${checkResults.size} checks")
-      val subject = generateSubject(checkName, numFailedConstraints, numSuccessfulConstraints, numErroredConstraints)
-      sendReport(
-        subject = subject,
-        message = "<p>\n" + reports.map {
-          case (checkResult, header, prologue) => generateReport(checkResult, header, prologue)
-        }.mkString("</p><p>\n") + "</p>\n"
-      )
+      if (!(numFailedConstraints == 0 && numErroredConstraints == 0 && reportOnlyOnFailure && !reportsToSend.isEmpty)) {
+        val checkName = accumulatedCheckName.getOrElse(s"${checkResults.size} checks")
+        val subject = generateSubject(checkName, numFailedConstraints, numSuccessfulConstraints, numErroredConstraints)
+        val message = if (reportsToSend.isEmpty) {
+          "No checks executed. Please run your checks before sending out a report."
+        } else {
+          "<p>\n" + reportsToSend.map {
+            case (checkResult, header, prologue) => generateReport(checkResult, header, prologue)
+          }.mkString("\n</p>\n<p>\n") + "\n</p>\n"
+        }
+        sendReport(subject, message)
+      }
     } else {
       throw new IllegalStateException("Cannot trigger an accumulated report unless it is switched on (see constructor).")
     }
@@ -130,11 +149,12 @@ case class EmailReporter(smtpServer: String,
 
   private def sendReport(subject: String, message: String): Unit = {
     val mailer = Mailer(smtpServer, smtpPort)()
-    mailer(Envelope.from(from.addr)
+    val future = mailer(Envelope.from(from.addr)
       .to(to.map(_.addr).toSeq:_*)
       .cc(cc.map(_.addr).toSeq:_*)
       .subject(subjectPrefix + subject)
       .content(Text(message)))
+    Await.ready(future, Duration(5, TimeUnit.SECONDS))
   }
 
 }
