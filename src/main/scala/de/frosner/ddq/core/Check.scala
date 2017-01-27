@@ -3,6 +3,7 @@ package de.frosner.ddq.core
 import java.text.SimpleDateFormat
 import java.util.UUID
 
+import de.frosner.ddq.constraints.CustomConstraint.{FailureMsg, SuccessMsg}
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.reporters.{ConsoleReporter, Reporter}
 import de.frosner.ddq.{constraints, core}
@@ -183,6 +184,18 @@ case class Check(dataFrame: DataFrame,
     */
   def isEqualTo(other: DataFrame): Check = addConstraint(
     Check.isEqualTo(other)
+  )
+
+  /**
+    * Check a custom constraint. It's up to you! If you think this constraint makes sense, feel free to
+    * create a feature request or provide a pull request.
+    *
+    * @param name what the constraint is called
+    * @param fun function that computes the constraint and returns either a failure or success
+    * @return [[core.Check]] object
+    */
+  def custom(name: String, fun: DataFrame => Either[FailureMsg, SuccessMsg]): Check = addConstraint(
+    Check.custom(name, fun)
   )
 
   /**
@@ -396,5 +409,16 @@ object Check {
     */
   def isEqualTo(other: DataFrame): Constraint =
     ExactEqualityConstraint(other)
+
+  /**
+    * Check a custom constraint. It's up to you! If you think this constraint makes sense, feel free to
+    * create a feature request or provide a pull request.
+    *
+    * @param name what the constraint is called
+    * @param fun function that computes the constraint and returns either a failure or success
+    * @return [[constraints.Constraint]] object
+    */
+  def custom(name: String, fun: DataFrame => Either[FailureMsg, SuccessMsg]): Constraint =
+    CustomConstraint(name, fun)
 
 }
