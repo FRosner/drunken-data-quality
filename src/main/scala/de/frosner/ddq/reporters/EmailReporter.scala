@@ -147,7 +147,7 @@ case class EmailReporter(smtpServer: String,
   }
 
   private def sendReport(subject: String, message: String): Unit = {
-    val mailer = Mailer(smtpServer, smtpPort)
+    val mailer = Mailer(smtpServer, smtpPort).startTtls(true)
     val maybeAuthenticatedMailer = usernameAndPassword.map {
       case (username, password) => mailer.as(username, password)
     }.getOrElse(mailer)
