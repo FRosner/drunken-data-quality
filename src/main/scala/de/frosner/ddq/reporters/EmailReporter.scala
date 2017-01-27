@@ -6,6 +6,7 @@ import courier.{Envelope, Mailer, Text}
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core.CheckResult
 import courier._
+import de.frosner.ddq.reporters
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -149,12 +150,21 @@ case class EmailReporter(smtpServer: String,
 
   private def sendReport(subject: String, message: String): Unit = {
     val mailer = Mailer(smtpServer, smtpPort)()
-    val future = mailer(Envelope.from(from.addr)
+    val contentString = EmailReporter.htmlPrefix + message + EmailReporter.htmlSuffix
+    val envelope = Envelope.from(from.addr)
       .to(to.map(_.addr).toSeq:_*)
       .cc(cc.map(_.addr).toSeq:_*)
       .subject(subjectPrefix + subject)
-      .content(Text(message)))
+      .content(Multipart().html(contentString))
+    val future = mailer(envelope)
     Await.ready(future, Duration(5, TimeUnit.SECONDS))
   }
+
+}
+
+object EmailReporter {
+
+  val htmlPrefix = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html charset=utf-8\"></head><body style=\"word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;\" class=\"\">\n"
+  val htmlSuffix = "</body></html>\n"
 
 }

@@ -1,5 +1,8 @@
 package de.frosner.ddq.reporters
 
+import javax.mail.Message
+import javax.mail.internet.MimeMultipart
+
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core._
 import de.frosner.ddq.testutils.{DummyConstraint, DummyConstraintResult}
@@ -13,6 +16,11 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
 
   override def beforeEach(): Unit = {
     Mailbox.clearAll()
+  }
+
+  private def checkMsgContent(msg: Message, expected: String): Unit = {
+    msg.getContent.asInstanceOf[MimeMultipart].getBodyPart(0).getContent.asInstanceOf[String] shouldBe
+      EmailReporter.htmlPrefix + expected + EmailReporter.htmlSuffix
   }
 
   "An email reporter" should "produce correct output for a check with failing, erroring and successful constraints" in {
@@ -69,13 +77,13 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName failed and errored (1 successful, 1 failed, 1 errored)"
-    msg.getContent shouldBe s"""<h4>$header</h4>
+    checkMsgContent(msg, s"""<h4>$header</h4>
 <h5>$prologue</h5>
 <table>
 <tr><td style="padding:3px">&#9989;</td><td style="padding:3px">$message1</td></tr>
 <tr><td style="padding:3px">&#10060;</td><td style="padding:3px">$message2</td></tr>
 <tr><td style="padding:3px">&#9995;</td><td style="padding:3px">$message3</td></tr>
-</table>"""
+</table>""")
   }
 
   it should "produce correct output for a check with failed and successful constraints" in {
@@ -126,12 +134,12 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName failed (1 successful, 1 failed, 0 errored)"
-    msg.getContent shouldBe s"""<h4>$header</h4>
+    checkMsgContent(msg, s"""<h4>$header</h4>
 <h5>$prologue</h5>
 <table>
 <tr><td style="padding:3px">&#9989;</td><td style="padding:3px">$message1</td></tr>
 <tr><td style="padding:3px">&#10060;</td><td style="padding:3px">$message2</td></tr>
-</table>"""
+</table>""")
   }
 
   it should "produce correct output for a check with errored and successful constraints" in {
@@ -182,12 +190,12 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName errored (1 successful, 0 failed, 1 errored)"
-    msg.getContent shouldBe s"""<h4>$header</h4>
+    checkMsgContent(msg, s"""<h4>$header</h4>
 <h5>$prologue</h5>
 <table>
 <tr><td style="padding:3px">&#9989;</td><td style="padding:3px">$message1</td></tr>
 <tr><td style="padding:3px">&#9995;</td><td style="padding:3px">$message2</td></tr>
-</table>"""
+</table>""")
   }
 
   it should "produce correct output for a check with only successful constraints" in {
@@ -238,12 +246,12 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName was successful (2 successful, 0 failed, 0 errored)"
-    msg.getContent shouldBe s"""<h4>$header</h4>
+    checkMsgContent(msg, s"""<h4>$header</h4>
 <h5>$prologue</h5>
 <table>
 <tr><td style="padding:3px">&#9989;</td><td style="padding:3px">$message1</td></tr>
 <tr><td style="padding:3px">&#9989;</td><td style="padding:3px">$message2</td></tr>
-</table>"""
+</table>""")
   }
 
   it should "produce correct output for a check without constraint" in {
@@ -281,9 +289,9 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName didn't do anything (0 successful, 0 failed, 0 errored)"
-    msg.getContent shouldBe s"""<h4>$header</h4>
+    checkMsgContent(msg, s"""<h4>$header</h4>
 <h5>$prologue</h5>
-Nothing to check!"""
+Nothing to check!""")
   }
 
   it should "send the email to everyone (including the cced people)" in {
@@ -483,13 +491,13 @@ Nothing to check!"""
 
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking 2 checks failed and errored (2 successful, 2 failed, 2 errored)"
-    msg.getContent shouldBe s"""<p>
+    checkMsgContent(msg, s"""<p>
 $expectedCheck
 </p>
 <p>
 $expectedCheck
 </p>
-"""
+""")
   }
 
   it should "produce correct output for a check without constraint" in {
@@ -528,12 +536,12 @@ $expectedCheck
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName didn't do anything (0 successful, 0 failed, 0 errored)"
-    msg.getContent shouldBe s"""<p>
+    checkMsgContent(msg, s"""<p>
 <h4>$header</h4>
 <h5>$prologue</h5>
 Nothing to check!
 </p>
-"""
+""")
   }
 
   it should "send an informative email if triggered without any previous reports" in {
@@ -571,7 +579,7 @@ Nothing to check!
     inbox.size shouldBe 1
     val msg = inbox.get(0)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName didn't do anything (0 successful, 0 failed, 0 errored)"
-    msg.getContent shouldBe "No checks executed. Please run your checks before sending out a report."
+    checkMsgContent(msg, "No checks executed. Please run your checks before sending out a report.")
   }
 
   it should "not report if only on failure reporting is enabled and there are no failures" in {
@@ -723,7 +731,7 @@ Nothing to check!
     inbox.size shouldBe 2
     val msg = inbox.get(1)
     msg.getSubject shouldBe subjectPrefix + s"Checking $displayName didn't do anything (0 successful, 0 failed, 0 errored)"
-    msg.getContent shouldBe "No checks executed. Please run your checks before sending out a report."
+    checkMsgContent(msg, "No checks executed. Please run your checks before sending out a report.")
   }
 
   it should "throw an exception if triggered but switched off" in {
