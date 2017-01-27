@@ -2,15 +2,13 @@ package de.frosner.ddq.reporters
 
 import java.util.concurrent.TimeUnit
 
-import courier.{Envelope, Mailer, Text}
 import de.frosner.ddq.constraints._
 import de.frosner.ddq.core.CheckResult
 import courier._
-import de.frosner.ddq.reporters
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 
 /**
   * A class which produces an HTML report of [[CheckResult]] and sends it to the configured SMTP server.
