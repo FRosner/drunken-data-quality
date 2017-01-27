@@ -119,7 +119,7 @@ case class EmailReporter(smtpServer: String,
     headerHtml + prologueHtml + bodyHtml
   }
 
-  def sendAccumulatedReport(accumulatedCheckName: Option[String]) = synchronized {
+  def sendAccumulatedReport(accumulatedCheckName: Option[String]): Unit = synchronized {
     if (accumulatedReport) {
       val reportsToSend = reports
       reports = Seq.empty
