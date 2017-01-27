@@ -25,7 +25,6 @@ import scala.concurrent.Await
   *                          or else you will lose the results.
   *
  **/
-@volatile
 case class EmailReporter(smtpServer: String,
                          to: Set[String],
                          cc: Set[String] = Set.empty,
@@ -50,7 +49,7 @@ case class EmailReporter(smtpServer: String,
     *
     * @param checkResult The [[CheckResult]] to be reported
    **/
-  override def report(checkResult: CheckResult, header: String, prologue: String): Unit = synchronized {
+  override def report(checkResult: CheckResult, header: String, prologue: String): Unit = {
     val numSuccessfulConstraints = computeSuccessful(checkResult)
     val numFailedConstraints = computeFailed(checkResult)
     val numErroredConstraints = computeErrored(checkResult)
