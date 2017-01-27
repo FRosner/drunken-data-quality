@@ -34,8 +34,7 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -97,8 +96,7 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -153,8 +151,7 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -209,8 +206,7 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -265,8 +261,7 @@ class EmailReporterTest extends FlatSpec with Matchers with MockitoSugar with Be
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -307,8 +302,7 @@ Nothing to check!""")
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = false
     )
@@ -343,8 +337,7 @@ Nothing to check!""")
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = true,
       accumulatedReport = false
     )
@@ -389,8 +382,7 @@ Nothing to check!""")
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = true,
       accumulatedReport = false
     )
@@ -435,8 +427,7 @@ Nothing to check!""")
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = true
     )
@@ -511,8 +502,7 @@ $expectedCheck
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = true
     )
@@ -555,8 +545,7 @@ Nothing to check!
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = false,
       accumulatedReport = true
     )
@@ -593,8 +582,7 @@ Nothing to check!
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = true,
       accumulatedReport = true
     )
@@ -642,8 +630,7 @@ Nothing to check!
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = true,
       accumulatedReport = true
     )
@@ -691,8 +678,7 @@ Nothing to check!
       subjectPrefix = subjectPrefix,
       smtpPort = 25,
       from = "test@senders.de",
-      username = None,
-      password = None,
+      usernameAndPassword = None,
       reportOnlyOnFailure = true,
       accumulatedReport = true
     )
@@ -746,8 +732,7 @@ Nothing to check!
         subjectPrefix = subjectPrefix,
         smtpPort = 25,
         from = "test@senders.de",
-        username = None,
-        password = None,
+        usernameAndPassword = None,
         reportOnlyOnFailure = true,
         accumulatedReport = false
       )

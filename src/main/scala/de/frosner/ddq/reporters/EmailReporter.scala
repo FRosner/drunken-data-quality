@@ -21,8 +21,7 @@ import scala.concurrent.{Await, Future}
   * @param cc Email addresses of the carbon copy receivers
   * @param smtpPort Port of the SMTP server to use for sending the email
   * @param reportOnlyOnFailure Whether to report only if there is a failing check (true) or always (false)
-  * @param username Whether to and if so which username to use
-  * @param password Whether to and if so which password to use
+  * @param usernameAndPassword Optional credentials
   * @param accumulatedReport Whether to report for each check result (false) or only when a report is triggered (true).
   *                          The accumulated option requires the reporter to stick around until manually triggered
   *                          or else you will lose the results.
@@ -35,8 +34,7 @@ case class EmailReporter(smtpServer: String,
                          subjectPrefix: String = "Data Quality Report: ",
                          smtpPort: Int = 25,
                          from: String = "mail@ddq.io",
-                         username: Option[String] = None,
-                         password: Option[String] = None,
+                         usernameAndPassword: Option[(String, String)] = None,
                          reportOnlyOnFailure: Boolean = false,
                          accumulatedReport: Boolean = false
                         ) extends HumanReadableReporter {
@@ -149,14 +147,17 @@ case class EmailReporter(smtpServer: String,
   }
 
   private def sendReport(subject: String, message: String): Unit = {
-    val mailer = Mailer(smtpServer, smtpPort)()
+    val mailer = Mailer(smtpServer, smtpPort)
+    val maybeAuthenticatedMailer = usernameAndPassword.map {
+      case (username, password) => mailer.as(username, password)
+    }.getOrElse(mailer)
     val contentString = EmailReporter.htmlPrefix + message + EmailReporter.htmlSuffix
     val envelope = Envelope.from(from.addr)
       .to(to.map(_.addr).toSeq:_*)
       .cc(cc.map(_.addr).toSeq:_*)
       .subject(subjectPrefix + subject)
       .content(Multipart().html(contentString))
-    val future = mailer(envelope)
+    val future = maybeAuthenticatedMailer()(envelope)
     Await.ready(future, Duration(5, TimeUnit.SECONDS))
   }
 
