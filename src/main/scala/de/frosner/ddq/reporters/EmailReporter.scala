@@ -14,12 +14,13 @@ import scala.concurrent.Await
   * A class which produces an HTML report of [[CheckResult]] and sends it to the configured SMTP server.
   *
   * @param smtpServer URL of the SMTP server to use for sending the email
-  * @param from Email address of the sender
   * @param to Email addresses of the receivers
   * @param cc Email addresses of the carbon copy receivers
+  * @param subjectPrefix Prefix to put in the email subject
   * @param smtpPort Port of the SMTP server to use for sending the email
-  * @param reportOnlyOnFailure Whether to report only if there is a failing check (true) or always (false)
+  * @param from Email address of the sender
   * @param usernameAndPassword Optional credentials
+  * @param reportOnlyOnFailure Whether to report only if there is a failing check (true) or always (false)
   * @param accumulatedReport Whether to report for each check result (false) or only when a report is triggered (true).
   *                          The accumulated option requires the reporter to stick around until manually triggered
   *                          or else you will lose the results.
