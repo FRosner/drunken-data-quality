@@ -85,5 +85,34 @@ class ZeppelinReporter(unittest.TestCase):
             jvm.java.io.PrintStream.assert_called_with(output_stream)
 
 
+class EmailReporter(unittest.TestCase):
+    def test_get_jvm_reporter(self):
+        jvm = Mock()
+        ddq_email_reporter = Mock()
+        jvm.de.frosner.ddq.reporters.EmailReporter = Mock(
+            return_value = ddq_email_reporter
+        )
+        reporter = r.EmailReporter("smtp", "to")
+        jvm_reporter = reporter.get_jvm_reporter(jvm)
+        self.assertEqual(
+            jvm_reporter,
+            ddq_email_reporter
+        )
+
+    def test_send_accumulated_report(self):
+        jvm = Mock()
+        ddq_email_reporter = Mock()
+        jvm.de.frosner.ddq.reporters.EmailReporter = Mock(
+            return_value = ddq_email_reporter
+        )
+        reporter = r.EmailReporter("smtp", "to")
+        self.assertRaises(ValueError, reporter.sendAccumulatedReport)
+
+        reporter.get_jvm_reporter(jvm) # usually called by Check.run
+        reporter.sendAccumulatedReport()
+
+        self.assertTrue(ddq_email_reporter.sendAccumulatedReport.called)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -9,7 +9,7 @@ import de.frosner.ddq.core.CheckResult
  * A class which produces an %html report of [[CheckResult]].
  *
 **/
-case class ZeppelinReporter(stream: PrintStream = Console.out) extends PrintStreamReporter {
+case class ZeppelinReporter(stream: PrintStream = Console.out) extends HumanReadableReporter {
 
   private def inTd(s: String) = s"""<td style="padding:3px">$s</td>"""
 

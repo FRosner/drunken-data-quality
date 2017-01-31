@@ -13,3 +13,9 @@ def simple_date_format(jvm, s):
 
 def tuple2(jvm, t):
     return jvm.scala.Tuple2(*t)
+
+def option(jvm, java_obj):
+    return jvm.scala.Option.apply(java_obj)
+
+def scala_none(jvm):
+    return getattr(getattr(jvm.scala, "None$"), "MODULE$")

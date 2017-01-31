@@ -5,7 +5,7 @@ from pyspark import SparkContext, StorageLevel
 from pyspark.sql import SQLContext
 
 from pyddq.core import Check
-from pyddq.reporters import ConsoleReporter, MarkdownReporter, ZeppelinReporter
+from pyddq.reporters import ConsoleReporter, MarkdownReporter, ZeppelinReporter, EmailReporter
 from pyddq.streams import ByteArrayOutputStream
 
 
@@ -89,6 +89,43 @@ class ZeppelinReporterTest(unittest.TestCase):
 """.strip()
             self.assertEqual(baos.get_output(), expected_output)
 
+class EmailReporterTest(unittest.TestCase):
+    def setUp(self):
+        self.sc = SparkContext()
+        self.sql = SQLContext(self.sc)
+        self.df = self.sql.createDataFrame([(1, "a"), (1, None), (3, "c")])
+
+    def tearDown(self):
+        self.sc.stop()
+
+    def test_default_arguments(self):
+        check = Check(self.df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
+        reporter = EmailReporter("test@smtp.de", {"test@receivers.de"})
+        check.run([reporter])
+
+    def test_passed_arguments(self):
+        check = Check(self.df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
+        smtpServer = "test@smtp.de"
+        to = {"test@receivers.de"}
+        cc = {"test@cced.de"}
+        subjectPrefix = "my subject prefix: "
+        smtpPort = 9000
+        from_ = "test.ddq.io"
+        usernameAndPassword = ("username", "password")
+        reportOnlyOnFailure = True
+        accumulatedReport = True
+        reporter = EmailReporter(
+            smtpServer, to, cc, subjectPrefix, smtpPort, from_,
+            usernameAndPassword, reportOnlyOnFailure, accumulatedReport
+        )
+        check.run([reporter])
+
+    def test_accumulated_report(self):
+        check = Check(self.df).hasUniqueKey("_1").hasUniqueKey("_1", "_2")
+        reporter = EmailReporter("test@smtp.de", {"test@receivers.de"}, accumulatedReport=True)
+        check.run([reporter])
+        reporter.sendAccumulatedReport()
+        reporter.sendAccumulatedReport("111")
 
 if __name__ == '__main__':
     unittest.main()

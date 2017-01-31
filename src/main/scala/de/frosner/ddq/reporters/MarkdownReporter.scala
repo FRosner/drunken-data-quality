@@ -10,7 +10,7 @@ import de.frosner.ddq.core.CheckResult
  * @param stream The [[java.io.PrintStream]] to put the output. The stream will not be closed internally and can
  *               be reused.
  **/
-case class MarkdownReporter(stream: PrintStream) extends PrintStreamReporter {
+case class MarkdownReporter(stream: PrintStream) extends HumanReadableReporter {
 
   /**
    * Output markdown report of a given checkResult to the stream passed to the constructor
