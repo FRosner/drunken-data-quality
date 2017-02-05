@@ -1,13 +1,16 @@
 import unittest
 from mock import Mock
+from py4j.java_gateway import JavaClass
 from pyddq.core import Check
+from utils import get_df
 
 
 class ConstraintTest(unittest.TestCase):
     COLUMN_NAME = "column name"
 
     def setUp(self):
-        self.check = Check(Mock())
+        df = get_df()
+        self.check = Check(df)
         self.jvmCheck = self.check.jvmCheck
 
     def test_hasUniqueKey(self):

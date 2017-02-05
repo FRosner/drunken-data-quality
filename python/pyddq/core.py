@@ -1,8 +1,10 @@
-from reporters import ConsoleReporter
-from streams import ByteArrayOutputStream
-import jvm_conversions as jc
+from pyddq.reporters import ConsoleReporter
+from pyddq.streams import ByteArrayOutputStream
+from pyddq.exceptions import JavaClassNotFoundException
+import pyddq.jvm_conversions as jc
 
 from pyspark import sql
+import py4j.java_gateway as jg
 
 
 class Check(object):
@@ -31,6 +33,8 @@ class Check(object):
             self.jvmCheck = jvmCheck
         else:
             ddq_check = self._jvm.de.frosner.ddq.core.Check
+            if not isinstance(ddq_check, jg.JavaClass):
+                raise JavaClassNotFoundException("de.frosner.ddq.core.Check")
             self.jvmCheck = ddq_check(
                 self._dataFrame._jdf,
                 self._jvm_display_name,
