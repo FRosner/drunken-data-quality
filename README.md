@@ -28,6 +28,12 @@ pip install pyddq==4.1.0
 
 In order to use DDQ in your project, you can add it as a library dependency. This can be done through the [SBT spark package plugin](https://github.com/databricks/sbt-spark-package), or you can add it using [JitPack.io](https://jitpack.io/#FRosner/drunken-data-quality).
 
+Keep in mind that you might need to add additional resolvers as DDQ has some external dependencies starting from version 4.1.0:
+
+```
+resolvers += "lightshed-maven" at "http://dl.bintray.com/content/lightshed/maven"
+```
+
 If neither of the above-mentioned ways work for you, feel free to download one of the compiled artifacts in the [release section](https://github.com/FRosner/drunken-data-quality/releases). Alternatively you may of course also build from source.
 
 ## Using DDQ
