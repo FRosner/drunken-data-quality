@@ -33,6 +33,57 @@ It has a total number of 2 columns and 3 rows.
             expected_output
         )
 
+    def test_hasNumRowsEqualTo(self):
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df).hasNumRowsEqualTo(3).hasNumRowsEqualTo(10)
+        check.run([self.reporter])
+        expected_output = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: The number of rows satisfies (count = 3).
+- *FAILURE*: The actual number of rows 3 does not satisfy (count = 10).
+""".strip()
+        self.assertEqual(
+            self.reporter.output_stream.get_output(),
+            expected_output
+        )
+
+    def test_hasNumRowsGreaterThan(self):
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df).hasNumRowsGreaterThan(2).hasNumRowsGreaterThan(10)
+        check.run([self.reporter])
+        expected_output = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *SUCCESS*: The number of rows satisfies (count > 2).
+- *FAILURE*: The actual number of rows 3 does not satisfy (count > 10).
+""".strip()
+        self.assertEqual(
+            self.reporter.output_stream.get_output(),
+            expected_output
+        )
+
+    def test_hasNumRowsLessThan(self):
+        df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
+        check = Check(df).hasNumRowsLessThan(2).hasNumRowsLessThan(10)
+        check.run([self.reporter])
+        expected_output = """
+**Checking [_1: bigint, _2: string]**
+
+It has a total number of 2 columns and 3 rows.
+
+- *FAILURE*: The actual number of rows 3 does not satisfy (count < 2).
+- *SUCCESS*: The number of rows satisfies (count < 10).
+""".strip()
+        self.assertEqual(
+            self.reporter.output_stream.get_output(),
+            expected_output
+        )
+
     def test_isNeverNull(self):
         df = self.spark.createDataFrame([(1, "a"), (1, None), (3, "c")])
         check = Check(df).isNeverNull("_1").isNeverNull("_2")
