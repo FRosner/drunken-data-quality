@@ -96,7 +96,7 @@ case class Check(dataFrame: DataFrame,
    * @param expected Expected number of rows.
    * @return [[core.Check]] object including this constraint
    */
-  def hasNumRows(expected: Column => Column): Check = addConstraint(Check.hasNumRowsEqualTo(expected))
+  def hasNumRows(expected: Column => Column): Check = addConstraint(Check.hasNumRows(expected))
 
   /**
     * Check whether the column with the given name can be converted to the given type.
@@ -270,7 +270,7 @@ object Check {
    * @param expected Expected number of rows.
    * @return [[constraints.Constraint]] object
    */
-  def hasNumRowsEqualTo(expected: Column => Column): Constraint = NumberOfRowsConstraint(expected)
+  def hasNumRows(expected: Column => Column): Constraint = NumberOfRowsConstraint(expected)
 
   /**
    * Check whether the given constraint is satisfied. The constraint has to comply with Spark SQL syntax. So you
