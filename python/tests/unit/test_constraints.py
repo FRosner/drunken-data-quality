@@ -25,6 +25,24 @@ class ConstraintTest(unittest.TestCase):
             self.COLUMN_NAME, jvm_column_names
         )
 
+    def test_hasNumRowsEqualTo(self):
+        num_rows = 10
+        self.check.hasNumRowsEqualTo(num_rows)
+        self.check._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.\
+            equalTo.assert_called_with(num_rows)
+
+    def test_hasNumRowsGreaterThan(self):
+        num_rows = 10
+        self.check.hasNumRowsGreaterThan(num_rows)
+        self.check._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.\
+            greaterThan.assert_called_with(num_rows)
+
+    def test_hasNumRowsLessThan(self):
+        num_rows = 10
+        self.check.hasNumRowsLessThan(num_rows)
+        self.check._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.\
+            lessThan.assert_called_with(num_rows)
+
     def test_isNeverNull(self):
         self.check.isNeverNull(self.COLUMN_NAME)
         self.jvmCheck.isNeverNull.assert_called_with(self.COLUMN_NAME)
