@@ -40,7 +40,21 @@ class DateFormatConstraintTest extends FlatSpec with Matchers with SparkContexts
   it should "fail if at least one element cannot be converted to Date" in {
     val column = "column"
     val format = "yyyy-MM-dd HH:mm:ss"
-    val check =  Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", "abc", "2000-15-23 11:11:11"))).
+    val check =  Check(TestData.makeNullableStringDf(spark, List("2000-11-23 11:50:10", "abc", "2000-10-23 11:11:11"))).
+      isFormattedAsDate(column, format)
+    val constraint = check.constraints.head
+    val result = DateFormatConstraintResult(
+      constraint = DateFormatConstraint(column, format),
+      data = Some(DateFormatConstraintResultData(failedRows = 1L)),
+      status = ConstraintFailure
+    )
+    check.run().constraintResults shouldBe Map(constraint -> result)
+  }
+
+  it should "fail if setLenient is required" in {
+    val column = "column"
+    val format = "dd-MM-yyyy"
+    val check =  Check(TestData.makeNullableStringDf(spark, List("2000-11-23"))).
       isFormattedAsDate(column, format)
     val constraint = check.constraints.head
     val result = DateFormatConstraintResult(
