@@ -62,4 +62,22 @@ class NumberOfRowsConstraintTest extends FlatSpec with Matchers with SparkContex
     }
   }
 
+  "NumberOfRowsConstraint.greaterThan" should "create a correct NumberOfRowsConstraint" in {
+    val expected = 10
+    val constraint = NumberOfRowsConstraint.greaterThan(expected)
+    constraint shouldBe NumberOfRowsConstraint(new Column("count") > expected)
+  }
+
+  "NumberOfRowsConstraint.lessThan" should "create a correct NumberOfRowsConstraint" in {
+    val expected = 10
+    val constraint = NumberOfRowsConstraint.lessThan(expected)
+    constraint shouldBe NumberOfRowsConstraint(new Column("count") < expected)
+  }
+
+  "NumberOfRowsConstraint.equalTo" should "create a correct NumberOfRowsConstraint" in {
+    val expected = 10
+    val constraint = NumberOfRowsConstraint.equalTo(expected)
+    constraint shouldBe NumberOfRowsConstraint(new Column("count") === expected)
+  }
+
 }

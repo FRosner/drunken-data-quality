@@ -110,6 +110,63 @@ class Check(object):
             jvmCheck
         )
 
+    def hasNumRowsEqualTo(self, expected):
+        """
+        Checks whether the table has exactly the given number of rows.
+        Args:
+            expected (int): expected number of rows
+        Returns:
+            core.Check object including this constraint
+        """
+        jvmCheck = self.jvmCheck.addConstraint(
+            self._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.equalTo(expected)
+        )
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
+
+    def hasNumRowsGreaterThan(self, expected):
+        """
+        Checks whether the table has the number of rows greater than the given number
+        Args:
+            expected (int): expected number of rows
+        Returns:
+            core.Check object including this constraint
+        """
+        jvmCheck = self.jvmCheck.addConstraint(
+            self._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.greaterThan(expected)
+        )
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
+
+    def hasNumRowsLessThan(self, expected):
+        """
+        Checks whether the table has the number of rows less than the given number
+        Args:
+            expected (int): expected number of rows
+        Returns:
+            core.Check object including this constraint
+        """
+        jvmCheck = self.jvmCheck.addConstraint(
+            self._jvm.de.frosner.ddq.constraints.NumberOfRowsConstraint.lessThan(expected)
+        )
+        return Check(
+            self.dataFrame,
+            self.name,
+            self.cacheMethod,
+            self.id,
+            jvmCheck
+        )
+
     def isNeverNull(self, columnName):
         """
         Checks whether the column with the given name contains no null values.

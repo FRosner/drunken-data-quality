@@ -26,6 +26,18 @@ object NumberOfRowsConstraint {
     new NumberOfRowsConstraint(expected(new Column(countKey)))
   }
 
+  def greaterThan(expected: Int): NumberOfRowsConstraint = {
+    NumberOfRowsConstraint(_ > expected)
+  }
+
+  def lessThan(expected: Int): NumberOfRowsConstraint = {
+    NumberOfRowsConstraint(_ < expected)
+  }
+
+  def equalTo(expected: Int): NumberOfRowsConstraint = {
+    NumberOfRowsConstraint(_ === expected)
+  }
+
 }
 
 case class NumberOfRowsConstraintResult(constraint: NumberOfRowsConstraint,
