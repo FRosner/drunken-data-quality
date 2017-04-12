@@ -11,7 +11,12 @@ case class DateFormatConstraint(columnName: String,
                                 formatString: String) extends Constraint {
 
   val fun = (df: DataFrame) => {
-    val cannotBeDate = udf((column: String) => column != null && Try(new SimpleDateFormat(formatString).parse(column)).isFailure)
+    val cannotBeDate = udf((column: String) =>
+      column != null && Try {
+        val format = new SimpleDateFormat(formatString)
+        format.setLenient(false)
+        format.parse(column)
+      }.isFailure)
     val maybeCannotBeDateCount = Try(df.filter(cannotBeDate(new Column(columnName))).count)
     DateFormatConstraintResult(
       this,
