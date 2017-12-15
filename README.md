@@ -197,6 +197,7 @@ Although we try to maintain as much compatibility between all available Spark ve
 
 DDQ Version | Spark Version
 --- | ---
+5.x | 2.2.x
 4.x | 2.0.x
 3.x | 1.6.x
 2.x | 1.3.x
