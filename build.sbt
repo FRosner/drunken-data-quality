@@ -4,11 +4,9 @@ version       := "4.2.0-SNAPSHOT"
 
 name          := "drunken-data-quality"
 
-scalaVersion  := "2.11.8"
+scalaVersion  := "2.11.11"
 
-crossScalaVersions := Seq("2.10.6", "2.11.8")
-
-sparkVersion := "2.0.2"
+sparkVersion := "2.2.1"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 

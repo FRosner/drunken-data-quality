@@ -6,8 +6,7 @@ addons:
       - git
       - python-pip
 scala:
-   - 2.10.6
-   - 2.11.8
+   - 2.11.11
 before_install:
   - pip install -U pip
 script:
