@@ -6,8 +6,7 @@ addons:
       - git
       - python-pip
 scala:
-   - 2.10.6
-   - 2.11.8
+   - 2.11.11
 before_install:
   - pip install -U pip
 script:
@@ -20,9 +19,9 @@ script:
   - sudo pip install -r test-requirements.txt
   - sudo python setup.py install
   - sudo python setup.py test
-  - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.0.2/spark-2.0.2-bin-hadoop2.6.tgz
-  - tar -xvzf $HOME/spark-2.0.2-bin-hadoop2.6.tgz -C $HOME/
-  - export PATH=$PATH:$HOME/spark-2.0.2-bin-hadoop2.6/bin
+  - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
+  - tar -xvzf $HOME/spark-2.2.1-bin-hadoop2.7.tgz -C $HOME/
+  - export PATH=$PATH:$HOME/spark-2.2.1-bin-hadoop2.7/bin
   - sudo "PATH=$PATH" python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
