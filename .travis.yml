@@ -21,7 +21,7 @@ script:
   - sudo python setup.py test
   - wget -P $HOME/ http://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
   - tar -xvzf $HOME/spark-2.2.1-bin-hadoop2.7.tgz -C $HOME/
-  - export PATH=$PATH:$HOME/spark-2.2.1-bin-hadoop2.6/bin
+  - export PATH=$PATH:$HOME/spark-2.2.1-bin-hadoop2.7/bin
   - sudo "PATH=$PATH" python setup.py integration_test --jar=drunken-data-quality.jar
 cache:
   directories:
