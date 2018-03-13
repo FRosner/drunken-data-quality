@@ -436,4 +436,4 @@ class Check(object):
         self.jvmCheck.run(jvm_reporters)
 
         if baos:
-            print baos.get_output()
+            print(baos.get_output())

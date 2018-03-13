@@ -1,6 +1,6 @@
 from pyddq.streams import PrintStream, OutputStream, ByteArrayOutputStream
 from py4j.java_gateway import get_field
-import jvm_conversions as jc
+import pyddq.jvm_conversions as jc
 
 
 class Reporter(object):
