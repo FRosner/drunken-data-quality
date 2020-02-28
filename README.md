@@ -13,7 +13,7 @@ DDQ is a small library for checking constraints on Spark data structures. It can
 DDQ is available as a [spark package](http://spark-packages.org/package/FRosner/drunken-data-quality). You can add it to your spark-shell, spark-submit or pyspark using the `--packages` command line option:
 
 ```sh
-spark-shell --packages FRosner:drunken-data-quality:4.1.1-s_2.11
+spark-shell --packages FRosner:drunken-data-quality:5.0.0-s_2.11
 ```
 
 ### Python API

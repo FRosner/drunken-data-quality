@@ -1,6 +1,6 @@
 organization  := "de.frosner"
 
-version       := "4.2.0-SNAPSHOT"
+version       := "5.0.0"
 
 name          := "drunken-data-quality"
 
